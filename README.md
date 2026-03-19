@@ -66,5 +66,14 @@ Example:
 |GET|/auth/login/|Open login page|
 |GET|/accounts/signup/|Open sign up page|
 |GET|/dashboard|Open dashboard page with information suitable for current session. If a session doesn't exist, redirect to /auth/login|
+|GET|/accounts/changePassword|Open change password page|
 |POST|/auth/login/|Login (actually create a session) and redirect to dashboard|
 |POST|/accounts/signup|Create account, login and redirect to dashboard|
+|POST|/accounts/changePassword|Change password|
+
+Read more at [this file](./docs/api.md).
+
+## Unsolved errors
+
+Read more [here](./docs/errors.md).
+

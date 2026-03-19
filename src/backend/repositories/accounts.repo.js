@@ -17,6 +17,9 @@ class AccountsRepository {
       .prepare("INSERT INTO Accounts VALUES (?, ?)")
       .run([phone, password]);
   }
+  changePassword(phone, newPassword) {
+    return db.prepare("UPDATE Accounts SET hashedPass=? WHERE phone=?").run([newPassword, phone]);
+  }
 }
 
 module.exports = new AccountsRepository();
