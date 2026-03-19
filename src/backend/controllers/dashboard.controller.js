@@ -5,7 +5,8 @@ function showDashboardPage(req, res) {
   res.send(`
     <h1>WaterQA Dashboard</h1>
     ${req.session.user ? `<p>Welcome back, ${req.session.user.phone}!</p>` : ''}
-    <a href="/auth/logout">Log out</a>
+    <p><a href="/auth/logout">Log out</a></p>
+    <p><a href="/accounts/changePassword">Change password</a></p>
   `);
 }
 module.exports = {

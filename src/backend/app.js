@@ -31,6 +31,7 @@ const dashboardRouter = require('./routes/dashboard.route');
 app.use('/accounts', accountsRouter);   // ← mount the router
 app.use('/auth', authRouter);
 app.use('/dashboard', dashboardRouter);
+// Special route: / = /dashboard
 app.get('/', (req, res) => {
   res.redirect('/dashboard');
 });

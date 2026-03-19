@@ -24,7 +24,7 @@ function checkByPhone(req, res) {
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    resres.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 }
 
@@ -60,9 +60,35 @@ function signup(req, res) {
   }
 }
 
+function showChangePasswordPage(req, res) {
+  res.send(`
+    <h1>Change password</h1>
+    <form method="POST" action="/accounts/changePassword">
+      <input type="password" name="currentPass" placeholder="Current password" required /><br>
+      <input type="password" name="newPass" placeholder="New password" required /><br>
+      <input type="password" name="confirmPass" placeholder="Confirm password" required /><br>
+      <button type="submit">Change password</button>
+    </form>
+  `);
+}
+
+function changePassword(req, res) {
+  const phone = req.session.user.phone;
+  const { currentPass, newPass, confirmPass } = req.body;
+  const errCode = accountsService.changePassword(phone, currentPass, newPass, confirmPass);
+  if (errCode > 0) {
+    res.redirect(`/accounts/changePassword?error=${errCode}`);
+  }
+  else {
+    res.redirect("/dashboard");
+  }
+}
+
 module.exports = {
   getAll,
   checkByPhone,
   showSignupPage,
-  signup
+  signup,
+  showChangePasswordPage,
+  changePassword
 };
