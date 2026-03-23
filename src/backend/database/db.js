@@ -10,7 +10,7 @@ const Database = require('better-sqlite3');
 // db.pragma('foreign_keys = ON');
 
 
-const db = new Database('/home/tdung/Code/DADN/WaterQA/data/WaterQA.db', {
+const db = new Database('./data/WaterQA.db', {
   verbose: console.log,
   // fileMustExist: true,        // optional: throw if db file missing
 });
