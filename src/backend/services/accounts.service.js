@@ -13,26 +13,38 @@ class AccountsService {
     return accountsRepo.findById(id);
   }
   addAccount(mail, phone, password, passwordAgain) {
-    if (password != passwordAgain) {
-      return 1;
-    }
-    else {
-      const accs = accountsRepo.findByPhone(phone);
-      if (accs.length > 0) { return 2; }
-      else {
-        try {
-          const row = accountsRepo.countRows();
-          const id = row.count + 1;
-          const createdAt = new Date().toISOString();
-          accountsRepo.addAccount(id, mail, phone, password, "User", 0, createdAt);
-        } catch (err) {
-          return 3; // temporary. This is expected to give the exact SQL error (eg. duplicated phone number...)
-        }
-        
-        return 0;
+  if (password != passwordAgain) {
+    return 1;
+  } else {
+    const accs = accountsRepo.findByPhone(phone);
+
+    if (accs) { 
+      return 2; 
+    } else {
+      try {
+        const row = accountsRepo.countRows();
+        const id = row.total + 1;
+
+        const createdAt = new Date().toISOString();
+
+        accountsRepo.addAccount(
+          id,
+          mail,
+          phone,
+          password,
+          "User",
+          0,
+          createdAt
+        );
+      } catch (err) {
+        return 3;  // temporary. This is expected to give the exact SQL error (eg. duplicated phone number...)
       }
+
+      return 0;
     }
   }
+}
+
   changePassword(id, currentPass, newPass, confirmPass){
     const accs = accountsRepo.findById(id);
     if (accs.length <= 0) {return 1;} // unexpected error: account not found
