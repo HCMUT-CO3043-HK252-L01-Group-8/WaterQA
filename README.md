@@ -20,29 +20,29 @@ A water quality monitoring app, created for personal use on mobile platform.
 ```
 
 Explanation:
-- /src: source code
-- /test: modular & system tests
-- /config: configuration files
-- /build: files used in or generated in build phase
-- /docs: documents (not including README)
-- /assets: image, sound, etc.
+- `/src`: source code
+- `/test`: modular & system tests
+- `/config`: configuration files
+- `/build`: files used in or generated in build phase
+- `/docs`: documents (not including README)
+- `/assets`: image, sound, etc.
 
 ## Branch name
-- release/[version name]: usable, releasable product with complete README file
-- main: executable snapshot
-- feature/[task number]-[feature name]: a specific feature
-- bugfix/[task number]-[feature name]: to fix bug for "feature" branches
-- hotfix/[task number]-[error name]: to fix bug from "main"
-- docs: document
+- `release/[version name]`: usable, releasable product with complete README file
+- `main`: executable snapshot
+- `feature/[task number]-[feature name]`: a specific feature
+- `bugfix/[task number]-[feature name]`: to fix bug for "feature" branches
+- `hotfix/[task number]-[error name]`: to fix bug from "main"
+- `docs`: document
 
 Example names:
-- feature/T-456-user-authentication
-- bugfix/T-789-fix-header-styling
-- hotfix/T-321-security-patch
-- release/v2.0.1
-- docs/T-654-update-readme
+- `feature/T-456-user-authentication`
+- `bugfix/T-789-fix-header-styling`
+- `hotfix/T-321-security-patch`
+- `release/v2.0.1`
+- `docs/T-654-update-readme`
 
-Task number looks like: T-xxx. One task number is aligned with a specific task, declared on Telegram group.
+Task number looks like: `T-xxx`. One task number is aligned with a specific task, declared on Telegram group. If there's no task number, just ignore it, e.g. `feature/user-authentication`.
 Names shall be written in English. Names with many word shall be separated by hyphens (-).
 
 ### Commit message

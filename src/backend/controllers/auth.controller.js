@@ -16,8 +16,8 @@ async function login(req, res) {
   const { id, password } = req.body;
 
   const { err, user } = authService.login(id, password);
-  console.log("ERR:", err);
-  console.log("USER:", user);
+  // console.log("ERR:", err);
+  // console.log("USER:", user);
 
   if (err > 0) {
     return res.redirect(`/auth/login?error=${err}`);

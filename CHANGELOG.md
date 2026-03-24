@@ -1,15 +1,13 @@
 # What changed in this commit
 
-## Added
-
-- Feature: change password
-- Documents (in ./docs/) about: API, unsolved errors 
 
 ## Changed
 
-- Switched database initialization to use Water_QA_Original.sql
-- Updated SQL path handling in initDb.js
+- Location of `WaterQA.db` (project database file), and file path to it specified in `/src/backend/database/db.js`.
+
+## Removed
+- Commented all `console.log()` functions in backend. These functions are used to monitor data flow for debugging.
 
 ## Notes
 
-- Make sure to check the SQL file path when running on a different machine
+- Make sure to check the SQL file path when running on a different machine!

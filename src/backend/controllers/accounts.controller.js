@@ -30,13 +30,13 @@ function findById(req, res) {
 }
 
 function showSignupPage(req, res) {
-  console.log('Error shown:', req.query.error);
+  // console.log('Error shown:', req.query.error);
   res.render('sign-up', {error: req.query.error});
 }
 function signup(req, res) {
   const { mail, phone, password, passwordAgain } = req.body;
   const errCode = accountsService.addAccount(mail, phone, password, passwordAgain);
-  console.log('errCode:', errCode);
+  // console.log('errCode:', errCode);
   if (errCode > 0) {
     res.redirect(`/accounts/signup?error=${errCode}`);
   }
@@ -55,8 +55,8 @@ function showChangePasswordPage(req, res) {
 function changePassword(req, res) {
   const id = req.session.user.user_id;
   const { currentPass, newPass, confirmPass } = req.body;
-  console.log(req.session.user);
-  console.log({id, currentPass, newPass, confirmPass});
+  // console.log(req.session.user);
+  // console.log("Input info:", {id, currentPass, newPass, confirmPass});
   const errCode = accountsService.changePassword(id, currentPass, newPass, confirmPass);
   if (errCode > 0) {
     res.redirect(`/accounts/change-password?error=${errCode}`);
