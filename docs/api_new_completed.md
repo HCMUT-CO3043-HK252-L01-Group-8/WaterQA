@@ -206,6 +206,7 @@ Parameters:
 |-|:-:|:-:|:-:|-|
 |user_id|body|int|x|User ID|
 |password|body|string|x|User password|
+
 Responses:
 
 |Status code|Description|Response payload example|Links|
