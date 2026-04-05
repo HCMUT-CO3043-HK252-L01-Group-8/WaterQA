@@ -58,22 +58,27 @@ Example:
 
 ## Frontend - backend API
 
-|Method|Endpoint|Description|
-|---|---|---|
-|GET|/|Same as /dashboard|
-|GET|/accounts/all|Get all rows from Accounts table in DB in JSON format|
-|GET|/accounts/id/:phone|Get 1 row by phone number (also UID) in JSON format|
-|GET|/auth/login/|Open login page|
-|GET|/accounts/signup/|Open sign up page|
-|GET|/dashboard|Open dashboard page with information suitable for current session. If a session doesn't exist, redirect to /auth/login|
-|GET|/accounts/changePassword|Open change password page|
-|POST|/auth/login/|Login (actually create a session) and redirect to dashboard|
-|POST|/accounts/signup|Create account, login and redirect to dashboard|
-|POST|/accounts/changePassword|Change password|
-
-Read more at [this file](./docs/api.md).
+Read [here](./docs/api.md).
 
 ## Unsolved errors
 
-Read more [here](./docs/errors.md).
+Read [here](./docs/errors.md).
+
+## Feature developing progress
+- [x] Auth
+	- [x] Login
+	- [x] Sign up
+	- [x] Change password
+	- [x] Log out
+- [x] Dashboard
+- [ ] Monitor data
+	- [ ] Live monitor
+	- [x] Monitor history
+- [ ] Forecast data
+- [ ] Export file
+- [ ] Manual input
+- [ ] Manage IoT devices
+- [ ] Manage users
+- [ ] Alert when IoT device has errors
+- [ ] Alert when threshold crossed
 

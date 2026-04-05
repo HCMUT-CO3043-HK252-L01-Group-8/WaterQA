@@ -66,89 +66,6 @@ Responses
 |:-:|-|-|-|
 |200|Get 1 row by user_id (also UID) in JSON format|Example 1.2||
 
-
-
-
-
-### Response payload examples
-Example 1.1
-```
-{
-    "count": 3,
-    "rows": [
-      {
-        "user_id": 1,
-        "email": "user1@example.com",
-        "phone_number": "0123456789",
-        "password_hash": "75320c934ed4d3b0310d0ede33d7e260d4c9e118",
-        "role": "User",
-        "verification_status": 0,
-        "created_at": "2026-03-23T02:59:00.633Z",
-        "updated_at": "2026-03-24T00:43:37.796Z"
-      }
-	]
-}
-```
-Example 1.2
-```
-{
-    "count": 1,
-    "rows": [
-      {
-        "user_id": 1,
-        "email": "user1@example.com",
-        "phone_number": "0123456789",
-        "password_hash": "75320c934ed4d3b0310d0ede33d7e260d4c9e118",
-        "role": "User",
-        "verification_status": 0,
-        "created_at": "2026-03-23T02:59:00.633Z",
-        "updated_at": "2026-03-24T00:43:37.796Z"
-      }
-    ]
-}
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Example material
-## Parameter table
-
-## Response table
-
-Parameters:
-
-|Param name|Request type|Data type|Required?|Description|
-|-|:-:|:-:|:-:|-|
-||||||
-
-Responses:
-
-|Status code|Description|Response payload example|Links|
-|:-:|-|-|-|
-|||||
-
-
 4. **GET** `/auth/login`
 
 Parameters: none
@@ -251,6 +168,43 @@ Responses:
 |200|Change password successfully|||
 
 ---
+### Response payload examples
+Example 1.1
+```
+{
+    "count": 3,
+    "rows": [
+      {
+        "user_id": 1,
+        "email": "user1@example.com",
+        "phone_number": "0123456789",
+        "password_hash": "75320c934ed4d3b0310d0ede33d7e260d4c9e118",
+        "role": "User",
+        "verification_status": 0,
+        "created_at": "2026-03-23T02:59:00.633Z",
+        "updated_at": "2026-03-24T00:43:37.796Z"
+      }
+	]
+}
+```
+Example 1.2
+```
+{
+    "count": 1,
+    "rows": [
+      {
+        "user_id": 1,
+        "email": "user1@example.com",
+        "phone_number": "0123456789",
+        "password_hash": "75320c934ed4d3b0310d0ede33d7e260d4c9e118",
+        "role": "User",
+        "verification_status": 0,
+        "created_at": "2026-03-23T02:59:00.633Z",
+        "updated_at": "2026-03-24T00:43:37.796Z"
+      }
+    ]
+}
+```
 
 # Monitoring data operations
 
@@ -268,15 +222,44 @@ Responses:
 
 2. **GET** `/data/history`
 
+|Param name|Request type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|row|query|int||Number of rows to retrieve (sort by timestamp DESC). Default: 10 (meaning 10 latest rows)|
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Render monitoring data history page (default: 10 rows)|||
+
+3. **GET** `/data/history-all`
+
 Parameters: none
 
 Responses:
 
 |Status code|Description|Response payload example|Links|
 |:-:|-|-|-|
-|200|View monitoring data history|||
+|200|Get monitor history in raw JSON, with no row limit|Example 2.1||
 
----
+### Response payload examples
+
+Example 2.1
+```
+{
+        "observation_id": 2,
+        "station_id": 2,
+        "light_intensity": 0.5,
+        "water_level": 15.23,
+        "temperature": 32.15,
+        "humidity": 71.3,
+        "tank_surface_moisture": 36,
+        "lid_status": 0,
+        "leakage_signal": 0,
+        "intrusion_signal": 0,
+        "timestamp": "2026-03-29 00:00:00"
+}
+```
 
 # Forecast operations
 
@@ -381,3 +364,19 @@ Responses:
 
 *(No information available)*
 
+# Example material
+## Parameter table
+
+## Response table
+
+Parameters:
+
+|Param name|Request type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+||||||
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|||||

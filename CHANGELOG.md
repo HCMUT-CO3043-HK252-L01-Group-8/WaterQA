@@ -1,12 +1,10 @@
 # What changed in this commit
 
-
-## Changed
-
-- Location of `WaterQA.db` (project database file), and file path to it specified in `/src/backend/database/db.js`.
+## Added
+- Feature: monitor history. Details in API doc.
 
 ## Removed
-- Commented all `console.log()` functions in backend. These functions are used to monitor data flow for debugging.
+- Redundant metadata files for sqlite (like .db-shm). These files are automatically generated when we open .sql file using DB Browser, then deleted after .sql file closed.
 
 ## Notes
 
