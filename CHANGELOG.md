@@ -1,11 +1,7 @@
 # What changed in this commit
 
 ## Added
-- Feature: monitor history. Details in API doc.
+- Feature: export to CSV. Still wondering if we should add "export to .xlsx" function (fuck micro&soft (dih), Bill Gates is in Epstein files!)
 
-## Removed
-- Redundant metadata files for sqlite (like .db-shm). These files are automatically generated when we open .sql file using DB Browser, then deleted after .sql file closed.
-
-## Notes
-
-- Make sure to check the SQL file path when running on a different machine!
+## Updated
+- In "show monitoring data history" function, rows now are sorted by observation_id rather than timestamp.

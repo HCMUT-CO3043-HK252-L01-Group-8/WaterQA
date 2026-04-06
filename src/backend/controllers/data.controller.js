@@ -1,4 +1,5 @@
 const dataService = require('../services/data.service');
+const { Parser } = require('json2csv');
 
 function getDataHistory(req, res) {
     try {
@@ -39,4 +40,25 @@ function showDataHistory(req, res) {
     res.render('data-history', { data: rows });
 }
 
-module.exports = { getDataHistory, showDataHistory, getDataHistoryNoLimit };
+function exportToFile(req, res) {
+    try {
+        // const all = req.query.all ? req.query.all : false;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+        const rows = limit > 0 ? dataService.getDataHistory(limit) : dataService.getDataHistoryNoLimit();
+
+        // Convert JSON to CSV!
+        const parser = new Parser();
+        const csv = parser.parse(rows);
+
+        // Set headers for download
+        res.header('Content-Type', 'text/csv');
+        res.attachment('data-history.csv');
+
+        return res.send(csv);
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+
+}
+
+module.exports = { getDataHistory, showDataHistory, getDataHistoryNoLimit, exportToFile };

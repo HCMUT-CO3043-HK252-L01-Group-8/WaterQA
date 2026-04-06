@@ -56,7 +56,7 @@ Responses:
 
 Parameters: 
 
-|Param name|Request type|Data type|Required?|Description|
+|Param name|Param type|Data type|Required?|Description|
 |-|:-:|:-:|:-:|-|
 |id|path|int|x||
 
@@ -119,7 +119,7 @@ Responses:
 
 Parameters:
 
-|Param name|Request type|Data type|Required?|Description|
+|Param name|Param type|Data type|Required?|Description|
 |-|:-:|:-:|:-:|-|
 |user_id|body|int|x|User ID|
 |password|body|string|x|User password|
@@ -136,7 +136,7 @@ Responses:
 
 Parameters:
 
-|Param name|Request type|Data type|Required?|Description|
+|Param name|Param type|Data type|Required?|Description|
 |-|:-:|:-:|:-:|-|
 |email|body|string|x|User email address|
 |phone_number|body|string|x|User phone number|
@@ -155,7 +155,7 @@ Responses:
 
 Parameters:
 
-|Param name|Request type|Data type|Required?|Description|
+|Param name|Param type|Data type|Required?|Description|
 |-|:-:|:-:|:-:|-|
 |current_password|body|string|x|Current password|
 |new_password|body|string|x|New password|
@@ -222,9 +222,9 @@ Responses:
 
 2. **GET** `/data/history`
 
-|Param name|Request type|Data type|Required?|Description|
+|Param name|Param type|Data type|Required?|Description|
 |-|:-:|:-:|:-:|-|
-|row|query|int||Number of rows to retrieve (sort by timestamp DESC). Default: 10 (meaning 10 latest rows)|
+|row|query|int||Number of rows (from OBSERVATION table) to retrieve (sort by observation_id DESC). Default: 10 (meaning 10 latest rows)|
 
 Responses:
 
@@ -279,7 +279,7 @@ Responses:
 
 Parameters:
 
-|Param name|Request type|Data type|Required?|Description|
+|Param name|Param type|Data type|Required?|Description|
 |-|:-:|:-:|:-:|-|
 |observation_id|body|int|x|Observation ID|
 |model_name|body|string|x|Model name|
@@ -296,13 +296,17 @@ Responses:
 
 1. **GET** `/data/export`
 
-Parameters: none
+Parameters: 
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|limit|query|int||Number of rows (from OBSERVATION table) to be exported. Rows are sorted by observation_id DESC. If user wants to export all rows, set this param to -1. Default: 10|
 
 Responses:
 
 |Status code|Description|Response payload example|Links|
 |:-:|-|-|-|
-|200|Open export data page|||
+|200|Open system dialog box to download .csv file|||
 
 ---
 
@@ -310,7 +314,7 @@ Responses:
 
 Parameters:
 
-|Param name|Request type|Data type|Required?|Description|
+|Param name|Param type|Data type|Required?|Description|
 |-|:-:|:-:|:-:|-|
 |station_id|body|int|x|Station ID|
 |file_type|body|string|x|File type|
@@ -342,7 +346,7 @@ Responses:
 
 Parameters:
 
-|Param name|Request type|Data type|Required?|Description|
+|Param name|Param type|Data type|Required?|Description|
 |-|:-:|:-:|:-:|-|
 |id|path|int|x|Station ID|
 
@@ -371,7 +375,7 @@ Responses:
 
 Parameters:
 
-|Param name|Request type|Data type|Required?|Description|
+|Param name|Param type|Data type|Required?|Description|
 |-|:-:|:-:|:-:|-|
 ||||||
 

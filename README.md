@@ -75,7 +75,7 @@ Read [here](./docs/errors.md).
 	- [ ] Live monitor
 	- [x] Monitor history
 - [ ] Forecast data
-- [ ] Export file
+- [x] Export file
 - [ ] Manual input
 - [ ] Manage IoT devices
 - [ ] Manage users
