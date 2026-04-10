@@ -1,86 +1,386 @@
-# Danh sách API endpoint
+# API document
+New. Refined. Grouped by functionality.
 
-Lưu ý: Doc này do dev @tdung vừa dev vừa viết nên Việt Anh lẫn lộn, rất mong quý anh chị em thông cảm. Khi chuẩn bị merge vào main sẽ thống nhất chuyển hết sang Việt (hoặc Anh).
+JSON response format:
 
-## Đăng ký - đăng nhập
+- Successful request: 
+```{
+  "success": true,
+  "payload": {
+    /* Application-specific data would go here. */
+  },
+  "timestamp": "2026-04-02T08:27:47.721Z"
+}
+```
+- Failed request:
 
-|#|Method|Endpoint|Description|Implemented?|
-|:-:|:-:|-|-|:-:|
-|1|GET|/|Same as /dashboard|<input type="checkbox" checked/>|
-|2|GET|/accounts/all|Get all rows from User table in DB in JSON format|<input type="checkbox" checked/>|
-|3|GET|/accounts/id/:id|Get 1 row by user_id (also UID) in JSON format|<input type="checkbox" checked/>|
-|4|GET|/auth/login|Open login page|<input type="checkbox" checked/>|
-|5|GET|/accounts/signup|Open sign up page|<input type="checkbox" checked/>|
-|6|GET|/dashboard|Open dashboard page with information suitable for current session. If a session doesn't exist, redirect to /auth/login|<input type="checkbox" checked/>|
-|7|GET|/accounts/change-password|Open change password page|<input type="checkbox" checked/>|
-|8|POST|/auth/login|Login (actually create a session) and redirect to dashboard|<input type="checkbox" checked/>|
-|9|POST|/accounts/signup|Create account, login and redirect to dashboard|<input type="checkbox" checked/>|
-|10|POST|/accounts/changePassword|Change password|<input type="checkbox" checked/>|
+```
+{
+  "success": false,
+  "payload": {
+    /* Application-specific data would go here. */
+  },
+  "error": {
+    "code": 123,
+    "message": "An error occurred!"
+  }
+  "timestamp": "2026-04-02T08:27:47.721Z"
+}
+```
 
-## Theo dõi dữ liệu quan trắc
+# Dashboard and login-related operations
 
-|#|Method|Endpoint|Description|Implemented?|
-|:-:|:-:|-|-|:-:|
-|1|GET|/data/live|View live monitoring data in real-time|<input type="checkbox"/>|
-|2|GET|/data/history|View monitoring data history|<input type="checkbox"/>|
+1. **GET** `/` (or **GET** `/dashboard`)
 
-### Notes
-- #1: Live monitoring data page should have a real-time line graph. Source of info is taken from IoT devices available to current user.
-- #2: Data history shall be a list. There're 2 ways to implement. 1) the list contains only essential info, with a "view" button on every row allowing user to see details in a dialog box; 2) All info are shown on a row, no "view" button needed.
-- #2: There's also an "export data" button which redirects to `/data/export`.
+Parameters: none
 
-## Dự báo dữ liệu quan trắc
+Responses:
 
-|#|Method|Endpoint|Description|Implemented?|
-|:-:|:-:|-|-|:-:|
-|1|GET|/data/forecast|Open data forecast page|<input type="checkbox"/>|
-|2|POST|/data/forecast|Create data forecast using AI|<input type="checkbox"/>|
+|Status code|Description|Response payload example|Links|
+|-|-|-|-|
+|200|Open dashboard|||
+|302|Redirects to login page||`/login`|
 
-### Note
-- #1: data forecast page includes: list of previous forecasts (each line has a "view" button to see details in a dialog box), "create forecast" button. "Create forecast" opens a form in dialog box/another page, user specifies: which fields to forecast, range of time, confidence level, then Enter.
-- #2: calls AI service, then collect data, create a forecast, add it to DB, then redirect to #1.
+2. **GET** `/accounts/all`
 
-## Xuất file
+Parameters: none
 
-|#|Method|Endpoint|Description|Implemented?|
-|:-:|:-:|-|-|:-:|
-|1|GET|/data/export|Open export data page|<input type="checkbox"/>|
-|2|POST|/data/export|Create data file in designated path|<input type="checkbox"/>|
+Responses:
 
-### Note
-- #1: Export data page has a form allowing user to specify: file type (raw JSON, svg or xlsx), directory path, and submit button. Currently only json and svg formats are supported.
-- #2: App calls system file explorer (?)
+|Status code|Description|Response payload example|Links|
+|-|-|-|-|
+|200|Get all rows from User table in DB in JSON format|Example 1.1||
 
 
-## Nhập dữ liệu thủ công
+3. **GET** `/accounts/id/:id`
 
-I haven't imagined how this works yet.
+Parameters: 
 
-## Quản lý thiết bị IoT
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|id|path|int|x||
 
-|#|Method|Endpoint|Description|Implemented?|
-|:-:|:-:|-|-|:-:|
-|1|GET|/devices/all|Show all IoT device as a table|<input type="checkbox"/>|
-|2|GET|/devices/id/:id|Show detailed info of an IoT device, as well as config options|<input type="checkbox"/>|
+Responses
 
-### Notes
-- #1: The tables only show essential info (including status), each row has a "show detail" button which redirects to #2.
-- #2: The page includes: detailed info, an "enable/disable" button (?)
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Get 1 row by user_id (also UID) in JSON format|Example 1.2||
 
-## Quản lý người dùng
+4. **GET** `/auth/login`
 
-I haven't imagined how this works yet.
+Parameters: none
 
-# Ghi chú
+Responses:
 
-Features to be implemented:
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Open login page|||
 
-- <input type="checkbox" checked/> Change password.
-- <input type="checkbox"/> Monitor data.
-- <input type="checkbox"/> Forecast data.
-- <input type="checkbox"/> Export file.
-- <input type="checkbox"/> Manual input
-- <input type="checkbox"/> Manage IoT devices
-- <input type="checkbox"/> Manage users
-- <input type="checkbox"/> Alert when IoT device has errors
-- <input type="checkbox"/> Alert when threshold crossed
+---
+
+5. **GET** `/accounts/signup`
+
+Parameters: none
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Open sign up page|||
+
+---
+
+6. **GET** `/dashboard`
+
+Parameters: none
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Open dashboard page with session data|||
+|302|Redirect to login if no session||`/auth/login`|
+
+---
+
+7. **GET** `/accounts/change-password`
+
+Parameters: none
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Open change password page|||
+
+---
+
+8. **POST** `/auth/login`
+
+Parameters:
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|user_id|body|int|x|User ID|
+|password|body|string|x|User password|
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|302|Login success, redirect to dashboard||`/dashboard`|
+
+---
+
+9. **POST** `/accounts/signup`
+
+Parameters:
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|email|body|string|x|User email address|
+|phone_number|body|string|x|User phone number|
+|password|body|string|x|User password|
+|role|body|string|x|Role|
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|302|Create account, login and redirect||`/dashboard`|
+
+---
+
+10. **POST** `/accounts/change-password`
+
+Parameters:
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|current_password|body|string|x|Current password|
+|new_password|body|string|x|New password|
+|confirm_password|body|string|x|Confirm new password|
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Change password successfully|||
+
+---
+### Response payload examples
+Example 1.1
+```
+{
+    "count": 3,
+    "rows": [
+      {
+        "user_id": 1,
+        "email": "user1@example.com",
+        "phone_number": "0123456789",
+        "password_hash": "75320c934ed4d3b0310d0ede33d7e260d4c9e118",
+        "role": "User",
+        "verification_status": 0,
+        "created_at": "2026-03-23T02:59:00.633Z",
+        "updated_at": "2026-03-24T00:43:37.796Z"
+      }
+	]
+}
+```
+Example 1.2
+```
+{
+    "count": 1,
+    "rows": [
+      {
+        "user_id": 1,
+        "email": "user1@example.com",
+        "phone_number": "0123456789",
+        "password_hash": "75320c934ed4d3b0310d0ede33d7e260d4c9e118",
+        "role": "User",
+        "verification_status": 0,
+        "created_at": "2026-03-23T02:59:00.633Z",
+        "updated_at": "2026-03-24T00:43:37.796Z"
+      }
+    ]
+}
+```
+
+# Monitoring data operations
+
+1. **GET** `/data/live`
+
+Parameters: none
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|View live monitoring data in real-time|||
+
+---
+
+2. **GET** `/data/history`
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|row|query|int||Number of rows (from OBSERVATION table) to retrieve (sort by observation_id DESC). Default: 10 (meaning 10 latest rows)|
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Render monitoring data history page (default: 10 rows)|||
+
+3. **GET** `/data/history-all`
+
+Parameters: none
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Get monitor history in raw JSON, with no row limit|Example 2.1||
+
+### Response payload examples
+
+Example 2.1
+```
+{
+        "observation_id": 2,
+        "station_id": 2,
+        "light_intensity": 0.5,
+        "water_level": 15.23,
+        "temperature": 32.15,
+        "humidity": 71.3,
+        "tank_surface_moisture": 36,
+        "lid_status": 0,
+        "leakage_signal": 0,
+        "intrusion_signal": 0,
+        "timestamp": "2026-03-29 00:00:00"
+}
+```
+
+# Forecast operations
+
+1. **GET** `/data/forecast`
+
+Parameters: none
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Open data forecast page|||
+
+---
+
+2. **POST** `/data/forecast`
+
+Parameters:
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|observation_id|body|int|x|Observation ID|
+|model_name|body|string|x|Model name|
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Create data forecast using AI|||
+
+---
+
+# Export operations
+
+1. **GET** `/data/export`
+
+Parameters: 
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|limit|query|int||Number of rows (from OBSERVATION table) to be exported. Rows are sorted by observation_id DESC. If user wants to export all rows, set this param to -1. Default: 10|
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Open system dialog box to download .csv file|||
+
+---
+
+2. **POST** `/data/export`
+
+Parameters:
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|station_id|body|int|x|Station ID|
+|file_type|body|string|x|File type|
+|path|body|string|x|File path|
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Create data file in designated path|||
+
+---
+
+# IoT device management
+
+1. **GET** `/devices/all`
+
+Parameters: none
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Show all IoT devices|||
+
+---
+
+2. **GET** `/devices/id/:id`
+
+Parameters:
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+|id|path|int|x|Station ID|
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|200|Show detailed info of an IoT device|||
+
+---
+
+# Manual data input
+
+*(No information available)*
+
+---
+
+# User management
+
+*(No information available)*
+
+# Example material
+## Parameter table
+
+## Response table
+
+Parameters:
+
+|Param name|Param type|Data type|Required?|Description|
+|-|:-:|:-:|:-:|-|
+||||||
+
+Responses:
+
+|Status code|Description|Response payload example|Links|
+|:-:|-|-|-|
+|||||

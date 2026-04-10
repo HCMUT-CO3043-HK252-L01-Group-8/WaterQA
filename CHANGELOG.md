@@ -1,13 +1,7 @@
 # What changed in this commit
 
+## Added
+- Feature: export to CSV. Still wondering if we should add "export to .xlsx" function (fuck micro&soft (dih), Bill Gates is in Epstein files!)
 
-## Changed
-
-- Location of `WaterQA.db` (project database file), and file path to it specified in `/src/backend/database/db.js`.
-
-## Removed
-- Commented all `console.log()` functions in backend. These functions are used to monitor data flow for debugging.
-
-## Notes
-
-- Make sure to check the SQL file path when running on a different machine!
+## Updated
+- In "show monitoring data history" function, rows now are sorted by observation_id rather than timestamp.
