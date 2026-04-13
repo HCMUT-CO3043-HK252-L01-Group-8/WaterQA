@@ -31,11 +31,13 @@ app.use(session({
 const accountsRouter = require('./routes/accounts.route');
 const authRouter = require('./routes/auth.route');
 const dashboardRouter = require('./routes/dashboard.route');
+const dataRouter = require('./routes/data.route');
 
 // Mount routers
 app.use('/accounts', accountsRouter);   // ← mount the router
 app.use('/auth', authRouter);
 app.use('/dashboard', dashboardRouter);
+app.use('/data', dataRouter);
 // Special route: / = /dashboard
 app.get('/', (req, res) => {
   res.redirect('/dashboard');
