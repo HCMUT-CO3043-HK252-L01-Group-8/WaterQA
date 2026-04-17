@@ -81,4 +81,6 @@ Read [here](./docs/errors.md).
 - [ ] Manage users
 - [ ] Alert when IoT device has errors
 - [ ] Alert when threshold crossed
+	- [x] CRUD threshold
+	- [ ] Give alert
 

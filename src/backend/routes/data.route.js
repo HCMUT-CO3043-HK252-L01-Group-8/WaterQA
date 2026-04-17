@@ -16,5 +16,8 @@ router.post('/receive-iot-data', dataCtrl.receiveIoTData);
 router.get('/thresholds-api', dataCtrl.getThresholdsRaw);
 router.get('/thresholds', dataCtrl.showThresholdsPage);
 router.post('/add-threshold', dataCtrl.addThreshold);
+router.get('/edit-threshold/:id', dataCtrl.showEditThresholdPage);
+router.post('/edit-threshold/:id', dataCtrl.editThreshold);
+router.delete('/delete-threshold/:id', dataCtrl.deleteThreshold);
 
 module.exports = router;

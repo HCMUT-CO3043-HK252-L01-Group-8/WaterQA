@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Thresholds</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Edit threshold</h1>
+<form method="POST" action="/data/edit-threshold/<%= threshold.threshold_id %>">
+    <label for="station_id">Station ID:</label>
+    <input
+        type="text"
+        name="station_id"
+        value="<%= threshold.station_id %>"
+        required
+    /><br />
+    <label for="parameter">Parameter Name:</label>
+    <select name="parameter" id="parameter" required>
+        <option value="temperature" <% if (threshold.parameter_name === 'temperature') { %>selected<% } %>>Temperature</option>
+        <option value="humidity" <% if (threshold.parameter_name === 'humidity') { %>selected<% } %>>Humidity</option>
+        <option value="water_level" <% if (threshold.parameter_name === 'water_level') { %>selected<% } %>>Water Level</option>
+        <option value="light_intensity" <% if (threshold.parameter_name === 'light_intensity') { %>selected<% } %>>Light Intensity</option>
+        <option value="tank_surface_moisture" <% if (threshold.parameter_name === 'tank_surface_moisture') { %>selected<% } %>>Tank Surface Moisture</option>
+        <option value="lid_status" <% if (threshold.parameter_name === 'lid_status') { %>selected<% } %>>Lid Status</option>
+        <option value="leakage_signal" <% if (threshold.parameter_name === 'leakage_signal') { %>selected<% } %>>Leakage Signal</option>
+        <option value="intrusion_signal" <% if (threshold.parameter_name === 'intrusion_signal') { %>selected<% } %>>Intrusion Signal</option>
+    </select><br/>
+    <label for="lower_threshold">Lower Threshold Value:</label>
+    <input
+        type="text"
+        name="lower_threshold"
+        value="<%= threshold.lower_threshold %>"
+        required
+    /><br />
+    <label for="upper_threshold">Upper Threshold Value:</label>
+    <input
+        type="text"
+        name="upper_threshold"
+        value="<%= threshold.upper_threshold %>"
+        required
+    /><br />
+    <label for="severity_level">Severity Level:</label>
+    <select name="severity" id="severity" required>
+        <option value="low" <% if (threshold.severity === 'low') { %>selected<% } %>>Low</option>
+        <option value="medium" <% if (threshold.severity === 'medium') { %>selected<% } %>>Medium</option>
+        <option value="high" <% if (threshold.severity === 'high') { %>selected<% } %>>High</option>
+        <option value="critical" <% if (threshold.severity === 'critical') { %>selected<% } %>>Critical</option>
+    </select><br />
+    <button type="submit">Change threshold</button>
+</form>
+
+</body>
+</html>

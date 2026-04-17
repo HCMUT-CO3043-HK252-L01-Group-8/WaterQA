@@ -39,6 +39,8 @@
                     <% Object.keys(thresholds[0]).forEach(function(key) { %>
                         <th><%= key %></th>
                     <% }); %>
+                    <th> </th>
+                    <th> </th>
                 </tr>
             </thead>
             <tbody>
@@ -47,6 +49,12 @@
                         <% Object.values(item).forEach(function(value) { %>
                             <td><%= value %></td>
                         <% }); %>
+                        <td>
+                            <a href="/data/edit-threshold/<%= item.threshold_id %>" style="color: #0066cc; text-decoration: none; cursor: pointer;">Edit</a>
+                        </td>
+                        <td>
+                            <a href="#" style="color: #dc3545; text-decoration: none; cursor: pointer;" onclick="deleteThreshold(event, '<%= item.threshold_id %>');">Delete</a>
+                        </td>
                     </tr>
                 <% }); %>
             </tbody>
@@ -70,17 +78,17 @@
                 <option value="leakage_signal">Leakage Signal</option>
                 <option value="intrusion_signal">Intrusion Signal</option>
             </select>
-        <label for="lower_value">Lower Threshold Value:</label>
-            <input type="number" id="lower_value" name="lower_value" required>
-        <label for="upper_value">Upper Threshold Value:</label>
-            <input type="number" id="upper_value" name="upper_value" required>
+        <label for="lower_threshold">Lower Threshold Value:</label>
+            <input type="number" id="lower_threshold" name="lower_threshold" required>
+        <label for="upper_threshold">Upper Threshold Value:</label>
+            <input type="number" id="upper_threshold" name="upper_threshold" required>
         <label for="severity">Severity:</label>
-            <select name="severity" id="severity" required>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-            </select>
+        <select name="severity" id="severity" required>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+        </select>
         <!-- Station can be null. Recommend: a drop down checkbox list to choose stations -->
         <label for="station" id="station">Station:</label>
             <input type="number" id="station" name="station">
@@ -88,7 +96,7 @@
     </form>
 </div>
 
-<!-- Recommendation: if success, a pop up box appears, saying "threshold added successfully" with an OK button to close -->
+<!-- Recommendation: if success, a pop up box appears, saying "threshold added successfully" with an OK button to close
 <% if (success) { %>
 <div class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
@@ -104,13 +112,38 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary">OK</button>
-        <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
       </div>
     </div>
   </div>
 </div>
-<% } %>
+<% } %> -->
     
+<script>
+function deleteThreshold(event, thresholdId) {
+    event.preventDefault();
+    if (confirm('Are you sure you want to delete this threshold?')) {
+        fetch(`/data/delete-threshold/${thresholdId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Threshold deleted successfully');
+                location.reload();     // This should now work reliably
+            } else {
+                alert('Error: ' + (data.error || 'Failed to delete'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the threshold');
+        });
+    }
+}
+</script>
 
 </body>
 </html>

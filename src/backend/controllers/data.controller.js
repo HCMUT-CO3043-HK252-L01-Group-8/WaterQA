@@ -75,7 +75,7 @@ const receiveIoTData = async (req, res) => {
                 wqi: 'LỖI CẢM BIẾN',
                 message: `Phát hiện dữ liệu phần cứng bất thường. Nhiệt độ: ${temperature}°C, Độ ẩm: ${humidity}%. Có thể thiết bị đã bị chập, vui lòng kiểm tra ngay!`
             };
-            
+
             // Bắn mail cảnh báo ngay lập tức (nhớ thay email của bạn vào)
             mailService.sendAlertEmail('taikhoanneverdie17@gmail.com', errorData)
                 .catch(err => console.error('Lỗi gửi mail cảnh báo phần cứng:', err));
@@ -105,21 +105,42 @@ function showThresholdsPage(req, res) {
     res.render('thresholds', { thresholds: thresholds, success: success });
 }
 function addThreshold(req, res) {
+    const { parameter, lower_threshold, upper_threshold, severity, station } = req.body;
     try {
-        const { parameter, lower_value, upper_value, severity, station } = req.body;
-
-        const serviceResponse = dataService.addThreshold(parameter, lower_value, upper_value, severity, station);
-
-        if (serviceResponse) {
-            res.status(500).json({ success: false, error: serviceResponse });
-        } else {
-            // res.status(200).json({ success: true, message: "Threshold added successfully" });
-            res.redirect('/data/thresholds?success=true'); // Redirect về trang hiển thị thresholds sau khi thêm thành công
-        }
+        dataService.addThreshold(parameter, lower_threshold, upper_threshold, severity, station);
+        res.redirect('/data/thresholds?success=true'); // Redirect về trang hiển thị thresholds sau khi chỉnh sửa thành công
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
 }
+function showEditThresholdPage(req, res) {
+    const thresholdId = req.params.id;
+    const threshold = dataService.getThresholdById(thresholdId); // Giả sử bạn có hàm này trong service để lấy thông tin threshold theo ID
+    if (!threshold) {
+        return res.status(404).send("Threshold not found");
+    }
+    console.log(threshold);
+    res.render('edit-threshold', { threshold: threshold });
+}
+function editThreshold(req, res) {
+    const thresholdId = req.params.id;
+    const { station_id, parameter, lower_threshold, upper_threshold, severity } = req.body;
+    try {
+        dataService.editThreshold(thresholdId, station_id, parameter, lower_threshold, upper_threshold, severity);
+        res.redirect('/data/thresholds?success=true'); // Redirect về trang hiển thị thresholds sau khi chỉnh sửa thành công
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+function deleteThreshold(req, res) {
+    const thresholdId = req.params.id;
+    try {
+        dataService.deleteThreshold(thresholdId);
+        res.redirect('/data/thresholds?success=true'); // Redirect về trang hiển thị thresholds sau khi chỉnh sửa thành công
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err.message });
+    }
+}
 
 
-module.exports = { getDataHistory, showDataHistory, getDataHistoryNoLimit, exportToFile, receiveIoTData, getThresholdsRaw, showThresholdsPage, addThreshold };
+module.exports = { getDataHistory, showDataHistory, getDataHistoryNoLimit, exportToFile, receiveIoTData, getThresholdsRaw, showThresholdsPage, addThreshold, showEditThresholdPage, editThreshold, deleteThreshold };
