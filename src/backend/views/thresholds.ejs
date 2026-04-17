@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Thresholds</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Thresholds</h1>
+
+    <% if (thresholds && thresholds.length > 0) { %>
+        <table>
+            <thead>
+                <tr>
+                    <% Object.keys(thresholds[0]).forEach(function(key) { %>
+                        <th><%= key %></th>
+                    <% }); %>
+                </tr>
+            </thead>
+            <tbody>
+                <% thresholds.forEach(function(item) { %>
+                    <tr>
+                        <% Object.values(item).forEach(function(value) { %>
+                            <td><%= value %></td>
+                        <% }); %>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p>No data available.</p>
+    <% } %>
+
+<div style="padding-top: 20px;">
+    <!-- Add new threshold -->
+    <h2>Add New Threshold</h2>
+    <form action="/data/add-threshold" method="POST">
+        <label for="parameter">Parameter:</label>
+            <select name="parameter" id="parameter" required>
+                <option value="temperature">Temperature</option>
+                <option value="humidity">Humidity</option>
+                <option value="water_level">Water Level</option>
+                <option value="light_intensity">Light Intensity</option>
+                <option value="tank_surface_moisture">Tank Surface Moisture</option>
+                <option value="lid_status">Lid Status</option>
+                <option value="leakage_signal">Leakage Signal</option>
+                <option value="intrusion_signal">Intrusion Signal</option>
+            </select>
+        <label for="lower_value">Lower Threshold Value:</label>
+            <input type="number" id="lower_value" name="lower_value" required>
+        <label for="upper_value">Upper Threshold Value:</label>
+            <input type="number" id="upper_value" name="upper_value" required>
+        <label for="severity">Severity:</label>
+            <select name="severity" id="severity" required>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+        <!-- Station can be null. Recommend: a drop down checkbox list to choose stations -->
+        <label for="station" id="station">Station:</label>
+            <input type="number" id="station" name="station">
+        <button type="submit">Add Threshold</button>
+    </form>
+</div>
+
+<!-- Recommendation: if success, a pop up box appears, saying "threshold added successfully" with an OK button to close -->
+<% if (success) { %>
+<div class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Threshold added successfully.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">OK</button>
+        <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+    
+
+</body>
+</html>

@@ -86,5 +86,40 @@ const receiveIoTData = async (req, res) => {
     }
 };
 
+// Threshold data API
+function getThresholdsRaw(req, res) {
+    try {
+        const thresholds = dataService.getThresholdsRaw();
+        res.status(200).json({
+            success: true,
+            payload: thresholds,
+            timestamp: new Date().toISOString(),
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+function showThresholdsPage(req, res) {
+    const thresholds = dataService.getThresholdsRaw();
+    const success = req.query.success === 'true'; // Lấy thông tin thành công từ query parameter
+    res.render('thresholds', { thresholds: thresholds, success: success });
+}
+function addThreshold(req, res) {
+    try {
+        const { parameter, lower_value, upper_value, severity, station } = req.body;
 
-module.exports = { getDataHistory, showDataHistory, getDataHistoryNoLimit, exportToFile, receiveIoTData};
+        const serviceResponse = dataService.addThreshold(parameter, lower_value, upper_value, severity, station);
+
+        if (serviceResponse) {
+            res.status(500).json({ success: false, error: serviceResponse });
+        } else {
+            // res.status(200).json({ success: true, message: "Threshold added successfully" });
+            res.redirect('/data/thresholds?success=true'); // Redirect về trang hiển thị thresholds sau khi thêm thành công
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+
+
+module.exports = { getDataHistory, showDataHistory, getDataHistoryNoLimit, exportToFile, receiveIoTData, getThresholdsRaw, showThresholdsPage, addThreshold };

@@ -1,7 +1,10 @@
 # What changed in this commit
 
 ## Added
-- Feature: export to CSV. Still wondering if we should add "export to .xlsx" function (fuck micro&soft (dih), Bill Gates is in Epstein files!)
+- Feature: view and add thresholds. For simplification, when adding a threshold, default set_by_user_id is 3 (defined in data.service). A pop up box for success threshold creation is recommended.
+
+### To be added soon
+- Feature: edit and delete thresholds.
 
 ## Updated
-- In "show monitoring data history" function, rows now are sorted by observation_id rather than timestamp.
+- For simplification, `requireLogin` is temporary removed from "GET /" in dashboard.route. In final product, it should be used.

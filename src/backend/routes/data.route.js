@@ -13,4 +13,8 @@ router.get('/history-all', dataCtrl.getDataHistoryNoLimit);
 router.get('/history', dataCtrl.showDataHistory);
 router.get('/export', dataCtrl.exportToFile);
 router.post('/receive-iot-data', dataCtrl.receiveIoTData);
+router.get('/thresholds-api', dataCtrl.getThresholdsRaw);
+router.get('/thresholds', dataCtrl.showThresholdsPage);
+router.post('/add-threshold', dataCtrl.addThreshold);
+
 module.exports = router;
