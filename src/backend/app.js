@@ -43,6 +43,9 @@ app.get('/', (req, res) => {
   res.redirect('/dashboard');
 });
 
+const cronService = require('./services/cron.service');
+cronService.startDeviceMonitor();
+
 // Listen
 app.listen(port, () => {
   console.clear();
