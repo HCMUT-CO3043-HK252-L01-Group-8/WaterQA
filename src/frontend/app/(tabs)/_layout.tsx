@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { Ionicons } from '@expo/vector-icons'; // 1. Thêm import thư viện icon chuẩn của Expo
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -22,7 +22,7 @@ export default function TabLayout() {
         name="home"
         options={{
           title: 'Trang chủ',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="house" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons size={24} name="home" color={color} />, // 2. Đổi sang Ionicons
         }}
       />
 
@@ -31,7 +31,7 @@ export default function TabLayout() {
         name="history"
         options={{
           title: 'Lịch sử',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="clock" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons size={24} name="time-outline" color={color} />,
         }}
       />
 
@@ -40,16 +40,16 @@ export default function TabLayout() {
         name="notification"
         options={{
           title: 'Cảnh báo',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="bell" color={color} />, 
+          tabBarIcon: ({ color }) => <Ionicons size={24} name="notifications-outline" color={color} />, 
         }}
       />
 
-      {/* 4. Cài đặt (Tab mới thêm) */}
+      {/* 4. Cài đặt */}
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Cài đặt',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="gearshape" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons size={24} name="settings-outline" color={color} />,
         }}
       />
     </Tabs>

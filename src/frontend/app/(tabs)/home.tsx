@@ -1,142 +1,149 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeDashboard() {
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            {/* 1. Header & Lời chào */}
-            <View style={styles.header}>
-                <View style={styles.appTitleRow}>
-                    <View style={styles.logoPlaceholder}>
-                        <Text style={styles.logoText}>💧</Text>
+        <SafeAreaView style={styles.safeArea}>
+            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+                {/* 1. Header & Lời chào */}
+                <View style={styles.header}>
+                    <View style={styles.appTitleRow}>
+                        <View style={styles.logoPlaceholder}>
+                            <Text style={styles.logoText}>💧</Text>
+                        </View>
+                        <View>
+                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
+                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                        </View>
                     </View>
-                    <View>
-                        <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                        <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
-                    </View>
-                </View>
-                
-                <View style={styles.greetingSection}>
-                    <Text style={styles.greetingTitle}>Xin chào, Đậu Minh Khôi</Text>
-                    <Text style={styles.greetingSubtitle}>Hãy kiểm tra chất lượng nước của bạn</Text>
-                </View>
-            </View>
-
-            {/* 2. Cảnh báo bất thường */}
-            <View style={styles.alertCard}>
-                <Text style={styles.alertTitle}>⚠️ Đã phát hiện bất thường với cảm biến pH</Text>
-                <Text style={styles.alertDescription}>
-                    Đã phát hiện hoạt động bất thường của cảm biến pH vào 06-03-2026 20:36 UTC+7. Kiểm tra cảm biến hoặc liên hệ với chúng tôi.
-                </Text>
-                <View style={styles.alertActions}>
-                    <TouchableOpacity style={styles.detailButton}>
-                        <Text style={styles.detailButtonText}>Chi tiết</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Text style={styles.readButtonText}>Đánh dấu đã đọc</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            {/* 3. Chọn vị trí */}
-            <View style={styles.locationSection}>
-                <Text style={styles.sectionTitle}>Vị trí</Text>
-                <TouchableOpacity style={styles.pickerBox}>
-                    <Text style={styles.pickerText}>Select Location</Text>
-                    <Text style={styles.pickerIcon}>▼</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* 4. Thẻ Chỉ số WQI chính */}
-            <View style={styles.wqiCard}>
-                <Text style={styles.wqiTitle}>An toàn</Text>
-                <Text style={styles.wqiSubtitle}>Chỉ số chất lượng nước (WQI)</Text>
-                
-                <View style={styles.wqiScoreBadge}>
-                    <Text style={styles.wqiScoreText}>96</Text>
-                </View>
-
-                <View style={styles.metricsRow}>
-                    <View style={styles.metricItem}>
-                        <Text style={styles.metricValue}>7.0</Text>
-                        <Text style={styles.metricLabel}>pH</Text>
-                    </View>
-                    <View style={styles.metricItem}>
-                        <Text style={styles.metricValue}>67</Text>
-                        <Text style={styles.metricLabel}>Hardness (mg/l)</Text>
-                    </View>
-                    <View style={styles.metricItem}>
-                        <Text style={styles.metricValue}>0.5</Text>
-                        <Text style={styles.metricLabel}>Clo (mg/l)</Text>
-                    </View>
-                    <View style={styles.metricItem}>
-                        <Text style={styles.metricValue}>1</Text>
-                        <Text style={styles.metricLabel}>NTU</Text>
+                    
+                    <View style={styles.greetingSection}>
+                        <Text style={styles.greetingTitle}>Xin chào, Đậu Minh Khôi</Text>
+                        <Text style={styles.greetingSubtitle}>Hãy kiểm tra chất lượng nước của bạn</Text>
                     </View>
                 </View>
-                
-                <Text style={styles.updateTime}>Cập nhật lần cuối: 06-03-2026 20:36 UTC+7</Text>
-            </View>
 
-            {/* 5. Thẻ Trạng thái phụ */}
-            <View style={styles.statusRow}>
-                <View style={styles.statusCard}>
-                    <Text style={styles.statusCardLabel}>so với 05-03-2026</Text>
-                    <Text style={styles.statusCardValuePositive}>+2</Text>
-                    <Text style={styles.statusCardDesc}>Chỉ số WQI</Text>
-                </View>
-                
-                <View style={styles.statusCard}>
-                    <Text style={styles.statusCardLabel}>Trạng thái cảm biến</Text>
-                    <Text style={styles.statusCardValueNegative}>3/4</Text>
-                    <Text style={styles.statusCardDesc}>Vui lòng kiểm tra cảm biến pH</Text>
-                </View>
-            </View>
-
-            {/* 6. Biểu đồ Thống kê */}
-            <View style={styles.chartCard}>
-                <View style={styles.chartHeader}>
-                    <Text style={styles.chartTitle}>Thống kê chất lượng nước</Text>
-                    <View style={styles.filterTabs}>
-                        <TouchableOpacity style={styles.activeTab}>
-                            <Text style={styles.activeTabText}>Theo tuần</Text>
+                {/* 2. Cảnh báo bất thường */}
+                <View style={styles.alertCard}>
+                    <Text style={styles.alertTitle}>⚠️ Đã phát hiện bất thường với cảm biến pH</Text>
+                    <Text style={styles.alertDescription}>
+                        Đã phát hiện hoạt động bất thường của cảm biến pH vào 06-03-2026 20:36 UTC+7. Kiểm tra cảm biến hoặc liên hệ với chúng tôi.
+                    </Text>
+                    <View style={styles.alertActions}>
+                        <TouchableOpacity style={styles.detailButton}>
+                            <Text style={styles.detailButtonText}>Chi tiết</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.inactiveTab}>
-                            <Text style={styles.inactiveTabText}>Theo tháng</Text>
+                        <TouchableOpacity>
+                            <Text style={styles.readButtonText}>Đánh dấu đã đọc</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
-                
-                {/* Placeholder cho Biểu đồ */}
-                <View style={styles.chartPlaceholder}>
-                    <View style={styles.mockLine} />
-                    <View style={styles.chartXAxis}>
-                        <Text style={styles.axisText}>2</Text>
-                        <Text style={styles.axisText}>3</Text>
-                        <Text style={styles.axisText}>4</Text>
-                        <Text style={styles.axisText}>5</Text>
-                        <Text style={[styles.axisText, styles.axisTextHighlight]}>6</Text>
-                        <Text style={styles.axisText}>7</Text>
-                        <Text style={styles.axisText}>CN</Text>
+
+                {/* 3. Chọn vị trí */}
+                <View style={styles.locationSection}>
+                    <Text style={styles.sectionTitle}>Vị trí</Text>
+                    <TouchableOpacity style={styles.pickerBox}>
+                        <Text style={styles.pickerText}>Select Location</Text>
+                        <Text style={styles.pickerIcon}>▼</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* 4. Thẻ Chỉ số WQI chính */}
+                <View style={styles.wqiCard}>
+                    <Text style={styles.wqiTitle}>An toàn</Text>
+                    <Text style={styles.wqiSubtitle}>Chỉ số chất lượng nước (WQI)</Text>
+                    
+                    <View style={styles.wqiScoreBadge}>
+                        <Text style={styles.wqiScoreText}>96</Text>
+                    </View>
+
+                    <View style={styles.metricsRow}>
+                        <View style={styles.metricItem}>
+                            <Text style={styles.metricValue}>7.0</Text>
+                            <Text style={styles.metricLabel}>pH</Text>
+                        </View>
+                        <View style={styles.metricItem}>
+                            <Text style={styles.metricValue}>67</Text>
+                            <Text style={styles.metricLabel}>Hardness (mg/l)</Text>
+                        </View>
+                        <View style={styles.metricItem}>
+                            <Text style={styles.metricValue}>0.5</Text>
+                            <Text style={styles.metricLabel}>Clo (mg/l)</Text>
+                        </View>
+                        <View style={styles.metricItem}>
+                            <Text style={styles.metricValue}>1</Text>
+                            <Text style={styles.metricLabel}>NTU</Text>
+                        </View>
+                    </View>
+                    
+                    <Text style={styles.updateTime}>Cập nhật lần cuối: 06-03-2026 20:36 UTC+7</Text>
+                </View>
+
+                {/* 5. Thẻ Trạng thái phụ */}
+                <View style={styles.statusRow}>
+                    <View style={styles.statusCard}>
+                        <Text style={styles.statusCardLabel}>so với 05-03-2026</Text>
+                        <Text style={styles.statusCardValuePositive}>+2</Text>
+                        <Text style={styles.statusCardDesc}>Chỉ số WQI</Text>
+                    </View>
+                    
+                    <View style={styles.statusCard}>
+                        <Text style={styles.statusCardLabel}>Trạng thái cảm biến</Text>
+                        <Text style={styles.statusCardValueNegative}>3/4</Text>
+                        <Text style={styles.statusCardDesc}>Vui lòng kiểm tra cảm biến pH</Text>
                     </View>
                 </View>
-                <Text style={styles.chartFooter}>Biểu đồ dự đoán WQI</Text>
-            </View>
 
-            {/* Tạo khoảng trống ở dưới cùng cho dễ cuộn */}
-            <View style={{ height: 40 }} />
-        </ScrollView>
+                {/* 6. Biểu đồ Thống kê */}
+                <View style={styles.chartCard}>
+                    <View style={styles.chartHeader}>
+                        <Text style={styles.chartTitle}>Thống kê chất lượng nước</Text>
+                        <View style={styles.filterTabs}>
+                            <TouchableOpacity style={styles.activeTab}>
+                                <Text style={styles.activeTabText}>Theo tuần</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.inactiveTab}>
+                                <Text style={styles.inactiveTabText}>Theo tháng</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    
+                    {/* Placeholder cho Biểu đồ */}
+                    <View style={styles.chartPlaceholder}>
+                        <View style={styles.mockLine} />
+                        <View style={styles.chartXAxis}>
+                            <Text style={styles.axisText}>2</Text>
+                            <Text style={styles.axisText}>3</Text>
+                            <Text style={styles.axisText}>4</Text>
+                            <Text style={styles.axisText}>5</Text>
+                            <Text style={[styles.axisText, styles.axisTextHighlight]}>6</Text>
+                            <Text style={styles.axisText}>7</Text>
+                            <Text style={styles.axisText}>CN</Text>
+                        </View>
+                    </View>
+                    <Text style={styles.chartFooter}>Biểu đồ dự đoán WQI</Text>
+                </View>
+
+                {/* Tạo khoảng trống ở dưới cùng cho dễ cuộn */}
+                <View style={{ height: 40 }} />
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+    },
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
     header: {
         padding: 16,
-        paddingTop: 40, // Cách top cho các dòng điện thoại tai thỏ
+        // Đã xóa paddingTop: 40 ở đây
     },
     appTitleRow: {
         flexDirection: 'row',
@@ -179,7 +186,7 @@ const styles = StyleSheet.create({
     alertCard: {
         marginHorizontal: 16,
         marginBottom: 20,
-        backgroundColor: '#FFF7ED', // Thay thế cho gradient
+        backgroundColor: '#FFF7ED', 
         borderRadius: 12,
         padding: 16,
         borderLeftWidth: 4,
@@ -251,7 +258,7 @@ const styles = StyleSheet.create({
     wqiCard: {
         marginHorizontal: 16,
         marginBottom: 20,
-        backgroundColor: '#E8FEED', // Thay thế cho gradient
+        backgroundColor: '#E8FEED', 
         borderWidth: 1,
         borderColor: '#00C950',
         borderRadius: 14,

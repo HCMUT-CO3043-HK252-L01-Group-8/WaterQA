@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HistoryScreen() {
-    // State giả lập cho bộ lọc thời gian
     const [activeFilter, setActiveFilter] = useState('Ngày');
 
-    // Hàm render 1 thẻ lịch sử để tái sử dụng cho gọn code
     const renderHistoryCard = (wqi, date, time, trend) => (
         <View style={styles.historyCard}>
             <View style={styles.cardLeft}>
@@ -28,98 +27,103 @@ export default function HistoryScreen() {
     );
 
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            {/* 1. Header */}
-            <View style={styles.header}>
-                <View style={styles.appTitleRow}>
-                    <View style={styles.logoPlaceholder}>
-                        <Text style={styles.logoText}>💧</Text>
+        <SafeAreaView style={styles.safeArea}>
+            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+                {/* 1. Header */}
+                <View style={styles.header}>
+                    <View style={styles.appTitleRow}>
+                        <View style={styles.logoPlaceholder}>
+                            <Text style={styles.logoText}>💧</Text>
+                        </View>
+                        <View>
+                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
+                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                        </View>
                     </View>
-                    <View>
-                        <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                        <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                    
+                    <View style={styles.pageTitleSection}>
+                        <Text style={styles.pageTitle}>Lịch sử quang trắc</Text>
                     </View>
                 </View>
-                
-                <View style={styles.pageTitleSection}>
-                    <Text style={styles.pageTitle}>Lịch sử quang trắc</Text>
+
+                {/* 2. Chọn vị trí */}
+                <View style={styles.locationSection}>
+                    <Text style={styles.sectionTitle}>Vị trí</Text>
+                    <TouchableOpacity style={styles.pickerBox}>
+                        <Text style={styles.pickerText}>Select Location</Text>
+                        <Text style={styles.pickerIcon}>▼</Text>
+                    </TouchableOpacity>
                 </View>
-            </View>
 
-            {/* 2. Chọn vị trí */}
-            <View style={styles.locationSection}>
-                <Text style={styles.sectionTitle}>Vị trí</Text>
-                <TouchableOpacity style={styles.pickerBox}>
-                    <Text style={styles.pickerText}>Select Location</Text>
-                    <Text style={styles.pickerIcon}>▼</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* 3. Thẻ thống kê nhanh */}
-            <View style={styles.summarySection}>
-                <View style={[styles.summaryCard, { backgroundColor: '#ECFEFF', borderColor: '#0092B8' }]}>
-                    <View style={styles.summaryHeader}>
-                        <View style={styles.smallIcon}><Text style={{fontSize: 10}}>💧</Text></View>
-                        <Text style={styles.summaryLabel}>Hôm nay</Text>
+                {/* 3. Thẻ thống kê nhanh */}
+                <View style={styles.summarySection}>
+                    <View style={[styles.summaryCard, { backgroundColor: '#ECFEFF', borderColor: '#0092B8' }]}>
+                        <View style={styles.summaryHeader}>
+                            <View style={styles.smallIcon}><Text style={{fontSize: 10}}>💧</Text></View>
+                            <Text style={styles.summaryLabel}>Hôm nay</Text>
+                        </View>
+                        <Text style={styles.summaryValueMain}>92</Text>
+                        <Text style={styles.summaryDesc}>WQI trung bình</Text>
                     </View>
-                    <Text style={styles.summaryValueMain}>92</Text>
-                    <Text style={styles.summaryDesc}>WQI trung bình</Text>
-                </View>
 
-                <View style={[styles.summaryCard, { backgroundColor: '#F0FDF4', borderColor: '#00A63E' }]}>
-                    <View style={styles.summaryHeader}>
-                        <View style={styles.smallIcon}><Text style={{fontSize: 10}}>📈</Text></View>
-                        <Text style={styles.summaryLabel}>so với Hôm qua</Text>
+                    <View style={[styles.summaryCard, { backgroundColor: '#F0FDF4', borderColor: '#00A63E' }]}>
+                        <View style={styles.summaryHeader}>
+                            <View style={styles.smallIcon}><Text style={{fontSize: 10}}>📈</Text></View>
+                            <Text style={styles.summaryLabel}>so với Hôm qua</Text>
+                        </View>
+                        <Text style={styles.summaryValuePositive}>+3</Text>
+                        <Text style={styles.summaryDesc}>Chỉ số WQI</Text>
                     </View>
-                    <Text style={styles.summaryValuePositive}>+3</Text>
-                    <Text style={styles.summaryDesc}>Chỉ số WQI</Text>
                 </View>
-            </View>
 
-            {/* 4. Bộ lọc & Xuất báo cáo */}
-            <View style={styles.filterActionSection}>
-                <View style={styles.filterTabs}>
-                    {['Ngày', 'Tháng', 'Năm'].map((filter) => (
-                        <TouchableOpacity 
-                            key={filter}
-                            style={[styles.tabButton, activeFilter === filter && styles.tabButtonActive]}
-                            onPress={() => setActiveFilter(filter)}
-                        >
-                            <Text style={[styles.tabText, activeFilter === filter && styles.tabTextActive]}>
-                                {filter}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+                {/* 4. Bộ lọc & Xuất báo cáo */}
+                <View style={styles.filterActionSection}>
+                    <View style={styles.filterTabs}>
+                        {['Ngày', 'Tháng', 'Năm'].map((filter) => (
+                            <TouchableOpacity 
+                                key={filter}
+                                style={[styles.tabButton, activeFilter === filter && styles.tabButtonActive]}
+                                onPress={() => setActiveFilter(filter)}
+                            >
+                                <Text style={[styles.tabText, activeFilter === filter && styles.tabTextActive]}>
+                                    {filter}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                    <TouchableOpacity style={styles.exportBtn}>
+                        <Text style={styles.exportIcon}>⬇</Text>
+                        <Text style={styles.exportText}>Xuất báo cáo</Text>
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.exportBtn}>
-                    <Text style={styles.exportIcon}>⬇</Text>
-                    <Text style={styles.exportText}>Xuất báo cáo</Text>
-                </TouchableOpacity>
-            </View>
 
-            {/* 5. Danh sách lịch sử */}
-            <View style={styles.historyListContainer}>
-                {renderHistoryCard('92', '06-03-2026', '20:36', '3')}
-                {renderHistoryCard('89', '05-03-2026', '14:20', '1')}
-                {renderHistoryCard('88', '04-03-2026', '09:15', '2')}
-                {renderHistoryCard('86', '03-03-2026', '18:45', '4')}
-                {renderHistoryCard('82', '02-03-2026', '11:10', '1')}
-                {renderHistoryCard('81', '01-03-2026', '08:30', '5')}
-            </View>
+                {/* 5. Danh sách lịch sử */}
+                <View style={styles.historyListContainer}>
+                    {renderHistoryCard('92', '06-03-2026', '20:36', '3')}
+                    {renderHistoryCard('89', '05-03-2026', '14:20', '1')}
+                    {renderHistoryCard('88', '04-03-2026', '09:15', '2')}
+                    {renderHistoryCard('86', '03-03-2026', '18:45', '4')}
+                    {renderHistoryCard('82', '02-03-2026', '11:10', '1')}
+                    {renderHistoryCard('81', '01-03-2026', '08:30', '5')}
+                </View>
 
-            <View style={{ height: 40 }} />
-        </ScrollView>
+                <View style={{ height: 40 }} />
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+    },
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
     header: {
         padding: 16,
-        paddingTop: 40,
     },
     appTitleRow: {
         flexDirection: 'row',
