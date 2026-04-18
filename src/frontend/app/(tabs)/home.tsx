@@ -5,7 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function HomeDashboard() {
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                style={styles.container} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
                 {/* 1. Header & Lời chào */}
                 <View style={styles.header}>
                     <View style={styles.appTitleRow}>
@@ -124,9 +128,6 @@ export default function HomeDashboard() {
                     </View>
                     <Text style={styles.chartFooter}>Biểu đồ dự đoán WQI</Text>
                 </View>
-
-                {/* Tạo khoảng trống ở dưới cùng cho dễ cuộn */}
-                <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
     );
@@ -143,7 +144,6 @@ const styles = StyleSheet.create({
     },
     header: {
         padding: 16,
-        // Đã xóa paddingTop: 40 ở đây
     },
     appTitleRow: {
         flexDirection: 'row',

@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function HistoryScreen() {
     const [activeFilter, setActiveFilter] = useState('Ngày');
 
-    const renderHistoryCard = (wqi, date, time, trend) => (
+    const renderHistoryCard = (wqi: string, date: string, time: string, trend: string) => (
         <View style={styles.historyCard}>
             <View style={styles.cardLeft}>
                 <View style={styles.iconBox}>
@@ -28,7 +28,11 @@ export default function HistoryScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                style={styles.container} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
                 {/* 1. Header */}
                 <View style={styles.header}>
                     <View style={styles.appTitleRow}>
@@ -106,8 +110,6 @@ export default function HistoryScreen() {
                     {renderHistoryCard('82', '02-03-2026', '11:10', '1')}
                     {renderHistoryCard('81', '01-03-2026', '08:30', '5')}
                 </View>
-
-                <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
     );

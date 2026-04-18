@@ -11,7 +11,11 @@ export default function AlertsScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                style={styles.container} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
                 {/* 1. Header */}
                 <View style={styles.header}>
                     <View style={styles.appTitleRow}>
@@ -189,8 +193,6 @@ export default function AlertsScreen() {
                         </View>
                     </View>
                 </View>
-
-                <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
     );

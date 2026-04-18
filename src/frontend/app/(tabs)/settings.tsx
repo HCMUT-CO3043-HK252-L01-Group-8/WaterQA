@@ -6,7 +6,7 @@ export default function SettingsScreen() {
     const [emailNotif, setEmailNotif] = useState(true);
     const [language, setLanguage] = useState('vi');
 
-    const renderSettingRow = (icon, title, subtitle, rightElement, isLast = false) => (
+    const renderSettingRow = (icon: string, title: string, subtitle: string, rightElement: any, isLast = false) => (
         <View style={[styles.settingRow, isLast && { borderBottomWidth: 0, paddingBottom: 0 }]}>
             <View style={styles.settingRowLeft}>
                 <View style={styles.settingIconBox}>
@@ -25,7 +25,11 @@ export default function SettingsScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                style={styles.container} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
                 {/* 1. Header */}
                 <View style={styles.header}>
                     <View style={styles.appTitleRow}>
@@ -147,8 +151,6 @@ export default function SettingsScreen() {
                     
                     {renderSettingRow('🚪', 'Đăng xuất', 'Đăng xuất khỏi tài khoản của bạn', null, true)}
                 </View>
-
-                <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
     );
