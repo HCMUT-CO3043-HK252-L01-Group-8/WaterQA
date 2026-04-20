@@ -1,6 +1,6 @@
 // controllers/auth.controller.js
 const authService = require('../services/auth.service');
-const { view } = require('../utils/path');
+// const { view } = require('../utils/path');
 
 function showLoginPage(req, res) {
   if (req.session.user) {
@@ -12,29 +12,60 @@ function showLoginPage(req, res) {
   });
 }
 
-async function login(req, res) {
+function login(req, res) {
   const { id, password } = req.body;
 
-  const { err, user } = authService.login(id, password);
-  // console.log("ERR:", err);
-  // console.log("USER:", user);
+  const { errCode, user } = authService.login(id, password);
 
-  if (err > 0) {
-    return res.redirect(`/auth/login?error=${err}`);
+  try {
+    if (errCode > 0) {
+      // return res.redirect(`/auth/login?error=${err}`);
+      res.status(errCode).json({ success: false, timestamp: new Date().toISOString() });
+    }
+
+    req.session.user = {
+      user_id: user.user_id,
+      role: user.role,
+      verification_status: user.verification_status
+    }
+
+    console.log('User logged in', user);
+    console.log('Session:', req.session);
+    // return res.redirect("/dashboard");
+    res.status(201).json({ success: true, timestamp: new Date().toISOString() });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ success: false, timestamp: new Date().toISOString() });
   }
-  req.session.user = user;
-  return res.redirect("/dashboard");
-
+  
 }
 
 function logout(req, res) {
+  if (!req.session.user) {
+    return res.status(401).json({ success: false, timestamp: new Date().toISOString() });
+  }
   req.session.destroy(() => {
-    res.redirect("/auth/login");
+    // res.redirect("/auth/login");
+    res.status(200).json({ success: true, timestamp: new Date().toISOString() });
   });
+}
+
+// function createSession(req, user_id, role, verification_status) {
+
+// }
+function getMySession(req, res) {
+  console.log('getMySession called');
+  console.log('session:', req.session);
+  if (!req.session.user) {
+    return res.status(401).json({ success: false, timestamp: new Date().toISOString() });
+  }
+  res.status(200).json({ success: true, user: req.session.user, timestamp: new Date().toISOString() });
 }
 
 module.exports = {
   showLoginPage,
   login,
   logout,
+  // createSession,
+  getMySession,
 };

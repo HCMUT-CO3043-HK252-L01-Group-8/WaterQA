@@ -1,16 +1,16 @@
 // routes/accounts.routes.js
 const express = require('express');
-const { getAll, findById, showSignupPage, signup, showChangePasswordPage, changePassword } = require('../controllers/accounts.controller');
+const accountCtrl = require('../controllers/accounts.controller');
+const {requireLogin} = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
 // GET /accounts/all
-router.get('/all', getAll);
-router.get('/id/:phone', findById);
-router.get('/signup', showSignupPage);
-router.post('/signup', signup);
-router.get('/change-password', showChangePasswordPage);
-router.post('/change-password', changePassword);
-
-
+router.get('/all', accountCtrl.getAll);
+router.get('/id/:id', accountCtrl.findById);
+// router.get('/signup', accountCtrl.showSignupPage);
+router.post('/signup', accountCtrl.signup);
+// router.get('/change-password', accountCtrl.showChangePasswordPage);
+router.put('/change-password', requireLogin, accountCtrl.changePassword);
+router.delete('/delete/', requireLogin, accountCtrl.deleteAccount); // delete own account. Admin delete is not implemented yet.
 module.exports = router;

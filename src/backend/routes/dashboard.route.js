@@ -4,7 +4,7 @@ const { requireLogin } = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
-router.get('/', requireLogin, showDashboardPage);
+// router.get('/', requireLogin, showDashboardPage);
 router.post('/test-alert', testEmailAlert);
 
 module.exports = router;

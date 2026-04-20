@@ -3,7 +3,7 @@ New. Refined. Grouped by functionality.
 
 JSON response format:
 
-- Successful request: 
+- Successful request:
 ```{
   "success": true,
   "payload": {
@@ -17,16 +17,11 @@ JSON response format:
 ```
 {
   "success": false,
-  "payload": {
-    /* Application-specific data would go here. */
-  },
-  "error": {
-    "code": 123,
-    "message": "An error occurred!"
-  }
+  "error": "An error occurred!",
   "timestamp": "2026-04-02T08:27:47.721Z"
 }
 ```
+If there's no payload, "payload" field is omitted.
 
 # Dashboard and login-related operations
 

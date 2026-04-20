@@ -6,6 +6,7 @@ const express = require('express');
 const app = express();
 const port = 3000;
 const path = require('path');
+require('dotenv').config(); // ← load .env file
 
 // 'Tools' for URL parsing
 app.use(express.urlencoded({ extended: true }));   // ← for form data (phone & password)
@@ -32,12 +33,17 @@ const accountsRouter = require('./routes/accounts.route');
 const authRouter = require('./routes/auth.route');
 const dashboardRouter = require('./routes/dashboard.route');
 const dataRouter = require('./routes/data.route');
+const deviceRouter = require('./routes/device.route');
 
 // Mount routers
-app.use('/accounts', accountsRouter);   // ← mount the router
-app.use('/auth', authRouter);
-app.use('/dashboard', dashboardRouter);
-app.use('/data', dataRouter);
+
+const API_PREFIX = ''; //'/api/v1';
+app.use(`${API_PREFIX}/accounts`, accountsRouter);   // ← mount the router
+app.use(`${API_PREFIX}/auth`, authRouter);
+app.use(`${API_PREFIX}/dashboard`, dashboardRouter);
+app.use(`${API_PREFIX}/data`, dataRouter);
+app.use(`${API_PREFIX}/devices`, deviceRouter);
+app.use
 // Special route: / = /dashboard
 app.get('/', (req, res) => {
   res.redirect('/dashboard');

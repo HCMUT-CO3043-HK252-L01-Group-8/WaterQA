@@ -78,7 +78,17 @@ Read [here](./docs/errors.md).
 - [x] Export file
 - [ ] Manual input
 - [ ] Manage IoT devices
+	- [x] List devices (sensors)
+	- [ ] Add, edit, remove device
+	- [ ] API for backend to fetch data (from Adafruit.io)
 - [ ] Manage users
+	- [ ] List users (admin only)
+	- [ ] Get "my" info (me = current session's user)
+	- [ ] Edit "my" info 
 - [ ] Alert when IoT device has errors
+	- [ ] Detect error
+	- [x] Give alert
 - [ ] Alert when threshold crossed
+	- [x] CRUD threshold
+	- [x] Give alert
 

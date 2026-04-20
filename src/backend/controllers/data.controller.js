@@ -35,17 +35,20 @@ function getDataHistoryNoLimit(req, res) {
     }
 }
 
+// obsoleted
 function showDataHistory(req, res) {
-    const row_num = req.query.row ? parseInt(req.query.row) : 10;
-    const rows = dataService.getDataHistory(row_num);
+    const rowLimit = req.query.rowLimit ? parseInt(req.query.rowLimit) : 10;
+    const rows = dataService.getDataHistory(rowLimit);
     res.render('data-history', { data: rows });
 }
 
 function exportToFile(req, res) {
     try {
         // const all = req.query.all ? req.query.all : false;
-        const limit = req.query.limit ? parseInt(req.query.limit) : 10;
-        const rows = limit > 0 ? dataService.getDataHistory(limit) : dataService.getDataHistoryNoLimit();
+        const rowLimit = req.query.rowLimit ? parseInt(req.query.rowLimit) : 10;
+        console.log(req.query.rowLimit);
+        console.log('Exporting data with row limit:', rowLimit);
+        const rows = rowLimit > 0 ? dataService.getDataHistory(rowLimit) : dataService.getDataHistoryNoLimit();
 
         // Convert JSON to CSV!
         const parser = new Parser();
@@ -57,7 +60,7 @@ function exportToFile(req, res) {
 
         return res.send(csv);
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, error: err.message, timestamp: new Date().toISOString() });
     }
 
 }
