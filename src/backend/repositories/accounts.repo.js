@@ -9,8 +9,8 @@ class AccountsRepository {
       .prepare("SELECT * FROM USER ORDER BY phone_number")
       .all();
   }
-  countRows(){
-  return db.prepare("SELECT COUNT(*) AS total FROM USER").get();
+  countRows() {
+    return db.prepare("SELECT COUNT(*) AS total FROM USER").get();
   }
   findByPhone(phone) {
     return db
@@ -18,7 +18,7 @@ class AccountsRepository {
       .prepare("SELECT phone_number, password_hash FROM USER WHERE phone_number=?")
       .get([phone]);
   }
-  findById(id){
+  findById(id) {
     return db
       .prepare("SELECT * FROM USER WHERE user_id=?")
       .all([id]);

@@ -1,7 +1,7 @@
 # What changed in this commit
 
 ## Added
-- Feature: export to CSV. Still wondering if we should add "export to .xlsx" function (fuck micro&soft (dih), Bill Gates is in Epstein files!)
+- Feature: edit and delete thresholds.
 
-## Updated
-- In "show monitoring data history" function, rows now are sorted by observation_id rather than timestamp.
+# Unsolved problems
+- After deleting a threshold, dialog box shows "an error occured" when there's no error, and the threshold page doesn't auto-reload like intended. After pressing F5, page renders normally.
