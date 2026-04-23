@@ -23,6 +23,7 @@
     "nodemon": "^3.1.14"
   },
   "devDependencies": {
+    "dayjs": "^1.11.20",
     "dotenv": "^17.4.2"
   }
 }

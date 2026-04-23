@@ -32,6 +32,7 @@ function getById(req, res){
     }
 }
 
+// obsoleted
 function switchSensor(req, res) {
     const sensorId = req.params.id;
     try {

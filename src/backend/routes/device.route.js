@@ -11,7 +11,9 @@ router.get('/id/:id', deviceCtrl.getById);
 // obsoleted
 // router.get('/switch-sensor/:id', deviceCtrl.switchSensor);
 
-router.put('/rename/:id', deviceCtrl.renameSensor);
+router.put('/rename/:id', deviceCtrl.renameSensor); // for user
+
+// Admin use following features:
 
 // router.post('/add', deviceCtrl.addSensor);
 // router.put('/update/:id', deviceCtrl.update);
