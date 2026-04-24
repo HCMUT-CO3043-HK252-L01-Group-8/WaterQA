@@ -8,7 +8,7 @@ const port = 3000;
 const path = require('path');
 require('dotenv').config(); // ← load .env file
 
-const Model = require('./services/model.service');
+const { predict } = require('./services/model.service');
 
 // 'Tools' for URL parsing
 app.use(express.urlencoded({ extended: true }));   // ← for form data (phone & password)
@@ -36,6 +36,7 @@ const authRouter = require('./routes/auth.route');
 const dashboardRouter = require('./routes/dashboard.route');
 const dataRouter = require('./routes/data.route');
 const deviceRouter = require('./routes/device.route');
+const modelRouter = require('./routes/model.route');
 
 // Mount routers
 
@@ -45,6 +46,7 @@ app.use(`${API_PREFIX}/auth`, authRouter);
 app.use(`${API_PREFIX}/dashboard`, dashboardRouter);
 app.use(`${API_PREFIX}/data`, dataRouter);
 app.use(`${API_PREFIX}/devices`, deviceRouter);
+app.use(`${API_PREFIX}/model`, modelRouter);
 app.use
 // Special route: / = /dashboard
 app.get('/', (req, res) => {
@@ -58,7 +60,6 @@ cronService.startDeviceMonitor();
 app.listen(port, async () => {
   console.clear();
   console.log(`App listening on port ${port}`);
-  const model = await Model.create()
 
   const rawSampleInput = {
     ph: 8.322986672402298,
@@ -72,5 +73,5 @@ app.listen(port, async () => {
     Turbidity: 4.052135727552661,
   };
 
-  model.predict(rawSampleInput)
+  await predict(rawSampleInput)
 });
