@@ -91,5 +91,9 @@ Read [here](./docs/errors.md).
 	- [x] Give alert
 - [ ] Alert when threshold crossed
 	- [x] CRUD threshold
+<<<<<<< HEAD
 	- [x] Give alert
+=======
+	- [ ] Give alert
+>>>>>>> dev
 

@@ -53,7 +53,6 @@
         <option value="leakage_signal" <% if (threshold.parameter_name === 'leakage_signal') { %>selected<% } %>>Leakage Signal</option>
         <option value="intrusion_signal" <% if (threshold.parameter_name === 'intrusion_signal') { %>selected<% } %>>Intrusion Signal</option>
     </select><br/>
-
     <label for="lower_threshold">Lower Threshold Value:</label>
     <input
         type="text"
@@ -77,7 +76,6 @@
         <option value="high" <% if (threshold.severity === 'high') { %>selected<% } %>>High</option>
         <option value="critical" <% if (threshold.severity === 'critical') { %>selected<% } %>>Critical</option>
     </select><br />
-    
     <button type="submit">Change threshold</button>
 </form>
 

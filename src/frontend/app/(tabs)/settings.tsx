@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
-    // States quản lý cài đặt
     const [emailNotif, setEmailNotif] = useState(true);
-    const [language, setLanguage] = useState('vi'); // 'vi' hoặc 'en'
+    const [language, setLanguage] = useState('vi');
 
-    // Hàm tiện ích để render một dòng cài đặt (Tái sử dụng)
-    const renderSettingRow = (icon, title, subtitle, rightElement, isLast = false) => (
+    const renderSettingRow = (icon: string, title: string, subtitle: string, rightElement: any, isLast = false) => (
         <View style={[styles.settingRow, isLast && { borderBottomWidth: 0, paddingBottom: 0 }]}>
             <View style={styles.settingRowLeft}>
                 <View style={styles.settingIconBox}>
@@ -25,142 +24,149 @@ export default function SettingsScreen() {
     );
 
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            {/* 1. Header */}
-            <View style={styles.header}>
-                <View style={styles.appTitleRow}>
-                    <View style={styles.logoPlaceholder}>
-                        <Text style={styles.logoText}>💧</Text>
+        <SafeAreaView style={styles.safeArea}>
+            <ScrollView 
+                style={styles.container} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
+                {/* 1. Header */}
+                <View style={styles.header}>
+                    <View style={styles.appTitleRow}>
+                        <View style={styles.logoPlaceholder}>
+                            <Text style={styles.logoText}>💧</Text>
+                        </View>
+                        <View>
+                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
+                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                        </View>
                     </View>
-                    <View>
-                        <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                        <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
-                    </View>
-                </View>
-                
-                <View style={styles.pageTitleSection}>
-                    <Text style={styles.pageTitle}>Cài đặt</Text>
-                    <Text style={styles.pageSubtitle}>Điều chỉnh theo sở thích cá nhân của bạn</Text>
-                </View>
-            </View>
-
-            {/* 2. Thẻ Thông tin tài khoản */}
-            <View style={styles.profileCard}>
-                <View style={styles.avatarBox}>
-                    <Text style={styles.avatarText}>👤</Text>
-                </View>
-                <View style={styles.profileInfo}>
-                    <Text style={styles.profileName}>Đậu Minh Khôi</Text>
-                    <Text style={styles.profileEmail}>khoidau123@gmail.com</Text>
-                    <View style={styles.verifyBadge}>
-                        <Text style={styles.verifyText}>Người dùng đã xác minh</Text>
+                    
+                    <View style={styles.pageTitleSection}>
+                        <Text style={styles.pageTitle}>Cài đặt</Text>
+                        <Text style={styles.pageSubtitle}>Điều chỉnh theo sở thích cá nhân của bạn</Text>
                     </View>
                 </View>
-            </View>
 
-            {/* 3. Thẻ Thống kê nhanh */}
-            <View style={styles.statsCard}>
-                <Text style={styles.statsTitle}>Thống kê</Text>
-                <View style={styles.statsRow}>
-                    <View style={styles.statItem}>
-                        <Text style={[styles.statValue, { color: '#0092B8' }]}>82</Text>
-                        <Text style={styles.statLabel}>WQI trung bình</Text>
+                {/* 2. Thẻ Thông tin tài khoản */}
+                <View style={styles.profileCard}>
+                    <View style={styles.avatarBox}>
+                        <Text style={styles.avatarText}>👤</Text>
                     </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                        <Text style={[styles.statValue, { color: '#00A63E' }]}>4</Text>
-                        <Text style={styles.statLabel}>Phiên hoạt động</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                        <Text style={[styles.statValue, { color: '#45556C' }]}>2</Text>
-                        <Text style={styles.statLabel}>Cảnh báo chưa đọc</Text>
+                    <View style={styles.profileInfo}>
+                        <Text style={styles.profileName}>Đậu Minh Khôi</Text>
+                        <Text style={styles.profileEmail}>khoidau123@gmail.com</Text>
+                        <View style={styles.verifyBadge}>
+                            <Text style={styles.verifyText}>Người dùng đã xác minh</Text>
+                        </View>
                     </View>
                 </View>
-            </View>
 
-            {/* 4. Cài đặt chung */}
-            <View style={styles.sectionCard}>
-                <Text style={styles.sectionTitle}>Cài đặt chung</Text>
-                {renderSettingRow('👤', 'Thông tin cá nhân', 'Quản lý thông tin tài khoản', null)}
-                {renderSettingRow(
-                    '✉️', 
-                    'Nhận thông báo qua email', 
-                    'Cho phép gửi thông báo qua email', 
-                    <Switch
-                        value={emailNotif}
-                        onValueChange={setEmailNotif}
-                        trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
-                        thumbColor="#FFFFFF"
-                    />,
-                    true
-                )}
-            </View>
-
-            {/* 5. Cài đặt cảnh báo */}
-            <View style={styles.sectionCard}>
-                <Text style={styles.sectionTitle}>Cài đặt cảnh báo</Text>
-                {renderSettingRow(
-                    '🔔', 
-                    'Ngưỡng cảnh báo WQI', 
-                    'Thay đổi ngưỡng cảnh báo', 
-                    <TouchableOpacity style={styles.thresholdBtn}>
-                        <Text style={styles.thresholdValue}>80</Text>
-                        <Text style={styles.editIcon}>✏️</Text>
-                    </TouchableOpacity>,
-                    true
-                )}
-            </View>
-
-            {/* 6. Cài đặt hệ thống */}
-            <View style={styles.sectionCard}>
-                <Text style={styles.sectionTitle}>Cài đặt hệ thống</Text>
-                {renderSettingRow('📍', 'Danh sách trạm quan trắc', 'Hiển thị vị trí và thông tin các trạm', null)}
-                {renderSettingRow('⚙️', 'Quản lý trạm của bạn', 'Quản lý trạm quan trắc của bạn', null, true)}
-            </View>
-
-            {/* 7. Hỗ trợ & Ngôn ngữ */}
-            <View style={styles.sectionCard}>
-                <Text style={styles.sectionTitle}>Hỗ trợ</Text>
-                {renderSettingRow('❓', 'FAQ', 'Nhận trợ giúp về ứng dụng', null)}
-                
-                {/* Custom Toggle Ngôn ngữ */}
-                {renderSettingRow(
-                    '🌐', 
-                    'Ngôn ngữ', 
-                    'Thay đổi ngôn ngữ', 
-                    <View style={styles.langToggle}>
-                        <TouchableOpacity 
-                            style={[styles.langBtn, language === 'vi' && styles.langBtnActive]}
-                            onPress={() => setLanguage('vi')}
-                        >
-                            <Text style={[styles.langText, language === 'vi' && styles.langTextActive]}>Tiếng Việt</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                            style={[styles.langBtn, language === 'en' && styles.langBtnActive]}
-                            onPress={() => setLanguage('en')}
-                        >
-                            <Text style={[styles.langText, language === 'en' && styles.langTextActive]}>Tiếng Anh</Text>
-                        </TouchableOpacity>
+                {/* 3. Thẻ Thống kê nhanh */}
+                <View style={styles.statsCard}>
+                    <Text style={styles.statsTitle}>Thống kê</Text>
+                    <View style={styles.statsRow}>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statValue, { color: '#0092B8' }]}>82</Text>
+                            <Text style={styles.statLabel}>WQI trung bình</Text>
+                        </View>
+                        <View style={styles.statDivider} />
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statValue, { color: '#00A63E' }]}>4</Text>
+                            <Text style={styles.statLabel}>Phiên hoạt động</Text>
+                        </View>
+                        <View style={styles.statDivider} />
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statValue, { color: '#45556C' }]}>2</Text>
+                            <Text style={styles.statLabel}>Cảnh báo chưa đọc</Text>
+                        </View>
                     </View>
-                )}
-                
-                {renderSettingRow('🚪', 'Đăng xuất', 'Đăng xuất khỏi tài khoản của bạn', null, true)}
-            </View>
+                </View>
 
-            <View style={{ height: 40 }} />
-        </ScrollView>
+                {/* 4. Cài đặt chung */}
+                <View style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Cài đặt chung</Text>
+                    {renderSettingRow('👤', 'Thông tin cá nhân', 'Quản lý thông tin tài khoản', null)}
+                    {renderSettingRow(
+                        '✉️', 
+                        'Nhận thông báo qua email', 
+                        'Cho phép gửi thông báo qua email', 
+                        <Switch
+                            value={emailNotif}
+                            onValueChange={setEmailNotif}
+                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            thumbColor="#FFFFFF"
+                        />,
+                        true
+                    )}
+                </View>
+
+                {/* 5. Cài đặt cảnh báo */}
+                <View style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Cài đặt cảnh báo</Text>
+                    {renderSettingRow(
+                        '🔔', 
+                        'Ngưỡng cảnh báo WQI', 
+                        'Thay đổi ngưỡng cảnh báo', 
+                        <TouchableOpacity style={styles.thresholdBtn}>
+                            <Text style={styles.thresholdValue}>80</Text>
+                            <Text style={styles.editIcon}>✏️</Text>
+                        </TouchableOpacity>,
+                        true
+                    )}
+                </View>
+
+                {/* 6. Cài đặt hệ thống */}
+                <View style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Cài đặt hệ thống</Text>
+                    {renderSettingRow('📍', 'Danh sách trạm quan trắc', 'Hiển thị vị trí và thông tin các trạm', null)}
+                    {renderSettingRow('⚙️', 'Quản lý trạm của bạn', 'Quản lý trạm quan trắc của bạn', null, true)}
+                </View>
+
+                {/* 7. Hỗ trợ & Ngôn ngữ */}
+                <View style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Hỗ trợ</Text>
+                    {renderSettingRow('❓', 'FAQ', 'Nhận trợ giúp về ứng dụng', null)}
+                    
+                    {/* Custom Toggle Ngôn ngữ */}
+                    {renderSettingRow(
+                        '🌐', 
+                        'Ngôn ngữ', 
+                        'Thay đổi ngôn ngữ', 
+                        <View style={styles.langToggle}>
+                            <TouchableOpacity 
+                                style={[styles.langBtn, language === 'vi' && styles.langBtnActive]}
+                                onPress={() => setLanguage('vi')}
+                            >
+                                <Text style={[styles.langText, language === 'vi' && styles.langTextActive]}>Tiếng Việt</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.langBtn, language === 'en' && styles.langBtnActive]}
+                                onPress={() => setLanguage('en')}
+                            >
+                                <Text style={[styles.langText, language === 'en' && styles.langTextActive]}>Tiếng Anh</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    
+                    {renderSettingRow('🚪', 'Đăng xuất', 'Đăng xuất khỏi tài khoản của bạn', null, true)}
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+    },
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
     header: {
         padding: 16,
-        paddingTop: 40,
     },
     appTitleRow: {
         flexDirection: 'row',

@@ -1,12 +1,11 @@
 const dataRepo = require('../repositories/data.repo');
 const dayjs = require('dayjs');
-// const axios = require('axios');
 
-class DataService{
-    getDataHistory(row_num){
+class DataService {
+    getDataHistory(row_num) {
         return dataRepo.getDataHistory(row_num);
     }
-    getDataHistoryNoLimit(){
+    getDataHistoryNoLimit() {
         return dataRepo.getDataHistoryNoLimit();
     }
 
@@ -78,7 +77,6 @@ class DataService{
         }
         catch (err) { return { success: false, err: err.message }; }
     }
-
 }
 
 module.exports = new DataService();

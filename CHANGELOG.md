@@ -1,6 +1,7 @@
 # What changed in this commit
 
 ## Added
+<<<<<<< HEAD
 - Python sript to retreive data from Adafruit.io (trial only). Running instruction is as follows:
 	+ Go into src/backend/utils/python
 	+ If you don't have venv/ in python/ yet, run `python3 -m venv venv` to create the venv first. This is done once.
@@ -13,3 +14,9 @@
 
 ## Updated
 - Update .gitignore to ignore venv directory.
+=======
+- Feature: edit and delete thresholds.
+
+# Unsolved problems
+- After deleting a threshold, dialog box shows "an error occured" when there's no error, and the threshold page doesn't auto-reload like intended. After pressing F5, page renders normally.
+>>>>>>> dev

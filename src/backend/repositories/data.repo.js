@@ -1,10 +1,10 @@
-const db = require ('../database/db');
+const db = require('../database/db');
 
 class DataRepository {
     getDataHistory(row_num) {
         return db.prepare('SELECT * FROM OBSERVATION ORDER BY observation_id DESC LIMIT ?').all([row_num]);
     }
-    getDataHistoryNoLimit(){
+    getDataHistoryNoLimit() {
         return db.prepare('SELECT * FROM OBSERVATION ORDER BY observation_id DESC').all();
     }
     /**
@@ -53,4 +53,8 @@ class DataRepository {
 }
 
 
+<<<<<<< HEAD
+=======
+// module.exports ={ getOfflineDevices, DataRepository: new DataRepository() };
+>>>>>>> dev
 module.exports = new DataRepository();
