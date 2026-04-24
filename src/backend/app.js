@@ -8,6 +8,9 @@ const port = 3000;
 const path = require('path');
 require('dotenv').config(); // ← load .env file
 
+const Model = require('./services/model.service');
+const model = new Model()
+
 // 'Tools' for URL parsing
 app.use(express.urlencoded({ extended: true }));   // ← for form data (phone & password)
 app.use(express.json());                           // ← optional but good to have for future API/JSON requests
