@@ -8,6 +8,40 @@ class DataService {
     getDataHistoryNoLimit() {
         return dataRepo.getDataHistoryNoLimit();
     }
+
+    async getTelemetryData(feedKey, rowLimit) {
+        try {
+            const aiokey = process.env.ADAFRUIT_IO_KEY;
+            const username = process.env.ADAFRUIT_IO_USERNAME;
+            let URL = `https://io.adafruit.com/api/v2/${username}/feeds/${feedKey}/data`;
+            if (rowLimit) {
+                URL += `?limit=${rowLimit}`;
+            }
+
+
+            console.log(`Fetching data from ${feedKey}...`);
+            
+            const response = await fetch(URL, {
+                method: 'GET',
+                headers: {
+                    'X-AIO-Key': aiokey,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const count = data.length;
+            return {data, count};
+
+        } catch (error) {
+            console.error("Failed to fetch data:", error.message);
+        }
+    }
+
     getThresholdsRaw() {
         return dataRepo.getThresholdsRaw();
     }
@@ -42,7 +76,6 @@ class DataService {
             return { success: true };
         }
         catch (err) { return { success: false, err: err.message }; }
-        return null;
     }
 }
 

@@ -1,12 +1,13 @@
 // repositories/accounts.repository.js
 // const db = require("../database/db");
 const db = require("../database/db");
+const { deleteAccount } = require("../services/accounts.service");
 
 class AccountsRepository {
   findAll() {
     return db
       // .prepare("SELECT phone, hashedPass FROM Accounts ORDER BY phone")
-      .prepare("SELECT * FROM USER ORDER BY phone_number")
+      .prepare("SELECT * FROM USER ORDER BY user_id")
       .all();
   }
   countRows() {
@@ -34,6 +35,11 @@ class AccountsRepository {
       // .prepare("UPDATE Accounts SET hashedPass=? WHERE phone=?")
       .prepare("UPDATE USER SET password_hash=?, updated_at=? WHERE user_id=?")
       .run([newPassword, updateTime, id]);
+  }
+  deleteAccount(id){
+    return db
+      .prepare("DELETE FROM USER WHERE user_id=?")
+      .run([id]);
   }
 }
 

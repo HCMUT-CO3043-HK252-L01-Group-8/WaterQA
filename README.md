@@ -72,15 +72,28 @@ Read [here](./docs/errors.md).
 	- [x] Log out
 - [x] Dashboard
 - [ ] Monitor data
-	- [ ] Live monitor
-	- [x] Monitor history
-- [ ] Forecast data
+	- [x] Fetch data from source (Adafruit IO)
+	- [x] Show history
+	- [ ] Integrate live data to history
+- [ ] Forecast data (require AI)
 - [x] Export file
 - [ ] Manual input
 - [ ] Manage IoT devices
+	- [x] List devices (sensors)
+	- [x] Rename device
+	- [ ] Add, edit, remove device (admin only)
 - [ ] Manage users
+	- [x] List users (admin only)
+	- [x] Get "my" info (me = current session's user)
+	- [ ] Edit "my" info 
 - [ ] Alert when IoT device has errors
+	- [ ] Detect error
+	- [x] Give alert
 - [ ] Alert when threshold crossed
 	- [x] CRUD threshold
+<<<<<<< HEAD
+	- [x] Give alert
+=======
 	- [ ] Give alert
+>>>>>>> dev
 

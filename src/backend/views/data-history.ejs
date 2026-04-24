@@ -55,15 +55,6 @@
         <p>No data available.</p>
     <% } %>
 
-    <!-- <div style="margin-bottom: 20px;">
-        <a href="/data/export?all=true">
-            <button>Export All</button>
-        </a>
-
-        <a href="/data/export?limit=5">
-            <button>Export Top 5</button>
-        </a>
-    </div> -->
 <div style="padding-top: 20px;">
     <h2>Export to CSV file</h2>
     <form action="/data/export" method="GET" style="border: 2px solid black; padding: 10px;">
@@ -77,7 +68,7 @@
         <label style="margin-left: 10px;">
             <input type="radio" name="mode" value="top" onclick="toggleLimit()">
             Top
-        </label>
+        </label><br/>
 
         <!-- Limit input -->
         <input 
@@ -86,15 +77,15 @@
             name="limitInput" 
             placeholder="Enter number of rows"
             min="1"
-            style="margin-left: 15px; width: 150px;"
+            style="margin-left: 10px; width: 150px;"
             disabled
-        >
+        ><br/>
 
         <!-- Hidden actual limit param -->
-        <input type="hidden" name="limit" id="limitHidden" value="-1">
+        <input type="hidden" name="limit" id="limitHidden" value="-1"><br/>
 
         <!-- Submit -->
-        <button type="submit" style="margin-left: 10px;">
+        <button type="submit" style="margin-left: 15px;">
             Export CSV
         </button>
     </form>

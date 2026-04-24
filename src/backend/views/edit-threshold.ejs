@@ -40,7 +40,8 @@
         name="station_id"
         value="<%= threshold.station_id %>"
         required
-    /><br />
+    /><br/>
+
     <label for="parameter">Parameter Name:</label>
     <select name="parameter" id="parameter" required>
         <option value="temperature" <% if (threshold.parameter_name === 'temperature') { %>selected<% } %>>Temperature</option>
@@ -58,14 +59,16 @@
         name="lower_threshold"
         value="<%= threshold.lower_threshold %>"
         required
-    /><br />
+    /><br/>
+
     <label for="upper_threshold">Upper Threshold Value:</label>
     <input
         type="text"
         name="upper_threshold"
         value="<%= threshold.upper_threshold %>"
         required
-    /><br />
+    /><br/>
+
     <label for="severity_level">Severity Level:</label>
     <select name="severity" id="severity" required>
         <option value="low" <% if (threshold.severity === 'low') { %>selected<% } %>>Low</option>

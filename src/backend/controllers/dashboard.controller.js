@@ -1,5 +1,6 @@
 const mailService = require('../services/mail.service');
 
+// obsoleted
 function showDashboardPage(req, res) {
   // requireLogin(req, res, () => { console.log('Login successfully'); });
   const phone = req.session.user?.phone_number || null;
