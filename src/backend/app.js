@@ -9,7 +9,6 @@ const path = require('path');
 require('dotenv').config(); // ← load .env file
 
 const Model = require('./services/model.service');
-const model = new Model()
 
 // 'Tools' for URL parsing
 app.use(express.urlencoded({ extended: true }));   // ← for form data (phone & password)
@@ -56,7 +55,22 @@ const cronService = require('./services/cron.service');
 cronService.startDeviceMonitor();
 
 // Listen
-app.listen(port, () => {
+app.listen(port, async () => {
   console.clear();
   console.log(`App listening on port ${port}`);
+  const model = await Model.create()
+
+  const rawSampleInput = {
+    ph: 8.322986672402298,
+    Hardness: 207.25246223156424,
+    Solids: 28049.646283166327,
+    Chloramines: 8.827061283189618,
+    Sulfate: 297.81308453289193,
+    Conductivity: 358.725868777638,
+    Organic_carbon: 18.70927336873052,
+    Trihalomethanes: 60.91142039439827,
+    Turbidity: 4.052135727552661,
+  };
+
+  model.predict(rawSampleInput)
 });

@@ -19,12 +19,13 @@ class AccountsService {
   } else {
     const accs = accountsRepo.findByPhone(phone);
 
-    if (accs) { 
+    if (accs) {
       return {errCode: 409};  // Phone number already exists
     } else {
       try {
         const row = accountsRepo.countRows();
         const newId = row.total + 1;
+        console.log("New id: " + newId);
 
         const createdAt = new Date().toISOString();
 
@@ -39,6 +40,7 @@ class AccountsService {
         );
         return { errCode: 0, newId: newId }; // success. Return the new account's ID for session creation. This can be used at Controller layer because it is not related to database operation.
       } catch (err) {
+        console.log(err);
         return {errCode: 500};  // temporary. This is expected to give the exact SQL error (eg. duplicated phone number...)
       }
 
@@ -52,10 +54,10 @@ class AccountsService {
     const acc = accs[0];
     if (currentPass != acc.password_hash){return 422;} // current password is wrong
     if (newPass != confirmPass){return 422;} // confirmed password is wrong
-    
+
     const updateTime = new Date().toISOString();
     accountsRepo.changePassword(id, newPass, updateTime);
-    return 0; 
+    return 0;
   }
 
   deleteAccount(id){
