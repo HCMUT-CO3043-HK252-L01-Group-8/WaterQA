@@ -12,7 +12,6 @@ const dataCtrl = require('../controllers/data.controller');
 router.get('/history', dataCtrl.getDataHistoryNoLimit);
 // router.get('/history', dataCtrl.showDataHistory);
 router.get('/export', dataCtrl.exportToFile);
-router.post('/receive-iot-data', dataCtrl.receiveIoTData); // what is this?
 
 router.get('/telemetry', dataCtrl.getTelemetryData);
 

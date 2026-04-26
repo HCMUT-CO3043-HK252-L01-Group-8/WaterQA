@@ -53,8 +53,4 @@ class DataRepository {
 }
 
 
-<<<<<<< HEAD
-=======
-// module.exports ={ getOfflineDevices, DataRepository: new DataRepository() };
->>>>>>> dev
 module.exports = new DataRepository();
