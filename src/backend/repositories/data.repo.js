@@ -15,8 +15,8 @@ class DataRepository {
         // Lấy tên trạm và thời gian gửi data cuối cùng (MAX(timestamp)).
         // Lọc ra các trạm mà: (Thời gian hiện tại - Thời gian cuối cùng) > minutesLimit
         const sql = `
-            SELECT 
-                s.station_name as name, 
+            SELECT
+                s.station_name as name,
                 MAX(o.timestamp) as lastActive
             FROM IOT_STATION s
             LEFT JOIN OBSERVATION o ON s.station_id = o.station_id
@@ -52,9 +52,4 @@ class DataRepository {
     }
 }
 
-
-<<<<<<< HEAD
-=======
-// module.exports ={ getOfflineDevices, DataRepository: new DataRepository() };
->>>>>>> dev
 module.exports = new DataRepository();

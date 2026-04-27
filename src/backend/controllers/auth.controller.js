@@ -37,7 +37,7 @@ function login(req, res) {
     console.error('Login error:', err);
     res.status(500).json({ success: false, timestamp: new Date().toISOString() });
   }
-  
+
 }
 
 function logout(req, res) {
