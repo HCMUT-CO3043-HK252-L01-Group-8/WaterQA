@@ -5,7 +5,7 @@ const dataRepo = require('../repositories/data.repo');
 const dataService = require('./data.service');
 //Lay tu feed key tren Adafruit IO, neu muon check ca 2 feed cung luc 
 //thi de trong array, neu chi check 1 feed thi de 1 phan tu trong array nhu duoi
-const FEEDS_TO_MONITOR = ['temperature', 'humidity']; //Vd chu chua co feedkey
+const FEEDS_TO_MONITOR = ['temp', 'humi', 'leakage-signal']; //cap nhat 29/4
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL; //Co the doi mail de test
 const startDeviceMonitor = () => {
     console.log("Bắt đầu chạy Cron Service giám sát thiết bị IoT...");
@@ -24,10 +24,9 @@ const startDeviceMonitor = () => {
                 const recordTime = new Date(data[0].created_at).toLocaleString('vi-VN');
                 //IOT devices co errors, uu tien may loi truoc, vuot thresholds sau
                 let isHardwareError = false;
-                if (feedKey === 'temperature' && (latestValue < -10 || latestValue > 80)) isHardwareError = true;
-                if (feedKey === 'humidity' && (latestValue < 0 || latestValue > 100)) isHardwareError = true;
-                //Vi du feedkey va gia tri
-                if (feedKey === 'ph' && (latestValue < 0 || latestValue > 14)) isHardwareError = true;
+                if (feedKey === 'temp' && (latestValue < -10 || latestValue > 80)) isHardwareError = true;
+                if (feedKey === 'humi' && (latestValue < 0 || latestValue > 100)) isHardwareError = true;
+                if (feedKey === 'leakage-signal' && latestValue !== 0 && latestValue !== 1) isHardwareError = true; //0: ko rỉ 1: rỉ
 
                 if (isHardwareError) {
                     const errorData = {
@@ -47,13 +46,27 @@ const startDeviceMonitor = () => {
                     const { lower_threshold, upper_threshold } = feedThreshold;
                     
                     if (latestValue < lower_threshold || latestValue > upper_threshold) {
-                        const alertData = {
-                            stationName: 'Trạm IoT (Hệ thống WaterQA)',
-                            wqi: `VƯỢT NGƯỠNG (${latestValue})`,
-                            message: `Cảnh báo: Chỉ số [${feedKey.toUpperCase()}] hiện tại là ${latestValue}, vượt ra khỏi giới hạn an toàn cho phép (từ ${lower_threshold} đến ${upper_threshold}). Vui lòng kiểm tra chất lượng nước! (Đo lúc: ${recordTime})`
-                        };
+                        let alertData = {};
+
+                        // Phân loại nội dung email tùy theo loại cảm biến
+                        if (feedKey === 'leakage-signal' && latestValue === 1) {
+                            // Email dành riêng cho sự cố rò rỉ nước
+                            alertData = {
+                                stationName: 'Trạm IoT (Hệ thống WaterQA)',
+                                wqi: 'CẢNH BÁO RÒ RỈ',
+                                message: `CẢNH BÁO KHẨN CẤP: Hệ thống phát hiện có sự cố rò rỉ hoặc tràn nước tại khu vực cảm biến! Vui lòng kiểm tra và xử lý ngay lập tức để tránh thiệt hại. (Ghi nhận lúc: ${recordTime})`
+                            };
+                        } else {
+                            // Email chuẩn cho nhiệt độ, độ ẩm vượt ngưỡng
+                            alertData = {
+                                stationName: 'Trạm IoT (Hệ thống WaterQA)',
+                                wqi: `VƯỢT NGƯỠNG (${latestValue})`,
+                                message: `Cảnh báo: Chỉ số [${feedKey.toUpperCase()}] hiện tại là ${latestValue}, vượt ra khỏi giới hạn an toàn cho phép (từ ${lower_threshold} đến ${upper_threshold}). Vui lòng kiểm tra lại hệ thống! (Ghi nhận lúc: ${recordTime})`
+                            };
+                        }
+
                         await mailService.sendAlertEmail(ADMIN_EMAIL, alertData);
-                        console.log(`[CẢNH BÁO] Đã gửi mail vượt ngưỡng cho feed: ${feedKey}`);
+                        console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo cho feed: ${feedKey}`);
                     }
                 }
             }
