@@ -14,10 +14,11 @@
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-converter": "^4.22.0",
-    "@tensorflow/tfjs-node": "^0.1.11",
+    "@tensorflow/tfjs-node": "^4.22.0",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.6.2",
     "dotenv": "^17.4.2",
+    "cors": "^2.8.6",
     "ejs": "^5.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",

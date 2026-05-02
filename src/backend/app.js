@@ -1,5 +1,5 @@
 const express = require('express');
-
+const cors = require('cors');
 // const db = require('./database/db');          // ← our database connection
 // require('./database/initDb');
 
@@ -11,6 +11,7 @@ require('dotenv').config(); // ← load .env file
 const { predict } = require('./services/model.service');
 
 // 'Tools' for URL parsing
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));   // ← for form data (phone & password)
 app.use(express.json());                           // ← optional but good to have for future API/JSON requests
 app.set('view engine', 'ejs');                      // view engine

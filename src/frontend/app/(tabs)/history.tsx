@@ -1,30 +1,91 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import dayjs from 'dayjs';
 
 export default function HistoryScreen() {
     const [activeFilter, setActiveFilter] = useState('Ngày');
+    const [historyData, setHistoryData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const renderHistoryCard = (wqi: string, date: string, time: string, trend: string) => (
-        <View style={styles.historyCard}>
-            <View style={styles.cardLeft}>
-                <View style={styles.iconBox}>
-                    <Text>📊</Text>
+    const SERVER_URL = 'http://192.168.1.21:3000';
+
+    useEffect(() => {
+        fetchHistoryData();
+    }, []);
+
+    const fetchHistoryData = async () => {
+        setIsLoading(true);
+        try {
+            const apiUrl = `${SERVER_URL}/data/history?rowLimit=4`;
+
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const json = await response.json();
+            
+            if (json && json.success && json.payload) {
+                setHistoryData(json.payload.data);
+            }
+        } catch (error) {
+            console.error("Error while fetching: ", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleExportReport = async () => {
+        try {
+            const exportUrl = `${SERVER_URL}/data/export`;
+            
+            const supported = await Linking.canOpenURL(exportUrl);
+            
+            if (supported) {
+                await Linking.openURL(exportUrl);
+            } else {
+                Alert.alert("Error");
+            }
+        } catch (error) {
+            Alert.alert("Error");
+            console.error(error);
+        }
+    };
+
+    const renderHistoryCard = (item: any, index: number) => {
+        const dateString = dayjs(item.timestamp).format('DD-MM-YYYY');
+        const timeString = dayjs(item.timestamp).format('HH:mm');
+        
+        const temp = item.temperature ? `Nhiệt độ: ${item.temperature}°C` : 'Nhiệt độ: --°C';
+        const hum = item.humidity ? `Độ ẩm: ${item.humidity}%` : 'Độ ẩm: --%';
+        const waterLevel = item.water_level ? `Mực nước: ${item.water_level}m` : 'Mực nước: --m';
+
+        return (
+            <View key={index} style={styles.historyCard}>
+                <View style={styles.cardLeft}>
+                    <View style={styles.iconBox}>
+                        <Text></Text>
+                    </View>
+                    <View>
+                        <Text style={styles.wqiText}>{temp}</Text>
+                        <Text style={[styles.wqiText, { fontSize: 12, color: '#45556C', marginTop: 2, fontWeight: '500' }]}>{hum}</Text>
+                        <Text style={styles.dateText}>Trạm {item.station_id} • {dateString}</Text>
+                    </View>
                 </View>
-                <View>
-                    <Text style={styles.wqiText}>{wqi} WQI</Text>
-                    <Text style={styles.dateText}>{date}</Text>
+                <View style={styles.cardRight}>
+                    <View style={styles.trendBadge}>
+                        <Text style={[styles.trendIcon, { color: '#0092B8' }]}></Text>
+                        <Text style={[styles.trendText, { color: '#0092B8' }]}>{waterLevel}</Text>
+                    </View>
+                    <Text style={styles.timeText}>{timeString}</Text>
                 </View>
             </View>
-            <View style={styles.cardRight}>
-                <View style={styles.trendBadge}>
-                    <Text style={styles.trendIcon}>↗</Text>
-                    <Text style={styles.trendText}>+{trend}</Text>
-                </View>
-                <Text style={styles.timeText}>{time}</Text>
-            </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -95,20 +156,26 @@ export default function HistoryScreen() {
                             </TouchableOpacity>
                         ))}
                     </View>
-                    <TouchableOpacity style={styles.exportBtn}>
+
+                    {/* ĐÃ GẮN SỰ KIỆN onPress VÀO ĐÂY */}
+                    <TouchableOpacity style={styles.exportBtn} onPress={handleExportReport}>
                         <Text style={styles.exportIcon}>⬇</Text>
                         <Text style={styles.exportText}>Xuất báo cáo</Text>
                     </TouchableOpacity>
+
                 </View>
 
                 {/* 5. Danh sách lịch sử */}
                 <View style={styles.historyListContainer}>
-                    {renderHistoryCard('92', '06-03-2026', '20:36', '3')}
-                    {renderHistoryCard('89', '05-03-2026', '14:20', '1')}
-                    {renderHistoryCard('88', '04-03-2026', '09:15', '2')}
-                    {renderHistoryCard('86', '03-03-2026', '18:45', '4')}
-                    {renderHistoryCard('82', '02-03-2026', '11:10', '1')}
-                    {renderHistoryCard('81', '01-03-2026', '08:30', '5')}
+                    {isLoading ? (
+                        <ActivityIndicator size="large" color="#0092B8" style={{ marginVertical: 20 }} />
+                    ) : historyData.length > 0 ? (
+                        historyData.map((item, index) => renderHistoryCard(item, index))
+                    ) : (
+                        <Text style={{ textAlign: 'center', padding: 20, color: '#62748E' }}>
+                            Không có dữ liệu
+                        </Text>
+                    )}
                 </View>
             </ScrollView>
         </SafeAreaView>
