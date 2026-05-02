@@ -30,25 +30,25 @@ class DataRepository {
     getThresholdsRaw() {
         return db.prepare('SELECT * FROM ALERT_THRESHOLD ORDER BY threshold_id ASC').all();
     }
-    getThresholdById(id){
+    getThresholdById(id) {
         return db.prepare('SELECT * FROM ALERT_THRESHOLD WHERE threshold_id = ?').get([id]);
     }
     // To be developed: add update and delete threshold functions
     addThreshold(threshold_id, station_id, parameter_name, lower_threshold, upper_threshold, severity_level, timestamp, user_id) {
         db
-        .prepare('INSERT INTO ALERT_THRESHOLD (threshold_id, station_id, parameter_name, lower_threshold, upper_threshold, severity_level, updated_at, set_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-        .run([threshold_id, station_id, parameter_name, lower_threshold, upper_threshold, severity_level, timestamp, user_id]); // Giả sử user_id = 3 là admin hoặc người dùng đã đăng nhập thực hiện thao tác này
+            .prepare('INSERT INTO ALERT_THRESHOLD (threshold_id, station_id, parameter_name, lower_threshold, upper_threshold, severity_level, updated_at, set_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+            .run([threshold_id, station_id, parameter_name, lower_threshold, upper_threshold, severity_level, timestamp, user_id]); // Giả sử user_id = 3 là admin hoặc người dùng đã đăng nhập thực hiện thao tác này
     }
     countRows() {
         return db.prepare("SELECT COUNT(*) AS total FROM ALERT_THRESHOLD").get();
     }
     editThreshold(thresholdId, station_id, parameter_name, lower_threshold, upper_threshold, severity_level, timestamp, user_id) {
         db.prepare('UPDATE ALERT_THRESHOLD SET station_id = ?, parameter_name = ?, lower_threshold = ?, upper_threshold = ?, severity_level = ?, updated_at = ?, set_by_user_id = ? WHERE threshold_id = ?')
-        .run([station_id, parameter_name, lower_threshold, upper_threshold, severity_level, timestamp, user_id, thresholdId]);
+            .run([station_id, parameter_name, lower_threshold, upper_threshold, severity_level, timestamp, user_id, thresholdId]);
     }
     deleteThreshold(thresholdId) {
         db.prepare('DELETE FROM ALERT_THRESHOLD WHERE threshold_id = ?')
-        .run([thresholdId]);
+            .run([thresholdId]);
     }
 }
 

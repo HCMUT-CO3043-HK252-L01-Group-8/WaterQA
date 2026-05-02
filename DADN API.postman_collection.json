@@ -1,0 +1,718 @@
+{
+  "info": {
+    "_postman_id": "adbfcfda-633f-4cab-bae4-9173cee287b0",
+    "name": "DADN API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49931502",
+    "_collection_link": "https://go.postman.co/collection/49931502-adbfcfda-633f-4cab-bae4-9173cee287b0?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"4\",\n    \"password\": \"bluearchive\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/auth/login",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Log out",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/auth/logout",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Account",
+      "item": [
+        {
+          "name": "Get all",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{host}}/accounts",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/accounts/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "accounts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "4"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get my session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/accounts/session",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "accounts",
+                "session"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get my profile info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/accounts/profile",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "accounts",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sign up (create account)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"mail\": \"noa@example.com\",\n    \"phone\": \"0908765432\",\n    \"password\": \"bluearchive\",\n    \"confirmPassword\": \"bluearchive\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/accounts/signup",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "accounts",
+                "signup"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change password",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"currentPassword\": \"bluearchive\",\n    \"newPassword\": \"lovesensei\",\n    \"confirmPassword\": \"lovesensei\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/accounts/change-password",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "accounts",
+                "change-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete account",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{host}}/accounts/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "accounts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "4"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Data",
+      "item": [
+        {
+          "name": "Get data history (no limit)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{host}}/data/history",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get data history (with limit)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/data/history?rowLimit=4",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "rowLimit",
+                  "value": "4",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export file (no limit)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{host}}/data/export",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "export"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export file (with limit)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/data/export?rowLimit=5",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "rowLimit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Fetch data from Adafruit IO",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/data/telemetry?feedKey=temp&rowLimit=5",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "telemetry"
+              ],
+              "query": [
+                {
+                  "key": "feedKey",
+                  "value": "temp"
+                },
+                {
+                  "key": "rowLimit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "(WIP) Receive IoT data",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"stationName\": \"Station1\",\n    \"temperature\": 25.5,\n    \"humidity\": 60\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/data/telemetry",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "telemetry"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get thresholds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/data/thresholds",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "thresholds"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get threshold by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/data/thresholds/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "thresholds",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "11"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add threshold",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"parameter\": \"temperature\",\n    \"lower_threshold\": 20,\n    \"upper_threshold\": 70,\n    \"severity\": \"high\",\n    \"station\": \"3\" // not required\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/data/thresholds/",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "thresholds",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit threshold",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"parameter\": \"temperature\",\n    \"lower_threshold\": 20,\n    \"upper_threshold\": 67,\n    \"severity\": \"high\",\n    \"station\": \"3\" // not required\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/data/thresholds/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "thresholds",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "11"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete threshold",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/data/thresholds/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "data",
+                "thresholds",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "11"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Devices",
+      "item": [
+        {
+          "name": "Get all devices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/devices",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "devices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get device by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/devices/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "devices",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "16"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create (add) device",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"station_id\": 3,\n    \"sensor_name\": \"Secret device from Gehenna\",\n    \"sensor_type\": \"infared\",\n    \"unit\": \"boolean\",\n    \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/devices",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "devices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit sensor (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"station_id\": 2,\n    \"sensor_name\": \"Secret device from Abydos\",\n    \"sensor_type\": \"infared\",\n    \"unit\": \"boolean\",\n    \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/devices/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "devices",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "16"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rename sensor (user only)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"newName\": \"Mysterious device from Millenium\"\n    // \"newName\": \"Cam bien hong ngoai\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/devices/rename/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "devices",
+                "rename",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "16"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete device",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/devices/:id",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "devices",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "16"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "host",
+      "value": ""
+    },
+    {
+      "key": "host_api",
+      "value": ""
+    }
+  ]
+}

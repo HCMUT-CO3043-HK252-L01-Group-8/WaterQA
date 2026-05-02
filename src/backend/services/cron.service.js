@@ -2,43 +2,77 @@
 const cron = require('node-cron');
 const mailService = require('./mail.service');
 const dataRepo = require('../repositories/data.repo');
-
+const dataService = require('./data.service');
+//Lay tu feed key tren Adafruit IO, neu muon check ca 2 feed cung luc 
+//thi de trong array, neu chi check 1 feed thi de 1 phan tu trong array nhu duoi
+const FEEDS_TO_MONITOR = ['temp', 'humi', 'leakage-signal']; //cap nhat 29/4
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL; //Co the doi mail de test
 const startDeviceMonitor = () => {
-    // Chạy kiểm tra mỗi 15 phút (Cú pháp: */15 * * * *)
-    cron.schedule('*/15 * * * *', async () => {
-        console.log('[CRON] Đang quét kiểm tra kết nối các thiết bị IoT...');
-        
+    console.log("Bắt đầu chạy Cron Service giám sát thiết bị IoT...");
+    setInterval(async () => {
         try {
-            // Tìm các trạm không có dữ liệu mới trong 30 phút qua
-            const offlineDevices = await dataRepo.getOfflineDevices(30);
-            
-            // Nếu phát hiện có thiết bị offline, gửi mail cảnh báo
-            if (offlineDevices && offlineDevices.length > 0) {
-                offlineDevices.forEach(device => {
-                    // Xử lý chuỗi thời gian cho đẹp, nếu null tức là trạm mới lắp chưa từng có data
-                    const lastActiveTime = device.lastActive 
-                        ? new Date(device.lastActive).toLocaleString('vi-VN') 
-                        : 'Chưa từng gửi dữ liệu';
+            const thresholds = await dataService.getThresholdsRaw();
 
-                    const alertData = {
-                        stationName: device.name,
-                        wqi: 'OFFLINE (MẤT KẾT NỐI)',
-                        message: `CẢNH BÁO: Trạm đã ngừng gửi dữ liệu từ lúc [${lastActiveTime}]. Vui lòng kiểm tra lại nguồn điện hoặc kết nối WiFi của thiết bị.`
+            for (let feedKey of FEEDS_TO_MONITOR) {
+                const response = await dataService.getTelemetryData(feedKey, 1);
+                if (!response || !response.data || response.data.length === 0) {
+                    console.log(`Bỏ qua feed [${feedKey}] do không lấy được dữ liệu từ Adafruit.`);
+                    continue; 
+                }
+                const data = response.data;
+                const latestValue = parseFloat(data[0].value);
+                const recordTime = new Date(data[0].created_at).toLocaleString('vi-VN');
+                //IOT devices co errors, uu tien may loi truoc, vuot thresholds sau
+                let isHardwareError = false;
+                if (feedKey === 'temp' && (latestValue < -10 || latestValue > 80)) isHardwareError = true;
+                if (feedKey === 'humi' && (latestValue < 0 || latestValue > 100)) isHardwareError = true;
+                if (feedKey === 'leakage-signal' && latestValue !== 0 && latestValue !== 1) isHardwareError = true; //0: ko rỉ 1: rỉ
+
+                if (isHardwareError) {
+                    const errorData = {
+                        stationName: 'Trạm IoT',
+                        wqi: 'LỖI CẢM BIẾN / PHẦN CỨNG',
+                        message: `Phát hiện dữ liệu bất thường từ cảm biến [${feedKey.toUpperCase()}]. Giá trị đo được là ${latestValue}. Có thể thiết bị đã bị hỏng hoặc chập mạch, vui lòng kiểm tra ngay lập tức! (Đo lúc: ${recordTime})`
                     };
+                    await mailService.sendAlertEmail(ADMIN_EMAIL, errorData);
+                    console.log(`[CẢNH BÁO] Đã gửi mail lỗi phần cứng cho feed: ${feedKey}`);
                     
-                    // Gửi mail (TEST: sau sửa lại email người dùng)
-                    mailService.sendAlertEmail('taikhoanneverdie17@gmail.com', alertData)
-                        .catch(err => console.error('Lỗi gửi mail cron:', err));
-                        
-                    console.log(`Đã phát hiện và gửi cảnh báo Offline cho trạm: ${device.name}`);
-                });
-            } else {
-                console.log('Tất cả thiết bị IoT đều đang hoạt động bình thường (Online).');
+                //Kiem tra vuot nguong chi khi khong co loi phan cung, neu co loi phan cung roi thi khong can check vuot nguong nua
+                    continue; 
+                }
+                const feedThreshold = thresholds.find(t => t.parameter.toLowerCase() === feedKey.toLowerCase());
+                
+                if (feedThreshold) {
+                    const { lower_threshold, upper_threshold } = feedThreshold;
+                    
+                    if (latestValue < lower_threshold || latestValue > upper_threshold) {
+                        let alertData = {};
+
+                        // Phân loại nội dung email tùy theo loại cảm biến
+                        if (feedKey === 'leakage-signal' && latestValue === 1) {
+                            // Email dành riêng cho sự cố rò rỉ nước
+                            alertData = {
+                                stationName: 'Trạm IoT (Hệ thống WaterQA)',
+                                wqi: 'CẢNH BÁO RÒ RỈ',
+                                message: `CẢNH BÁO KHẨN CẤP: Hệ thống phát hiện có sự cố rò rỉ hoặc tràn nước tại khu vực cảm biến! Vui lòng kiểm tra và xử lý ngay lập tức để tránh thiệt hại. (Ghi nhận lúc: ${recordTime})`
+                            };
+                        } else {
+                            // Email chuẩn cho nhiệt độ, độ ẩm vượt ngưỡng
+                            alertData = {
+                                stationName: 'Trạm IoT (Hệ thống WaterQA)',
+                                wqi: `VƯỢT NGƯỠNG (${latestValue})`,
+                                message: `Cảnh báo: Chỉ số [${feedKey.toUpperCase()}] hiện tại là ${latestValue}, vượt ra khỏi giới hạn an toàn cho phép (từ ${lower_threshold} đến ${upper_threshold}). Vui lòng kiểm tra lại hệ thống! (Ghi nhận lúc: ${recordTime})`
+                            };
+                        }
+
+                        await mailService.sendAlertEmail(ADMIN_EMAIL, alertData);
+                        console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo cho feed: ${feedKey}`);
+                    }
+                }
             }
         } catch (error) {
-            console.error('Lỗi khi chạy cron job kiểm tra thiết bị:', error);
+            console.error("Lỗi trong quá trình chạy hệ thống giám sát tự động:", error.message);
         }
-    });
+    }, 60000); // 60000 ms = 1p quet 1 lan (de test, chinh thuc co the de 5p = 300000ms)
 };
-
 module.exports = { startDeviceMonitor };
