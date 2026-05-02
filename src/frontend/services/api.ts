@@ -1,8 +1,31 @@
-const DEFAULT_BASE_URL = process.env.BASE_URL?.trim() || 'http://localhost:3000';
+import Constants from 'expo-constants';
 
-export const BASE_URL =
-  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_API_BASE_URL || '').trim() ||
-  DEFAULT_BASE_URL;
+const API_PORT = '3000';
+const LOCAL_BASE_URL = `http://localhost:${API_PORT}`;
+
+function normalizeBaseUrl(url: string): string {
+  return url.trim().replace(/\/+$/, '');
+}
+
+function getExpoDevServerBaseUrl(): string | null {
+  const hostUri =
+    Constants.expoConfig?.hostUri ||
+    (Constants as any).manifest2?.extra?.expoClient?.hostUri ||
+    (Constants as any).manifest?.debuggerHost;
+
+  if (typeof hostUri !== 'string' || hostUri.length === 0) {
+    return null;
+  }
+
+  const host = hostUri.split(':')[0];
+  return host ? `http://${host}:${API_PORT}` : null;
+}
+
+const configuredBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
+
+export const BASE_URL = normalizeBaseUrl(
+  configuredBaseUrl || getExpoDevServerBaseUrl() || LOCAL_BASE_URL,
+);
 
 type ApiSuccess<TPayload> = {
   success: true;

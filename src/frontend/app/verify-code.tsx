@@ -1,12 +1,13 @@
 import React, { useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 export default function VerifyCodeScreen() {
     const router = useRouter();
 
     // Array to hold refs for auto-focusing next input
-    const inputRefs = useRef<Array<TextInput | null>>([]);
+    const inputRefs = useRef<(TextInput | null)[]>([]);
 
     const handleKeyPress = (e: any, index: number) => {
         if (e.nativeEvent.key === "Backspace" && index > 0) {
