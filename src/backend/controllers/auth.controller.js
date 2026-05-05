@@ -19,8 +19,7 @@ function login(req, res) {
 
   try {
     if (errCode > 0) {
-      // return res.redirect(`/auth/login?error=${err}`);
-      res.status(errCode).json({ success: false, timestamp: new Date().toISOString() });
+      return res.redirect(`/auth/login?error=${errCode}`);
     }
 
     req.session.user = {
@@ -30,23 +29,20 @@ function login(req, res) {
     }
 
     console.log('User logged in', user);
-    console.log('Session:', req.session);
-    // return res.redirect("/dashboard");
-    res.status(201).json({ success: true, timestamp: new Date().toISOString() });
+    return res.redirect("/dashboard");
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ success: false, timestamp: new Date().toISOString() });
+    return res.redirect('/auth/login?error=500');
   }
 
 }
 
 function logout(req, res) {
   if (!req.session.user) {
-    return res.status(401).json({ success: false, timestamp: new Date().toISOString() });
+    return res.redirect('/auth/login');
   }
   req.session.destroy(() => {
-    // res.redirect("/auth/login");
-    res.status(200).json({ success: true, timestamp: new Date().toISOString() });
+    res.redirect("/auth/login");
   });
 }
 

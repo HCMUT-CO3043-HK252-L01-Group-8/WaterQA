@@ -1,7 +1,6 @@
 function requireLogin(req, res, next) {
   if (!req.session.user) {
-    // return res.redirect('/auth/login');
-    return res.status(401).json({ error: 'Unauthorized', timestamp: new Date().toISOString() });
+    return res.redirect('/auth/login');
   }
 
   next();

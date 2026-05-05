@@ -6,7 +6,7 @@ const {requireLogin} = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
-// router.get('/login', showLoginPage);
+router.get('/login', authCtrl.showLoginPage);
 router.post('/login', authCtrl.login);
 router.delete('/logout', authCtrl.logout);
 router.get('/me', requireLogin, authCtrl.getMySession);

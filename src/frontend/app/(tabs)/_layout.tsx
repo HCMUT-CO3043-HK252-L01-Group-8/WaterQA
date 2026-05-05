@@ -47,6 +47,13 @@ export default function TabLayout() {
             />
 
             <Tabs.Screen
+                name="iot-dashboard"
+                options={{
+                    tabBarIcon: ({ color }) => <Feather name="activity" size={22} color={color} />,
+                }}
+            />
+
+            <Tabs.Screen
                 name="notification"
                 options={{
                     tabBarIcon: ({ color }) => <Feather name="bell" size={22} color={color} />,

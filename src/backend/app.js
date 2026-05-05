@@ -16,6 +16,16 @@ app.use(express.json());                           // ← optional but good to h
 app.set('view engine', 'ejs');                      // view engine
 app.set('views', path.join(__dirname, 'views'));    // view path
 
+// Enable CORS for frontend development
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, X-AIO-Key');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // Setup express-session (for auth)
 const session = require('express-session');
