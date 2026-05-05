@@ -2,6 +2,10 @@
 
 Hướng dẫn setup và chạy project WaterQA Dashboard với Adafruit IO integration.
 
+⚠️ **IMPORTANT - AIO_KEY Configuration:**
+- [docs/OHSTEM_SETUP.md](docs/OHSTEM_SETUP.md#L54): Line 54 () - Thay `YOUR_ADAFRUIT_IO_KEY` bằng key của bạn từ Adafruit IO
+- [src/backend/.env](.env): Cũng cần cập nhật `ADAFRUIT_IO_KEY`
+
 ## Prerequisites
 
 - Node.js (v16+)
