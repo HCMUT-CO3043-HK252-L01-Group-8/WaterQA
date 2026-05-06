@@ -1,8 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export default function HomeDashboard() {
+    const [userName, setUserName] = useState('Người dùng');
+    const { t } = useTranslation();
+
+    useEffect(() => {
+        // Đọc tên người dùng từ localStorage
+        const storedName = localStorage.getItem('userName');
+        if (storedName) {
+            setUserName(storedName);
+        }
+    }, []);
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <ScrollView 
@@ -17,46 +29,46 @@ export default function HomeDashboard() {
                             <Text style={styles.logoText}>💧</Text>
                         </View>
                         <View>
-                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                            <Text style={styles.appName}>{t('app.name')}</Text>
+                            <Text style={styles.appSubtitle}>{t('app.subtitle')}</Text>
                         </View>
                     </View>
                     
                     <View style={styles.greetingSection}>
-                        <Text style={styles.greetingTitle}>Xin chào, Đậu Minh Khôi</Text>
-                        <Text style={styles.greetingSubtitle}>Hãy kiểm tra chất lượng nước của bạn</Text>
+                        <Text style={styles.greetingTitle}>{t('home.greeting', { name: userName })}</Text>
+                        <Text style={styles.greetingSubtitle}>{t('home.greetingSubtitle')}</Text>
                     </View>
                 </View>
 
                 {/* 2. Cảnh báo bất thường */}
                 <View style={styles.alertCard}>
-                    <Text style={styles.alertTitle}>⚠️ Đã phát hiện bất thường với cảm biến pH</Text>
+                    <Text style={styles.alertTitle}>{t('home.alertDetected')}</Text>
                     <Text style={styles.alertDescription}>
-                        Đã phát hiện hoạt động bất thường của cảm biến pH vào 06-03-2026 20:36 UTC+7. Kiểm tra cảm biến hoặc liên hệ với chúng tôi.
+                        {t('home.alertDescription')}
                     </Text>
                     <View style={styles.alertActions}>
                         <TouchableOpacity style={styles.detailButton}>
-                            <Text style={styles.detailButtonText}>Chi tiết</Text>
+                            <Text style={styles.detailButtonText}>{t('home.details')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity>
-                            <Text style={styles.readButtonText}>Đánh dấu đã đọc</Text>
+                            <Text style={styles.readButtonText}>{t('home.markAsRead')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* 3. Chọn vị trí */}
                 <View style={styles.locationSection}>
-                    <Text style={styles.sectionTitle}>Vị trí</Text>
+                    <Text style={styles.sectionTitle}>{t('home.location')}</Text>
                     <TouchableOpacity style={styles.pickerBox}>
-                        <Text style={styles.pickerText}>Select Location</Text>
+                        <Text style={styles.pickerText}>{t('home.selectLocation')}</Text>
                         <Text style={styles.pickerIcon}>▼</Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* 4. Thẻ Chỉ số WQI chính */}
                 <View style={styles.wqiCard}>
-                    <Text style={styles.wqiTitle}>An toàn</Text>
-                    <Text style={styles.wqiSubtitle}>Chỉ số chất lượng nước (WQI)</Text>
+                    <Text style={styles.wqiTitle}>{t('home.wqiTitle')}</Text>
+                    <Text style={styles.wqiSubtitle}>{t('home.wqiSubtitle')}</Text>
                     
                     <View style={styles.wqiScoreBadge}>
                         <Text style={styles.wqiScoreText}>96</Text>
@@ -65,29 +77,29 @@ export default function HomeDashboard() {
                     <View style={styles.metricsRow}>
                         <View style={styles.metricItem}>
                             <Text style={styles.metricValue}>7.0</Text>
-                            <Text style={styles.metricLabel}>pH</Text>
+                            <Text style={styles.metricLabel}>{t('home.pH')}</Text>
                         </View>
                         <View style={styles.metricItem}>
                             <Text style={styles.metricValue}>67</Text>
-                            <Text style={styles.metricLabel}>Hardness (mg/l)</Text>
+                            <Text style={styles.metricLabel}>{t('home.hardness')}</Text>
                         </View>
                         <View style={styles.metricItem}>
                             <Text style={styles.metricValue}>0.5</Text>
-                            <Text style={styles.metricLabel}>Clo (mg/l)</Text>
+                            <Text style={styles.metricLabel}>{t('home.chlorine')}</Text>
                         </View>
                         <View style={styles.metricItem}>
                             <Text style={styles.metricValue}>1</Text>
-                            <Text style={styles.metricLabel}>NTU</Text>
+                            <Text style={styles.metricLabel}>{t('home.turbidity')}</Text>
                         </View>
                     </View>
                     
-                    <Text style={styles.updateTime}>Cập nhật lần cuối: 06-03-2026 20:36 UTC+7</Text>
+                    <Text style={styles.updateTime}>{t('home.lastUpdate')}</Text>
                 </View>
 
                 {/* 5. Thẻ Trạng thái phụ */}
                 <View style={styles.statusRow}>
                     <View style={styles.statusCard}>
-                        <Text style={styles.statusCardLabel}>so với 05-03-2026</Text>
+                        <Text style={styles.statusCardLabel}>{t('home.compared')}</Text>
                         <Text style={styles.statusCardValuePositive}>+2</Text>
                         <Text style={styles.statusCardDesc}>Chỉ số WQI</Text>
                     </View>

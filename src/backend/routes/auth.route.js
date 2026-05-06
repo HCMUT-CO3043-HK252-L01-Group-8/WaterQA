@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.get('/login', authCtrl.showLoginPage);
 router.post('/login', authCtrl.login);
+router.post('/google', authCtrl.loginWithGoogle);
 router.delete('/logout', authCtrl.logout);
 router.get('/me', requireLogin, authCtrl.getMySession);
 

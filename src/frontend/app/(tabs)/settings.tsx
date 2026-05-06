@@ -1,26 +1,90 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../contexts/LanguageContext';
+import * as api from '../../services/api';
 
 export default function SettingsScreen() {
     const [emailNotif, setEmailNotif] = useState(true);
-    const [language, setLanguage] = useState('vi');
+    const [userName, setUserName] = useState('Người dùng');
+    const [userEmail, setUserEmail] = useState('user@example.com');
+    const router = useRouter();
+    const { t } = useTranslation();
+    const { language, setLanguage } = useLanguage();
 
-    const renderSettingRow = (icon: string, title: string, subtitle: string, rightElement: any, isLast = false) => (
-        <View style={[styles.settingRow, isLast && { borderBottomWidth: 0, paddingBottom: 0 }]}>
-            <View style={styles.settingRowLeft}>
-                <View style={styles.settingIconBox}>
-                    <Text style={styles.settingIcon}>{icon}</Text>
+    useEffect(() => {
+        // Đọc thông tin người dùng từ localStorage
+        const storedName = localStorage.getItem('userName');
+        const storedEmail = localStorage.getItem('userEmail');
+        if (storedName) setUserName(storedName);
+        if (storedEmail) setUserEmail(storedEmail);
+    }, []);
+
+    const handleLogout = async () => {
+        const doLogout = async () => {
+            try {
+                await api.logout();
+            } catch (error) {
+                console.error('Logout API error:', error);
+                // Even if API call fails, still clear local state and go to login
+            } finally {
+                // Clear localStorage
+                localStorage.removeItem('userName');
+                localStorage.removeItem('userEmail');
+                // Always redirect to login page
+                router.replace('/login');
+            }
+        };
+
+        // On web, Alert.alert may not block - use platform-aware confirm
+        if (Platform.OS === 'web') {
+            const confirmed = window.confirm(t('settings.confirmLogout'));
+            if (confirmed) {
+                await doLogout();
+            }
+        } else {
+            Alert.alert(
+                t('settings.logoutConfirmText'),
+                t('settings.confirmLogout'),
+                [
+                    {
+                        text: t('settings.cancel'),
+                        style: 'cancel',
+                    },
+                    {
+                        text: t('common.logout'),
+                        onPress: doLogout,
+                        style: 'destructive',
+                    },
+                ]
+            );
+        }
+    };
+
+
+    const renderSettingRow = (icon: string, title: string, subtitle: string, rightElement: any, isLast = false, onPress?: () => void) => (
+        <TouchableOpacity 
+            onPress={onPress}
+            activeOpacity={onPress ? 0.6 : 1}
+            disabled={!onPress}
+        >
+            <View style={[styles.settingRow, isLast && { borderBottomWidth: 0, paddingBottom: 0 }]}>
+                <View style={styles.settingRowLeft}>
+                    <View style={styles.settingIconBox}>
+                        <Text style={styles.settingIcon}>{icon}</Text>
+                    </View>
+                    <View>
+                        <Text style={styles.settingTitle}>{title}</Text>
+                        <Text style={styles.settingSubtitle}>{subtitle}</Text>
+                    </View>
                 </View>
-                <View>
-                    <Text style={styles.settingTitle}>{title}</Text>
-                    <Text style={styles.settingSubtitle}>{subtitle}</Text>
+                <View style={styles.settingRowRight}>
+                    {rightElement ? rightElement : <Text style={styles.chevron}>›</Text>}
                 </View>
             </View>
-            <View style={styles.settingRowRight}>
-                {rightElement ? rightElement : <Text style={styles.chevron}>›</Text>}
-            </View>
-        </View>
+        </TouchableOpacity>
     );
 
     return (
@@ -37,14 +101,14 @@ export default function SettingsScreen() {
                             <Text style={styles.logoText}>💧</Text>
                         </View>
                         <View>
-                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                            <Text style={styles.appName}>{t('app.name')}</Text>
+                            <Text style={styles.appSubtitle}>{t('app.subtitle')}</Text>
                         </View>
                     </View>
                     
                     <View style={styles.pageTitleSection}>
-                        <Text style={styles.pageTitle}>Cài đặt</Text>
-                        <Text style={styles.pageSubtitle}>Điều chỉnh theo sở thích cá nhân của bạn</Text>
+                        <Text style={styles.pageTitle}>{t('settings.title')}</Text>
+                        <Text style={styles.pageSubtitle}>{t('settings.subtitle')}</Text>
                     </View>
                 </View>
 
@@ -54,43 +118,43 @@ export default function SettingsScreen() {
                         <Text style={styles.avatarText}>👤</Text>
                     </View>
                     <View style={styles.profileInfo}>
-                        <Text style={styles.profileName}>Đậu Minh Khôi</Text>
-                        <Text style={styles.profileEmail}>khoidau123@gmail.com</Text>
+                        <Text style={styles.profileName}>{userName}</Text>
+                        <Text style={styles.profileEmail}>{userEmail}</Text>
                         <View style={styles.verifyBadge}>
-                            <Text style={styles.verifyText}>Người dùng đã xác minh</Text>
+                            <Text style={styles.verifyText}>{t('settings.verifiedUser')}</Text>
                         </View>
                     </View>
                 </View>
 
                 {/* 3. Thẻ Thống kê nhanh */}
                 <View style={styles.statsCard}>
-                    <Text style={styles.statsTitle}>Thống kê</Text>
+                    <Text style={styles.statsTitle}>{t('settings.statistics')}</Text>
                     <View style={styles.statsRow}>
                         <View style={styles.statItem}>
                             <Text style={[styles.statValue, { color: '#0092B8' }]}>82</Text>
-                            <Text style={styles.statLabel}>WQI trung bình</Text>
+                            <Text style={styles.statLabel}>{t('settings.averageWQI')}</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
                             <Text style={[styles.statValue, { color: '#00A63E' }]}>4</Text>
-                            <Text style={styles.statLabel}>Phiên hoạt động</Text>
+                            <Text style={styles.statLabel}>{t('settings.activeSessions')}</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
                             <Text style={[styles.statValue, { color: '#45556C' }]}>2</Text>
-                            <Text style={styles.statLabel}>Cảnh báo chưa đọc</Text>
+                            <Text style={styles.statLabel}>{t('settings.unreadAlerts')}</Text>
                         </View>
                     </View>
                 </View>
 
                 {/* 4. Cài đặt chung */}
                 <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Cài đặt chung</Text>
-                    {renderSettingRow('👤', 'Thông tin cá nhân', 'Quản lý thông tin tài khoản', null)}
+                    <Text style={styles.sectionTitle}>{t('settings.general')}</Text>
+                    {renderSettingRow('👤', t('settings.profileInfo'), t('common.profile'), null)}
                     {renderSettingRow(
                         '✉️', 
-                        'Nhận thông báo qua email', 
-                        'Cho phép gửi thông báo qua email', 
+                        t('settings.notifications'), 
+                        t('settings.notificationsSubtitle'), 
                         <Switch
                             value={emailNotif}
                             onValueChange={setEmailNotif}
@@ -103,11 +167,11 @@ export default function SettingsScreen() {
 
                 {/* 5. Cài đặt cảnh báo */}
                 <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Cài đặt cảnh báo</Text>
+                    <Text style={styles.sectionTitle}>{t('settings.alerts')}</Text>
                     {renderSettingRow(
                         '🔔', 
-                        'Ngưỡng cảnh báo WQI', 
-                        'Thay đổi ngưỡng cảnh báo', 
+                        t('settings.wqiThreshold'), 
+                        t('settings.thresholdSubtitle'), 
                         <TouchableOpacity style={styles.thresholdBtn}>
                             <Text style={styles.thresholdValue}>80</Text>
                             <Text style={styles.editIcon}>✏️</Text>
@@ -118,38 +182,38 @@ export default function SettingsScreen() {
 
                 {/* 6. Cài đặt hệ thống */}
                 <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Cài đặt hệ thống</Text>
-                    {renderSettingRow('📍', 'Danh sách trạm quan trắc', 'Hiển thị vị trí và thông tin các trạm', null)}
-                    {renderSettingRow('⚙️', 'Quản lý trạm của bạn', 'Quản lý trạm quan trắc của bạn', null, true)}
+                    <Text style={styles.sectionTitle}>{t('settings.system')}</Text>
+                    {renderSettingRow('📍', t('settings.stations'), t('settings.stationsSubtitle'), null)}
+                    {renderSettingRow('⚙️', t('settings.manageStations'), t('settings.manageStationsSubtitle'), null, true)}
                 </View>
 
                 {/* 7. Hỗ trợ & Ngôn ngữ */}
                 <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Hỗ trợ</Text>
-                    {renderSettingRow('❓', 'FAQ', 'Nhận trợ giúp về ứng dụng', null)}
+                    <Text style={styles.sectionTitle}>{t('settings.support')}</Text>
+                    {renderSettingRow('❓', t('settings.faq'), t('settings.faqSubtitle'), null)}
                     
                     {/* Custom Toggle Ngôn ngữ */}
                     {renderSettingRow(
                         '🌐', 
-                        'Ngôn ngữ', 
-                        'Thay đổi ngôn ngữ', 
+                        t('common.language'), 
+                        t('settings.changeLanguage'), 
                         <View style={styles.langToggle}>
                             <TouchableOpacity 
                                 style={[styles.langBtn, language === 'vi' && styles.langBtnActive]}
                                 onPress={() => setLanguage('vi')}
                             >
-                                <Text style={[styles.langText, language === 'vi' && styles.langTextActive]}>Tiếng Việt</Text>
+                                <Text style={[styles.langText, language === 'vi' && styles.langTextActive]}>{t('settings.Vietnamese')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity 
                                 style={[styles.langBtn, language === 'en' && styles.langBtnActive]}
                                 onPress={() => setLanguage('en')}
                             >
-                                <Text style={[styles.langText, language === 'en' && styles.langTextActive]}>Tiếng Anh</Text>
+                                <Text style={[styles.langText, language === 'en' && styles.langTextActive]}>{t('settings.English')}</Text>
                             </TouchableOpacity>
                         </View>
                     )}
                     
-                    {renderSettingRow('🚪', 'Đăng xuất', 'Đăng xuất khỏi tài khoản của bạn', null, true)}
+                    {renderSettingRow('🚪', t('common.logout'), t('common.logoutSubtitle'), null, true, handleLogout)}
                 </View>
             </ScrollView>
         </SafeAreaView>

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export default function HistoryScreen() {
-    const [activeFilter, setActiveFilter] = useState('Ngày');
+    const { t } = useTranslation();
+    const [activeFilter, setActiveFilter] = useState(t('history.daily'));
 
     const renderHistoryCard = (wqi: string, date: string, time: string, trend: string) => (
         <View style={styles.historyCard}>
@@ -40,21 +42,21 @@ export default function HistoryScreen() {
                             <Text style={styles.logoText}>💧</Text>
                         </View>
                         <View>
-                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                            <Text style={styles.appName}>{t('app.name')}</Text>
+                            <Text style={styles.appSubtitle}>{t('app.subtitle')}</Text>
                         </View>
                     </View>
                     
                     <View style={styles.pageTitleSection}>
-                        <Text style={styles.pageTitle}>Lịch sử quang trắc</Text>
+                        <Text style={styles.pageTitle}>{t('history.title')}</Text>
                     </View>
                 </View>
 
                 {/* 2. Chọn vị trí */}
                 <View style={styles.locationSection}>
-                    <Text style={styles.sectionTitle}>Vị trí</Text>
+                    <Text style={styles.sectionTitle}>{t('home.location')}</Text>
                     <TouchableOpacity style={styles.pickerBox}>
-                        <Text style={styles.pickerText}>Select Location</Text>
+                        <Text style={styles.pickerText}>{t('home.selectLocation')}</Text>
                         <Text style={styles.pickerIcon}>▼</Text>
                     </TouchableOpacity>
                 </View>
@@ -64,26 +66,26 @@ export default function HistoryScreen() {
                     <View style={[styles.summaryCard, { backgroundColor: '#ECFEFF', borderColor: '#0092B8' }]}>
                         <View style={styles.summaryHeader}>
                             <View style={styles.smallIcon}><Text style={{fontSize: 10}}>💧</Text></View>
-                            <Text style={styles.summaryLabel}>Hôm nay</Text>
+                            <Text style={styles.summaryLabel}>{t('history.today')}</Text>
                         </View>
                         <Text style={styles.summaryValueMain}>92</Text>
-                        <Text style={styles.summaryDesc}>WQI trung bình</Text>
+                        <Text style={styles.summaryDesc}>{t('history.wqiAverage')}</Text>
                     </View>
 
                     <View style={[styles.summaryCard, { backgroundColor: '#F0FDF4', borderColor: '#00A63E' }]}>
                         <View style={styles.summaryHeader}>
                             <View style={styles.smallIcon}><Text style={{fontSize: 10}}>📈</Text></View>
-                            <Text style={styles.summaryLabel}>so với Hôm qua</Text>
+                            <Text style={styles.summaryLabel}>{t('history.compareWith')} {t('history.yesterday')}</Text>
                         </View>
                         <Text style={styles.summaryValuePositive}>+3</Text>
-                        <Text style={styles.summaryDesc}>Chỉ số WQI</Text>
+                        <Text style={styles.summaryDesc}>{t('history.wqiIndex')}</Text>
                     </View>
                 </View>
 
                 {/* 4. Bộ lọc & Xuất báo cáo */}
                 <View style={styles.filterActionSection}>
                     <View style={styles.filterTabs}>
-                        {['Ngày', 'Tháng', 'Năm'].map((filter) => (
+                        {[t('history.daily'), t('history.monthly'), t('history.yearly')].map((filter) => (
                             <TouchableOpacity 
                                 key={filter}
                                 style={[styles.tabButton, activeFilter === filter && styles.tabButtonActive]}
@@ -97,7 +99,7 @@ export default function HistoryScreen() {
                     </View>
                     <TouchableOpacity style={styles.exportBtn}>
                         <Text style={styles.exportIcon}>⬇</Text>
-                        <Text style={styles.exportText}>Xuất báo cáo</Text>
+                        <Text style={styles.exportText}>{t('history.export')}</Text>
                     </TouchableOpacity>
                 </View>
 

@@ -24,6 +24,11 @@ class AccountsRepository {
       .prepare("SELECT * FROM USER WHERE user_id=?")
       .all([id]);
   }
+  findByEmail(email) {
+    return db
+      .prepare("SELECT * FROM USER WHERE email=?")
+      .all([email]);
+  }
   addAccount(id, mail, phone, password, role, verif, createdAt) {
     return db
       // .prepare("INSERT INTO Accounts VALUES (?, ?)")

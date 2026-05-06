@@ -163,3 +163,50 @@ export async function getLatestTelemetrySnapshot(options?: {
     fetchedAt: new Date().toISOString(),
   };
 }
+
+// Authentication functions
+export async function logout(options?: { signal?: AbortSignal }): Promise<void> {
+  const url = `${BASE_URL}/auth/logout`;
+  await fetch(url, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'Accept': 'application/json',
+    },
+    signal: options?.signal,
+  });
+}
+
+// Email/Password login
+export async function login(email: string, password: string, options?: { signal?: AbortSignal }): Promise<{ success: boolean; user?: any; error?: string }> {
+  const url = `${BASE_URL}/auth/login`;
+  const res = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ id: email, password }),
+    signal: options?.signal,
+  });
+  const body = await res.json();
+  return body;
+}
+
+// Google OAuth login
+export async function loginWithGoogle(name: string, email: string, picture: string, options?: { signal?: AbortSignal }): Promise<{ success: boolean; user?: any; error?: string }> {
+  const url = `${BASE_URL}/auth/google`;
+  const res = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ name, email, picture }),
+    signal: options?.signal,
+  });
+  const body = await res.json();
+  return body;
+}

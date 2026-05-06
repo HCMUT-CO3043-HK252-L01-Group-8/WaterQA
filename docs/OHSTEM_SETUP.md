@@ -50,8 +50,8 @@ API Key: aio_Qrvq88PkdBecDcy7o0VkfQPzwH5T
 // ========== Adafruit IO Config ==========
 #define AIO_SERVER      "io.adafruit.com"
 #define AIO_SERVERPORT  1883
-#define AIO_USERNAME    "luonggminh05"
-#define AIO_KEY         "YOUR_ADAFRUIT_IO_KEY"
+#define AIO_USERNAME    "YOUR_ADAFRUIT_USERNAME"
+#define AIO_KEY         "YOUR_ADAFRUIT_KEY"
 
 // ========== Initialize WiFi & MQTT ==========
 WiFiClient client;

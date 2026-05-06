@@ -1,0 +1,85 @@
+{
+  "app": {
+    "name": "Theo dõi chất lượng nước thông minh",
+    "subtitle": "Ứng dụng hàng đầu Việt Nam"
+  },
+  "common": {
+    "language": "Ngôn ngữ",
+    "logout": "Đăng xuất",
+    "logoutSubtitle": "Đăng xuất khỏi tài khoản của bạn",
+    "settings": "Cài đặt",
+    "profile": "Thông tin cá nhân",
+    "email": "Email"
+  },
+  "home": {
+    "greeting": "Xin chào, {{name}}",
+    "greetingSubtitle": "Hãy kiểm tra chất lượng nước của bạn",
+    "alertDetected": "⚠️ Đã phát hiện bất thường với cảm biến pH",
+    "alertDescription": "Đã phát hiện hoạt động bất thường của cảm biến pH vào 06-03-2026 20:36 UTC+7. Kiểm tra cảm biến hoặc liên hệ với chúng tôi.",
+    "details": "Chi tiết",
+    "markAsRead": "Đánh dấu đã đọc",
+    "location": "Vị trí",
+    "selectLocation": "Chọn vị trí",
+    "wqiTitle": "An toàn",
+    "wqiSubtitle": "Chỉ số chất lượng nước (WQI)",
+    "lastUpdate": "Cập nhật lần cuối: 06-03-2026 20:36 UTC+7",
+    "pH": "pH",
+    "hardness": "Hardness (mg/l)",
+    "chlorine": "Clo (mg/l)",
+    "turbidity": "NTU",
+    "compared": "so với 05-03-2026"
+  },
+  "history": {
+    "title": "Lịch sử quang trắc",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "wqiAverage": "WQI trung bình",
+    "wqiIndex": "Chỉ số WQI",
+    "daily": "Ngày",
+    "monthly": "Tháng",
+    "yearly": "Năm",
+    "export": "Xuất báo cáo",
+    "compareWith": "so với"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "subtitle": "Điều chỉnh theo sở thích cá nhân của bạn",
+    "profileInfo": "Quản lý thông tin tài khoản",
+    "notifications": "Nhận thông báo qua email",
+    "notificationsSubtitle": "Cho phép gửi thông báo qua email",
+    "enableNotifications": "✉️",
+    "general": "Cài đặt chung",
+    "alerts": "Cài đặt cảnh báo",
+    "wqiThreshold": "Ngưỡng cảnh báo WQI",
+    "thresholdSubtitle": "Thay đổi ngưỡng cảnh báo",
+    "system": "Cài đặt hệ thống",
+    "stations": "Danh sách trạm quan trắc",
+    "stationsSubtitle": "Hiển thị vị trí và thông tin các trạm",
+    "manageStations": "Quản lý trạm của bạn",
+    "manageStationsSubtitle": "Quản lý trạm quan trắc của bạn",
+    "support": "Hỗ trợ",
+    "faq": "FAQ",
+    "faqSubtitle": "Nhận trợ giúp về ứng dụng",
+    "Vietnamese": "Tiếng Việt",
+    "English": "Tiếng Anh",
+    "changeLanguage": "Thay đổi ngôn ngữ",
+    "verifiedUser": "Người dùng đã xác minh",
+    "statistics": "Thống kê",
+    "averageWQI": "WQI trung bình",
+    "activeSessions": "Phiên hoạt động",
+    "unreadAlerts": "Cảnh báo chưa đọc",
+    "confirmLogout": "Bạn có chắc chắn muốn đăng xuất không?",
+    "logoutConfirmText": "Xác nhận đăng xuất",
+    "cancel": "Hủy"
+  },
+  "auth": {
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "forgotPassword": "Quên mật khẩu",
+    "verifyCode": "Xác minh mã",
+    "welcome": "Chào mừng"
+  },
+  "errors": {
+    "logout_confirmation": "Xác nhận đăng xuất"
+  }
+}
