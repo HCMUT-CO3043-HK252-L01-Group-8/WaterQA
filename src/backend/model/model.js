@@ -35,7 +35,7 @@ class Model {
       comment = "Good"
     } else if (probability >= 0.5) {
       comment = "Average"
-    } else if (probability >= 4) {
+    } else if (probability >= 0.4) {
       comment = "Possibly Unsafe"
     }
 
