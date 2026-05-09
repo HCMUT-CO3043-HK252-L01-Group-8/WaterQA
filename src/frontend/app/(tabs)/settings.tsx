@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarHeight } from '@/hooks/useTabBarHeight';
+import AppHeader from '@/components/AppHeader';
 
 export default function SettingsScreen() {
     const [emailNotif, setEmailNotif] = useState(true);
     const [language, setLanguage] = useState('vi');
+    const tabBarHeight = useTabBarHeight();
 
     const renderSettingRow = (icon: string, title: string, subtitle: string, rightElement: any, isLast = false) => (
         <View style={[styles.settingRow, isLast && { borderBottomWidth: 0, paddingBottom: 0 }]}>
@@ -24,24 +27,16 @@ export default function SettingsScreen() {
     );
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <ScrollView 
-                style={styles.container} 
+        <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+            <ScrollView
+                style={styles.container}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 100 }}
+                contentContainerStyle={{ paddingBottom: tabBarHeight }}
             >
                 {/* 1. Header */}
                 <View style={styles.header}>
-                    <View style={styles.appTitleRow}>
-                        <View style={styles.logoPlaceholder}>
-                            <Text style={styles.logoText}>💧</Text>
-                        </View>
-                        <View>
-                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
-                        </View>
-                    </View>
-                    
+                    <AppHeader />
+
                     <View style={styles.pageTitleSection}>
                         <Text style={styles.pageTitle}>Cài đặt</Text>
                         <Text style={styles.pageSubtitle}>Điều chỉnh theo sở thích cá nhân của bạn</Text>
@@ -88,13 +83,13 @@ export default function SettingsScreen() {
                     <Text style={styles.sectionTitle}>Cài đặt chung</Text>
                     {renderSettingRow('👤', 'Thông tin cá nhân', 'Quản lý thông tin tài khoản', null)}
                     {renderSettingRow(
-                        '✉️', 
-                        'Nhận thông báo qua email', 
-                        'Cho phép gửi thông báo qua email', 
+                        '✉️',
+                        'Nhận thông báo qua email',
+                        'Cho phép gửi thông báo qua email',
                         <Switch
                             value={emailNotif}
                             onValueChange={setEmailNotif}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
                             thumbColor="#FFFFFF"
                         />,
                         true
@@ -105,9 +100,9 @@ export default function SettingsScreen() {
                 <View style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Cài đặt cảnh báo</Text>
                     {renderSettingRow(
-                        '🔔', 
-                        'Ngưỡng cảnh báo WQI', 
-                        'Thay đổi ngưỡng cảnh báo', 
+                        '🔔',
+                        'Ngưỡng cảnh báo WQI',
+                        'Thay đổi ngưỡng cảnh báo',
                         <TouchableOpacity style={styles.thresholdBtn}>
                             <Text style={styles.thresholdValue}>80</Text>
                             <Text style={styles.editIcon}>✏️</Text>
@@ -127,20 +122,19 @@ export default function SettingsScreen() {
                 <View style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Hỗ trợ</Text>
                     {renderSettingRow('❓', 'FAQ', 'Nhận trợ giúp về ứng dụng', null)}
-                    
-                    {/* Custom Toggle Ngôn ngữ */}
+
                     {renderSettingRow(
-                        '🌐', 
-                        'Ngôn ngữ', 
-                        'Thay đổi ngôn ngữ', 
+                        '🌐',
+                        'Ngôn ngữ',
+                        'Thay đổi ngôn ngữ',
                         <View style={styles.langToggle}>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={[styles.langBtn, language === 'vi' && styles.langBtnActive]}
                                 onPress={() => setLanguage('vi')}
                             >
                                 <Text style={[styles.langText, language === 'vi' && styles.langTextActive]}>Tiếng Việt</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={[styles.langBtn, language === 'en' && styles.langBtnActive]}
                                 onPress={() => setLanguage('en')}
                             >
@@ -148,7 +142,7 @@ export default function SettingsScreen() {
                             </TouchableOpacity>
                         </View>
                     )}
-                    
+
                     {renderSettingRow('🚪', 'Đăng xuất', 'Đăng xuất khỏi tài khoản của bạn', null, true)}
                 </View>
             </ScrollView>
