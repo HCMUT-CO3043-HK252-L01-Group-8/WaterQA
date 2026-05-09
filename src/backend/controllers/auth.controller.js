@@ -42,6 +42,7 @@ function login(req, res) {
 
     req.session.user = {
       user_id: user.user_id,
+      email: user.email,
       role: user.role,
       verification_status: user.verification_status
     }

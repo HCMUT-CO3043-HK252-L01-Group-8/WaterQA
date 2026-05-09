@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
+const LOCATIONS = [
+    { id: 1, name: 'Bể nước BK-H6' },
+    { id: 2, name: 'Bể nước BK-B1' },
+    { id: 3, name: 'Bể nước BK-B2' },
+    { id: 4, name: 'Bể nước BK-B3' },
+];
+
 export default function HomeDashboard() {
     const [userName, setUserName] = useState('Người dùng');
+    const [alertRead, setAlertRead] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
+    const [showLocationModal, setShowLocationModal] = useState(false);
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -13,7 +23,21 @@ export default function HomeDashboard() {
         if (storedName) {
             setUserName(storedName);
         }
+        
+        // Kiểm tra xem alert có được đánh dấu là đã đọc không
+        const isAlertRead = localStorage.getItem('homeAlertRead') === 'true';
+        setAlertRead(isAlertRead);
     }, []);
+
+    const handleMarkAlertAsRead = () => {
+        setAlertRead(true);
+        localStorage.setItem('homeAlertRead', 'true');
+    };
+
+    const handleSelectLocation = (location: typeof LOCATIONS[0]) => {
+        setSelectedLocation(location);
+        setShowLocationModal(false);
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -41,6 +65,7 @@ export default function HomeDashboard() {
                 </View>
 
                 {/* 2. Cảnh báo bất thường */}
+                {!alertRead && (
                 <View style={styles.alertCard}>
                     <Text style={styles.alertTitle}>{t('home.alertDetected')}</Text>
                     <Text style={styles.alertDescription}>
@@ -50,20 +75,65 @@ export default function HomeDashboard() {
                         <TouchableOpacity style={styles.detailButton}>
                             <Text style={styles.detailButtonText}>{t('home.details')}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={handleMarkAlertAsRead}>
                             <Text style={styles.readButtonText}>{t('home.markAsRead')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+                )}
 
                 {/* 3. Chọn vị trí */}
                 <View style={styles.locationSection}>
                     <Text style={styles.sectionTitle}>{t('home.location')}</Text>
-                    <TouchableOpacity style={styles.pickerBox}>
-                        <Text style={styles.pickerText}>{t('home.selectLocation')}</Text>
+                    <TouchableOpacity 
+                        style={styles.pickerBox}
+                        onPress={() => setShowLocationModal(true)}
+                    >
+                        <Text style={styles.pickerText}>{selectedLocation.name}</Text>
                         <Text style={styles.pickerIcon}>▼</Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* Location Selection Modal */}
+                <Modal
+                    visible={showLocationModal}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowLocationModal(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>{t('home.selectLocation')}</Text>
+                                <TouchableOpacity onPress={() => setShowLocationModal(false)}>
+                                    <Text style={styles.closeButton}>✕</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <FlatList
+                                data={LOCATIONS}
+                                keyExtractor={(item) => item.id.toString()}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.locationItem,
+                                            selectedLocation.id === item.id && styles.selectedLocationItem
+                                        ]}
+                                        onPress={() => handleSelectLocation(item)}
+                                    >
+                                        <Text 
+                                            style={[
+                                                styles.locationItemText,
+                                                selectedLocation.id === item.id && styles.selectedLocationItemText
+                                            ]}
+                                        >
+                                            {item.name}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        </View>
+                    </View>
+                </Modal>
 
                 {/* 4. Thẻ Chỉ số WQI chính */}
                 <View style={styles.wqiCard}>
@@ -101,26 +171,26 @@ export default function HomeDashboard() {
                     <View style={styles.statusCard}>
                         <Text style={styles.statusCardLabel}>{t('home.compared')}</Text>
                         <Text style={styles.statusCardValuePositive}>+2</Text>
-                        <Text style={styles.statusCardDesc}>Chỉ số WQI</Text>
+                        <Text style={styles.statusCardDesc}>{t('home.wqiTitle')}</Text>
                     </View>
                     
                     <View style={styles.statusCard}>
-                        <Text style={styles.statusCardLabel}>Trạng thái cảm biến</Text>
+                        <Text style={styles.statusCardLabel}>{t('home.sensorStatus')}</Text>
                         <Text style={styles.statusCardValueNegative}>3/4</Text>
-                        <Text style={styles.statusCardDesc}>Vui lòng kiểm tra cảm biến pH</Text>
+                        <Text style={styles.statusCardDesc}>{t('home.sensorCheck')}</Text>
                     </View>
                 </View>
 
                 {/* 6. Biểu đồ Thống kê */}
                 <View style={styles.chartCard}>
                     <View style={styles.chartHeader}>
-                        <Text style={styles.chartTitle}>Thống kê chất lượng nước</Text>
+                        <Text style={styles.chartTitle}>{t('home.statistics')}</Text>
                         <View style={styles.filterTabs}>
                             <TouchableOpacity style={styles.activeTab}>
-                                <Text style={styles.activeTabText}>Theo tuần</Text>
+                                <Text style={styles.activeTabText}>{t('home.weekly')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.inactiveTab}>
-                                <Text style={styles.inactiveTabText}>Theo tháng</Text>
+                                <Text style={styles.inactiveTabText}>{t('home.monthly')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -138,7 +208,7 @@ export default function HomeDashboard() {
                             <Text style={styles.axisText}>CN</Text>
                         </View>
                     </View>
-                    <Text style={styles.chartFooter}>Biểu đồ dự đoán WQI</Text>
+                    <Text style={styles.chartFooter}>{t('home.predictedChart')}</Text>
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -433,5 +503,54 @@ const styles = StyleSheet.create({
         color: '#62748E',
         textAlign: 'center',
         marginTop: 12,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        width: '80%',
+        maxHeight: '70%',
+        paddingTop: 16,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingBottom: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E2E8F0',
+    },
+    modalTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#0F172B',
+    },
+    closeButton: {
+        fontSize: 20,
+        color: '#999999',
+        fontWeight: 'bold',
+    },
+    locationItem: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+    },
+    selectedLocationItem: {
+        backgroundColor: '#E8FEED',
+    },
+    locationItemText: {
+        fontSize: 14,
+        color: '#0F172B',
+    },
+    selectedLocationItemText: {
+        color: '#00C950',
+        fontWeight: '600',
     },
 });

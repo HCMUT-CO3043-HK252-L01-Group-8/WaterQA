@@ -3,13 +3,41 @@ const cron = require('node-cron');
 const mailService = require('./mail.service');
 const dataRepo = require('../repositories/data.repo');
 const dataService = require('./data.service');
+const accountsRepo = require('../repositories/accounts.repo');
 //Lay tu feed key tren Adafruit IO, neu muon check ca 2 feed cung luc 
 //thi de trong array, neu chi check 1 feed thi de 1 phan tu trong array nhu duoi
 const FEEDS_TO_MONITOR = ['temp', 'humi', 'light']; //cap nhat: dam quay chinh sach canh bao light
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL; //Co the doi mail de test
-const LIGHT_THRESHOLD = 70; // Mốc cảnh báo cường độ ánh sáng
+const LIGHT_THRESHOLD = 60; // Mốc cảnh báo cường độ ánh sáng (thay từ 70 → 60)
 const LIGHT_DURATION_MS = 10000; // 10 giây
 let lightAlert = { isAlerting: false, startTime: null }; // Tracking alert state
+
+/**
+ * Gửi cảnh báo tới tất cả users (hoặc admin nếu không có users)
+ */
+const sendAlertToAllUsers = async (alertData) => {
+    try {
+        const allUsers = accountsRepo.findAll();
+        
+        if (allUsers && allUsers.length > 0) {
+            // Gửi tới tất cả users
+            for (let user of allUsers) {
+                if (user.email) {
+                    await mailService.sendAlertEmail(user.email, alertData);
+                    console.log(`[CẢNH BÁO] Đã gửi mail tới user: ${user.email}`);
+                }
+            }
+        } else {
+            // Nếu không có users, gửi tới admin
+            if (ADMIN_EMAIL) {
+                await mailService.sendAlertEmail(ADMIN_EMAIL, alertData);
+                console.log(`[CẢNH BÁO] Không có users, gửi tới admin: ${ADMIN_EMAIL}`);
+            }
+        }
+    } catch (error) {
+        console.error('Lỗi khi gửi cảnh báo tới users:', error);
+    }
+};
 
 const startDeviceMonitor = () => {
     console.log("Bắt đầu chạy Cron Service giám sát thiết bị IoT...");
@@ -38,7 +66,7 @@ const startDeviceMonitor = () => {
                         wqi: 'LỖI CẢM BIẾN / PHẦN CỨNG',
                         message: `Phát hiện dữ liệu bất thường từ cảm biến [${feedKey.toUpperCase()}]. Giá trị đo được là ${latestValue}. Có thể thiết bị đã bị hỏng hoặc chập mạch, vui lòng kiểm tra ngay lập tức! (Đo lúc: ${recordTime})`
                     };
-                    await mailService.sendAlertEmail(ADMIN_EMAIL, errorData);
+                    await sendAlertToAllUsers(errorData);
                     console.log(`[CẢNH BÁO] Đã gửi mail lỗi phần cứng cho feed: ${feedKey}`);
                     
                 //Kiem tra vuot nguong chi khi khong co loi phan cung, neu co loi phan cung roi thi khong can check vuot nguong nua
@@ -62,7 +90,7 @@ const startDeviceMonitor = () => {
                                     wqi: 'CẢNH BÁO MỞ NẮP',
                                     message: `CẢNH BÁO KHẨN CẤP: Phát hiện ánh sáng cao (${latestValue}%) liên tục trong 10 giây! Có thể có người mở nắp bồn chứa hoặc có ánh sáng ngoài xâm nhập. Vui lòng kiểm tra ngay lập tức! (Ghi nhận lúc: ${recordTime})`
                                 };
-                                await mailService.sendAlertEmail(ADMIN_EMAIL, alertData);
+                                await sendAlertToAllUsers(alertData);
                                 console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo MỞ NẮP - Light: ${latestValue}%`);
                                 lightAlert = { isAlerting: false, startTime: null }; // Reset
                             } else {
@@ -91,7 +119,7 @@ const startDeviceMonitor = () => {
                             wqi: `VƯỢT NGƯỠNG (${latestValue})`,
                             message: `Cảnh báo: Chỉ số [${feedKey.toUpperCase()}] hiện tại là ${latestValue}, vượt ra khỏi giới hạn an toàn cho phép (từ ${lower_threshold} đến ${upper_threshold}). Vui lòng kiểm tra lại hệ thống! (Ghi nhận lúc: ${recordTime})`
                         };
-                        await mailService.sendAlertEmail(ADMIN_EMAIL, alertData);
+                        await sendAlertToAllUsers(alertData);
                         console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo cho feed: ${feedKey}`);
                     }
                 }

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export default function AlertsScreen() {
+    const { t } = useTranslation();
     const [sysNotification, setSysNotification] = useState(true);
     const [sensorAlert, setSensorAlert] = useState(true);
     const [waterAlert, setWaterAlert] = useState(true);
@@ -23,28 +25,28 @@ export default function AlertsScreen() {
                             <Text style={styles.logoText}>💧</Text>
                         </View>
                         <View>
-                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                            <Text style={styles.appName}>{t('app.name')}</Text>
+                            <Text style={styles.appSubtitle}>{t('app.subtitle')}</Text>
                         </View>
                     </View>
                     
                     <View style={styles.pageTitleSection}>
-                        <Text style={styles.pageTitle}>Cảnh báo</Text>
+                        <Text style={styles.pageTitle}>{t('notifications.pageTitle')}</Text>
                         <View style={styles.unreadBadge}>
                             <View style={styles.dotRed} />
-                            <Text style={styles.unreadText}>Có 2 cảnh báo chưa đọc</Text>
+                            <Text style={styles.unreadText}>{t('notifications.unreadCount', { count: 2 })}</Text>
                         </View>
                     </View>
                 </View>
 
                 {/* 2. Cài đặt cảnh báo */}
                 <View style={styles.settingsCard}>
-                    <Text style={styles.settingsTitle}>Cài đặt cảnh báo</Text>
+                    <Text style={styles.settingsTitle}>{t('notifications.settingsTitle')}</Text>
                     
                     <View style={styles.settingRow}>
                         <View style={styles.settingTextContainer}>
-                            <Text style={styles.settingLabel}>Thông báo hệ thống</Text>
-                            <Text style={styles.settingDesc}>Cho phép ứng dụng gửi thông báo</Text>
+                            <Text style={styles.settingLabel}>{t('notifications.systemNotification')}</Text>
+                            <Text style={styles.settingDesc}>{t('notifications.systemNotificationDesc')}</Text>
                         </View>
                         <Switch
                             value={sysNotification}
@@ -56,8 +58,8 @@ export default function AlertsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingTextContainer}>
-                            <Text style={styles.settingLabel}>Cảnh báo cảm biến</Text>
-                            <Text style={styles.settingDesc}>Nhận cảnh báo khi cảm biến gặp sự cố</Text>
+                            <Text style={styles.settingLabel}>{t('notifications.sensorAlert')}</Text>
+                            <Text style={styles.settingDesc}>{t('notifications.sensorAlertDesc')}</Text>
                         </View>
                         <Switch
                             value={sensorAlert}
@@ -69,8 +71,8 @@ export default function AlertsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingTextContainer}>
-                            <Text style={styles.settingLabel}>Cảnh báo chất lượng nước</Text>
-                            <Text style={styles.settingDesc}>Nhận thông báo khi có dữ liệu mới từ cảm biến</Text>
+                            <Text style={styles.settingLabel}>{t('notifications.waterAlert')}</Text>
+                            <Text style={styles.settingDesc}>{t('notifications.waterAlertDesc')}</Text>
                         </View>
                         <Switch
                             value={waterAlert}
@@ -82,8 +84,8 @@ export default function AlertsScreen() {
 
                     <View style={[styles.settingRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
                         <View style={styles.settingTextContainer}>
-                            <Text style={styles.settingLabel}>Báo cáo quan trắc hằng ngày</Text>
-                            <Text style={styles.settingDesc}>Nhận thông báo thống kê dữ liệu hằng ngày</Text>
+                            <Text style={styles.settingLabel}>{t('notifications.dailyReport')}</Text>
+                            <Text style={styles.settingDesc}>{t('notifications.dailyReportDesc')}</Text>
                         </View>
                         <Switch
                             value={dailyReport}
@@ -96,25 +98,25 @@ export default function AlertsScreen() {
 
                 {/* 3. Bộ lọc */}
                 <View style={styles.filterSection}>
-                    <Text style={styles.filterTitle}>Bộ lọc</Text>
+                    <Text style={styles.filterTitle}>{t('notifications.filterTitle')}</Text>
                     <View style={styles.filterTabs}>
                         <TouchableOpacity 
                             style={[styles.tabButton, activeTab === 'All' && styles.tabButtonActive]}
                             onPress={() => setActiveTab('All')}
                         >
-                            <Text style={[styles.tabText, activeTab === 'All' && styles.tabTextActive]}>All</Text>
+                            <Text style={[styles.tabText, activeTab === 'All' && styles.tabTextActive]}>{t('notifications.filterAll')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity 
                             style={[styles.tabButton, activeTab === 'Warning' && styles.tabButtonActive]}
                             onPress={() => setActiveTab('Warning')}
                         >
-                            <Text style={[styles.tabText, activeTab === 'Warning' && styles.tabTextActive]}>Warning</Text>
+                            <Text style={[styles.tabText, activeTab === 'Warning' && styles.tabTextActive]}>{t('notifications.filterWarning')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity 
                             style={[styles.tabButton, activeTab === 'Critical' && styles.tabButtonActive]}
                             onPress={() => setActiveTab('Critical')}
                         >
-                            <Text style={[styles.tabText, activeTab === 'Critical' && styles.tabTextActive]}>Critical</Text>
+                            <Text style={[styles.tabText, activeTab === 'Critical' && styles.tabTextActive]}>{t('notifications.filterCritical')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -128,17 +130,17 @@ export default function AlertsScreen() {
                                 <Text>🚨</Text>
                             </View>
                             <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>Phát hiện nguy cơ ô nhiễm</Text>
-                                <Text style={styles.notiDesc}>Khả năng ô nhiễm nguồn nước tăng{'\n'}Độ tin cậy: 99%</Text>
-                                <Text style={styles.notiTime}>🕒 2 giờ trước bởi 268 Lý Thường Kiệt</Text>
+                                <Text style={styles.notiTitle}>{t('notifications.pollutionRisk')}</Text>
+                                <Text style={styles.notiDesc}>{t('notifications.pollutionRiskDesc')}{'\n'}{t('notifications.pollutionConfidence', { percentage: 99 })}</Text>
+                                <Text style={styles.notiTime}>🕒 {t('notifications.agoFrom', { time: '2 giờ', location: '268 Lý Thường Kiệt' })}</Text>
                             </View>
                         </View>
                         <View style={styles.notiActions}>
                             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FFE2E2' }]}>
-                                <Text style={[styles.actionBtnText, { color: '#9F0712' }]}>Chi tiết</Text>
+                                <Text style={[styles.actionBtnText, { color: '#9F0712' }]}>{t('notifications.details')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity>
-                                <Text style={[styles.actionLinkText, { color: '#C10007' }]}>Đánh dấu đã đọc</Text>
+                                <Text style={[styles.actionLinkText, { color: '#C10007' }]}>{t('notifications.markAsRead')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -150,9 +152,9 @@ export default function AlertsScreen() {
                                 <Text>⚠️</Text>
                             </View>
                             <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>Độ đục tăng cao</Text>
-                                <Text style={styles.notiDesc}>Turbidity = 7 NTU{'\n'}Có thể có tạp chất trong nước</Text>
-                                <Text style={styles.notiTime}>🕒 1 ngày trước bởi 268 Lý Thường Kiệt</Text>
+                                <Text style={styles.notiTitle}>{t('notifications.turbidityHigh')}</Text>
+                                <Text style={styles.notiDesc}>{t('notifications.turbidityHighDesc', { value: 7 })}</Text>
+                                <Text style={styles.notiTime}>🕒 {t('notifications.agoFrom', { time: '1 ngày', location: '268 Lý Thường Kiệt' })}</Text>
                             </View>
                         </View>
                     </View>
@@ -164,17 +166,17 @@ export default function AlertsScreen() {
                                 <Text>ℹ️</Text>
                             </View>
                             <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>Kiểm tra cảm biến pH</Text>
-                                <Text style={styles.notiDesc}>Cảm biến pH đã đến kỳ kiểm tra</Text>
-                                <Text style={styles.notiTime}>🕒 3 ngày trước bởi Đông Hòa, Dĩ An</Text>
+                                <Text style={styles.notiTitle}>{t('notifications.sensorMaintenance')}</Text>
+                                <Text style={styles.notiDesc}>{t('notifications.sensorMaintenanceDesc')}</Text>
+                                <Text style={styles.notiTime}>🕒 {t('notifications.agoFrom', { time: '3 ngày', location: 'Đông Hòa, Dĩ An' })}</Text>
                             </View>
                         </View>
                         <View style={styles.notiActions}>
                             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EFF6FF' }]}>
-                                <Text style={[styles.actionBtnText, { color: '#0C5EDB' }]}>Chi tiết</Text>
+                                <Text style={[styles.actionBtnText, { color: '#0C5EDB' }]}>{t('notifications.details')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity>
-                                <Text style={[styles.actionLinkText, { color: '#0C5EDB' }]}>Đánh dấu đã đọc</Text>
+                                <Text style={[styles.actionLinkText, { color: '#0C5EDB' }]}>{t('notifications.markAsRead')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -186,9 +188,9 @@ export default function AlertsScreen() {
                                 <Text>✅</Text>
                             </View>
                             <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>Cập nhật trạm quan sát mới</Text>
-                                <Text style={styles.notiDesc}>161 Võ Nguyên Giáp đã được thiết lập</Text>
-                                <Text style={styles.notiTime}>🕒 04-03-2026 bởi 161 Võ Nguyên Giáp</Text>
+                                <Text style={styles.notiTitle}>{t('notifications.newStation')}</Text>
+                                <Text style={styles.notiDesc}>{t('notifications.newStationDesc', { station: '161 Võ Nguyên Giáp' })}</Text>
+                                <Text style={styles.notiTime}>🕒 {t('notifications.agoFrom', { time: '04-03-2026', location: '161 Võ Nguyên Giáp' })}</Text>
                             </View>
                         </View>
                     </View>
