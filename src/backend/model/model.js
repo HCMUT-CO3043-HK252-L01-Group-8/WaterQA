@@ -19,7 +19,7 @@ class Model {
     const scaledData = featureCols.map(col => {
 
       if (!data[col]) {
-        return stats[col].mean;
+        return 0;
       }
 
       return (data[col] - this.stats[col].mean) / this.stats[col].std;
@@ -27,14 +27,21 @@ class Model {
 
     const inputTensor = tf.tensor2d([scaledData]);
     const prediction = this.model.predict(inputTensor);
-    const probability = prediction.dataSync()[0];
+    const probability = prediction.dataSync()[0]
 
-    console.log(`Predicted probability of potability: ${(probability * 100).toFixed(2)}%`);
-    console.log(`Classification: ${probability > 0.5 ? 'Potable (Safe)' : 'Not Potable (Unsafe)'}`);
+    let comment = "Dangerous"
+
+    if (probability >= 0.7) {
+      comment = "Good"
+    } else if (probability >= 0.5) {
+      comment = "Average"
+    } else if (probability >= 4) {
+      comment = "Possibly Unsafe"
+    }
 
     return {
-      prediction: prediction,
-      probability: probability
+      probability,
+      comment
     }
   }
 }
