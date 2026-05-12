@@ -34,21 +34,44 @@ function showSignupPage(req, res) {
 }
 
 function signup(req, res) {
-  const { mail, phone, password, confirmPassword } = req.body;
-  const {errCode, newId} = accountsService.addAccount(mail, phone, password, confirmPassword);
-  // console.log('errCode:', errCode);
+  const { name, email, phone_number, password, confirmPassword } = req.body;
+
+  // Validate bắt buộc
+  if (!email || !password) {
+    return res.status(400).json({ success: false, error: 'Email và mật khẩu là bắt buộc', timestamp: new Date().toISOString() });
+  }
+
+  const { errCode, newId } = accountsService.addAccount(name, email, phone_number, password, confirmPassword);
+
   if (errCode > 0) {
-    // res.redirect(`/accounts/signup?error=${errCode}`);
-    res.status(errCode).json({ success: false, timestamp: new Date().toISOString()});
+    const errorMessages = {
+      422: 'Mật khẩu xác nhận không khớp',
+      409: 'Email hoặc số điện thoại đã được đăng ký',
+      500: 'Lỗi máy chủ khi tạo tài khoản',
+    };
+    return res.status(errCode === 409 ? 409 : errCode === 422 ? 422 : 500).json({
+      success: false,
+      error: errorMessages[errCode] || 'Đăng ký thất bại',
+      timestamp: new Date().toISOString(),
+    });
   }
-  else {
-    req.session.user = {
-      user_id: newId,
-      role: "User"
-    }; // log in the user immediately after signing up. This can only be implemented at Controller layer because it involves creating session.
-    // res.redirect("/dashboard");
-    res.status(201).json({ success: true, timestamp: new Date().toISOString() });
-  }
+
+  // Lấy lại user vừa tạo để có đầy đủ thông tin
+  const createdUsers = accountsService.findById(newId);
+  const createdUser = createdUsers && createdUsers.length > 0 ? createdUsers[0] : null;
+
+  req.session.user = {
+    user_id: newId,
+    email: email,
+    name: (createdUser && createdUser.name) || name || email.split('@')[0],
+    role: 'User',
+  };
+
+  return res.status(201).json({
+    success: true,
+    user: req.session.user,
+    timestamp: new Date().toISOString(),
+  });
 }
 
 

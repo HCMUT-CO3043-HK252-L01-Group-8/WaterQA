@@ -8,7 +8,7 @@ const accountsRepo = require('../repositories/accounts.repo');
 //thi de trong array, neu chi check 1 feed thi de 1 phan tu trong array nhu duoi
 const FEEDS_TO_MONITOR = ['temp', 'humi', 'light']; //cap nhat: dam quay chinh sach canh bao light
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL; //Co the doi mail de test
-const LIGHT_THRESHOLD = 60; // Mốc cảnh báo cường độ ánh sáng (thay từ 70 → 60)
+const LIGHT_THRESHOLD = 70; // Mốc cảnh báo cường độ ánh sáng
 const LIGHT_DURATION_MS = 10000; // 10 giây
 let lightAlert = { isAlerting: false, startTime: null }; // Tracking alert state
 
@@ -127,6 +127,6 @@ const startDeviceMonitor = () => {
         } catch (error) {
             console.error("Lỗi trong quá trình chạy hệ thống giám sát tự động:", error.message);
         }
-    }, 60000); // 60000 ms = 1p quet 1 lan (de test, chinh thuc co the de 5p = 300000ms)
+    }, 5000); // 5000ms = 5 giây/lần → đủ để phát hiện chuỗi liên tục 10s (LIGHT_DURATION_MS)
 };
 module.exports = { startDeviceMonitor };

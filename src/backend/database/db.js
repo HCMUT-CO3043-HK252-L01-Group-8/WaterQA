@@ -5,7 +5,7 @@ const path = require('path');
 const dbPath = path.join(__dirname, '..', '..', '..', 'data', 'WaterQA.db');
 
 const db = new Database(dbPath, {
-  verbose: console.log,
+  // verbose: console.log, // Disabled for cleaner logs
   // fileMustExist: true, // optional: throw if db file missing
 });
 

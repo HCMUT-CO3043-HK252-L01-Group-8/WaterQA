@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../contexts/LanguageContext';
 import * as api from '../../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SettingsScreen() {
     const [emailNotif, setEmailNotif] = useState(true);
@@ -15,11 +16,20 @@ export default function SettingsScreen() {
     const { language, setLanguage } = useLanguage();
 
     useEffect(() => {
-        // Đọc thông tin người dùng từ localStorage
-        const storedName = localStorage.getItem('userName');
-        const storedEmail = localStorage.getItem('userEmail');
-        if (storedName) setUserName(storedName);
-        if (storedEmail) setUserEmail(storedEmail);
+        // Đọc thông tin người dùng từ AsyncStorage
+        const loadUserInfo = async () => {
+            try {
+                const storedUserStr = await AsyncStorage.getItem('currentUser');
+                if (storedUserStr) {
+                    const storedUser = JSON.parse(storedUserStr);
+                    if (storedUser.name) setUserName(storedUser.name);
+                    if (storedUser.email) setUserEmail(storedUser.email);
+                }
+            } catch (e) {
+                console.error('Lỗi khi đọc thông tin người dùng:', e);
+            }
+        };
+        loadUserInfo();
     }, []);
 
     const handleLogout = async () => {
@@ -30,9 +40,9 @@ export default function SettingsScreen() {
                 console.error('Logout API error:', error);
                 // Even if API call fails, still clear local state and go to login
             } finally {
-                // Clear localStorage
-                localStorage.removeItem('userName');
-                localStorage.removeItem('userEmail');
+                // Clear active session data
+                await AsyncStorage.removeItem('currentUser');
+                await AsyncStorage.removeItem('rememberedUser');
                 // Always redirect to login page
                 router.replace('/login');
             }

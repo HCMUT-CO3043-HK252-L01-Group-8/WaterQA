@@ -16,6 +16,7 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as api from "../services/api";
 
 // Cần thiết để đóng browser popup sau khi xác thực trên web
@@ -28,6 +29,7 @@ export default function LoginScreen() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
 
     // Cấu hình Google OAuth - cần EXPO_PUBLIC_GOOGLE_CLIENT_ID trong .env.local
     const [request, response, promptAsync] = Google.useAuthRequest({
@@ -104,8 +106,9 @@ export default function LoginScreen() {
                     );
                     if (backendResponse.success) {
                         const userData = backendResponse.user;
-                        localStorage.setItem('userName', userData.name || userInfo.name || 'Google User');
-                        localStorage.setItem('userEmail', userData.email || userInfo.email);
+                        const finalName = userData.name || userInfo.name || 'Google User';
+                        const finalEmail = userData.email || userInfo.email;
+                        await AsyncStorage.setItem('currentUser', JSON.stringify({ name: finalName, email: finalEmail }));
                         router.replace("/(tabs)/home");
                     } else {
                         Alert.alert('Lỗi', backendResponse.error || 'Không thể hoàn thành đăng nhập');
@@ -137,10 +140,24 @@ export default function LoginScreen() {
             const response = await api.login(email, password);
             
             if (response.success) {
-                // Lưu thông tin người dùng vào localStorage
                 const userData = response.user;
-                localStorage.setItem('userName', userData.email.split('@')[0]);
-                localStorage.setItem('userEmail', userData.email);
+                const userInfo = {
+                    email: userData.email || email,
+                    name: userData.name || userData.email?.split('@')[0] || 'User',
+                    role: userData.role || 'User',
+                };
+
+                if (rememberMe) {
+                    // Lưu thông tin user vào AsyncStorage để auto-login lần sau
+                    await AsyncStorage.setItem('rememberedUser', JSON.stringify(userInfo));
+                } else {
+                    // Xóa dữ liệu đã lưu (nếu trước đó có lưu)
+                    await AsyncStorage.removeItem('rememberedUser');
+                }
+
+                // Luôn lưu currentUser cho session hiện tại
+                await AsyncStorage.setItem('currentUser', JSON.stringify(userInfo));
+
                 router.replace("/(tabs)/home");
             } else {
                 const errorMessage = response.error || 'Đăng nhập thất bại';
@@ -242,6 +259,18 @@ export default function LoginScreen() {
                     {/* Forgot Password */}
                     <TouchableOpacity onPress={() => router.push("/forgot-password")}>
                         <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
+                    </TouchableOpacity>
+
+                    {/* Remember Me */}
+                    <TouchableOpacity
+                        style={styles.rememberMeContainer}
+                        onPress={() => setRememberMe(!rememberMe)}
+                        activeOpacity={0.7}
+                    >
+                        <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                            {rememberMe && <Ionicons name="checkmark" size={14} color="#FFF" />}
+                        </View>
+                        <Text style={styles.rememberMeText}>Ghi nhớ đăng nhập</Text>
                     </TouchableOpacity>
 
                     {/* Login Button */}
@@ -352,7 +381,30 @@ const styles = StyleSheet.create({
         textAlign: "right",
         fontSize: 14,
         fontWeight: "500",
+        marginBottom: 12,
+    },
+    rememberMeContainer: {
+        flexDirection: "row",
+        alignItems: "center",
         marginBottom: 24,
+        gap: 10,
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 1.5,
+        borderColor: "#00A89D",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    checkboxChecked: {
+        backgroundColor: "#00A89D",
+    },
+    rememberMeText: {
+        fontSize: 14,
+        color: "#333",
+        fontWeight: "400",
     },
     loginButton: {
         backgroundColor: "#00A89D",

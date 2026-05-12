@@ -1,12 +1,46 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import * as api from "../services/api";
 
 export default function ForgotPasswordScreen() {
     const router = useRouter();
     const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
+        if (!email.trim()) {
+            Alert.alert("Lỗi", "Vui lòng nhập địa chỉ email của bạn");
+            return;
+        }
+        // Kiểm tra định dạng email cơ bản
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            Alert.alert("Lỗi", "Địa chỉ email không hợp lệ");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await api.forgotPassword(email.trim());
+            if (response.success) {
+                // Chuyển thẳng sang trang nhập OTP, không cần bấm thêm nút
+                router.push({
+                    pathname: "/verify-otp",
+                    params: { email: email.trim() },
+                });
+            } else {
+                Alert.alert("Lỗi", response.error || "Không thể gửi mã OTP. Vui lòng thử lại.");
+            }
+        } catch (error) {
+            console.error("Forgot password error:", error);
+            Alert.alert("Lỗi", "Không thể kết nối tới server. Vui lòng kiểm tra kết nối.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -17,7 +51,9 @@ export default function ForgotPasswordScreen() {
                 </TouchableOpacity>
 
                 <Text style={styles.title}>Bạn quên{"\n"}mật khẩu?</Text>
-                <Text style={styles.subtitle}>Nhập email và chúng tôi sẽ hỗ trợ bạn tạo lại mật khẩu mới</Text>
+                <Text style={styles.subtitle}>
+                    Nhập email đăng ký và chúng tôi sẽ gửi mã OTP 6 số để bạn tạo lại mật khẩu mới
+                </Text>
 
                 <View style={styles.formContainer}>
                     <Text style={styles.inputLabel}>Email</Text>
@@ -29,11 +65,20 @@ export default function ForgotPasswordScreen() {
                             placeholder="Nhập email của bạn..."
                             keyboardType="email-address"
                             autoCapitalize="none"
+                            editable={!loading}
                         />
                     </View>
 
-                    <TouchableOpacity style={styles.submitButton} onPress={() => router.push("/verify-code")}>
-                        <Text style={styles.submitButtonText}>Tiếp tục</Text>
+                    <TouchableOpacity
+                        style={[styles.submitButton, loading && { opacity: 0.6 }]}
+                        onPress={handleSubmit}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="white" />
+                        ) : (
+                            <Text style={styles.submitButtonText}>Gửi mã OTP</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
             </View>

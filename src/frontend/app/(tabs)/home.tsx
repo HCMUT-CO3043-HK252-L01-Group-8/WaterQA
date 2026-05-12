@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LOCATIONS = [
     { id: 1, name: 'Bể nước BK-H6' },
@@ -18,20 +19,32 @@ export default function HomeDashboard() {
     const { t } = useTranslation();
 
     useEffect(() => {
-        // Đọc tên người dùng từ localStorage
-        const storedName = localStorage.getItem('userName');
-        if (storedName) {
-            setUserName(storedName);
-        }
-        
-        // Kiểm tra xem alert có được đánh dấu là đã đọc không
-        const isAlertRead = localStorage.getItem('homeAlertRead') === 'true';
-        setAlertRead(isAlertRead);
+        // Đọc thông tin từ AsyncStorage
+        const loadData = async () => {
+            try {
+                const storedUserStr = await AsyncStorage.getItem('currentUser');
+                if (storedUserStr) {
+                    const storedUser = JSON.parse(storedUserStr);
+                    if (storedUser.name) setUserName(storedUser.name);
+                }
+                
+                // Kiểm tra xem alert có được đánh dấu là đã đọc không
+                const isAlertRead = await AsyncStorage.getItem('homeAlertRead');
+                setAlertRead(isAlertRead === 'true');
+            } catch (e) {
+                console.error(e);
+            }
+        };
+        loadData();
     }, []);
 
-    const handleMarkAlertAsRead = () => {
+    const handleMarkAlertAsRead = async () => {
         setAlertRead(true);
-        localStorage.setItem('homeAlertRead', 'true');
+        try {
+            await AsyncStorage.setItem('homeAlertRead', 'true');
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     const handleSelectLocation = (location: typeof LOCATIONS[0]) => {

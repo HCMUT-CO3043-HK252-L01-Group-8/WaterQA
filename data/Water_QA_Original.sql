@@ -16,6 +16,7 @@ PRAGMA synchronous = NORMAL;
 -- 1. USER
 CREATE TABLE USER (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
     email TEXT UNIQUE NOT NULL,
     phone_number TEXT,
     password_hash TEXT NOT NULL,

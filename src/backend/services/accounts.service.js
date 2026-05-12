@@ -1,5 +1,4 @@
 // services/accounts.service.js
-const { deleteAccount } = require("../controllers/accounts.controller");
 const accountsRepo = require("../repositories/accounts.repo");
 
 class AccountsService {
@@ -13,38 +12,39 @@ class AccountsService {
   findById(id){
     return accountsRepo.findById(id);
   }
-  addAccount(mail, phone, password, passwordAgain) {
-  if (password != passwordAgain) {
-    return {errCode: 422}; // confirmed password is wrong
-  } else {
-    const accs = accountsRepo.findByPhone(phone);
+  addAccount(name, email, phone_number, password, passwordAgain) {
+  if (passwordAgain && password !== passwordAgain) {
+    return { errCode: 422 }; // confirmed password is wrong
+  }
 
-    if (accs) {
-      return {errCode: 409};  // Phone number already exists
-    } else {
-      try {
-        const row = accountsRepo.countRows();
-        const newId = row.total + 1;
-        console.log("New id: " + newId);
+  // Kiểm tra email đã tồn tại chưa
+  const existingByEmail = accountsRepo.findByEmail(email);
+  if (existingByEmail.length > 0) {
+    return { errCode: 409 }; // Email already exists
+  }
 
-        const createdAt = new Date().toISOString();
+  try {
+    // Get the max user_id and add 1 instead of counting rows
+    const maxIdResult = accountsRepo.getMaxUserId();
+    const newId = (maxIdResult?.max_id || 0) + 1;
+    console.log('New id: ' + newId);
 
-        accountsRepo.addAccount(
-          newId,
-          mail,
-          phone,
-          password,
-          "User",
-          0,
-          createdAt
-        );
-        return { errCode: 0, newId: newId }; // success. Return the new account's ID for session creation. This can be used at Controller layer because it is not related to database operation.
-      } catch (err) {
-        console.log(err);
-        return {errCode: 500};  // temporary. This is expected to give the exact SQL error (eg. duplicated phone number...)
-      }
+    const createdAt = new Date().toISOString();
 
-    }
+    accountsRepo.addAccount(
+      newId,
+      email,
+      phone_number || null,
+      password,
+      'User', // role luôn là 'User' khi đăng ký, không cho phép client tự chọn
+      0,
+      createdAt,
+      name || null  // lưu tên hiển thị
+    );
+    return { errCode: 0, newId: newId };
+  } catch (err) {
+    console.log(err);
+    return { errCode: 500 };
   }
 }
 

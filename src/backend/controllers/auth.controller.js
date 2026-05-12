@@ -13,9 +13,9 @@ function showLoginPage(req, res) {
 }
 
 function login(req, res) {
-  const { id, password } = req.body;
+  const { email, password } = req.body;
 
-  const { err, user } = authService.login(id, password);
+  const { err, user } = authService.login(email, password);
 
   // Check if this is an API call (from React Native/Web frontend)
   const isApiRequest = 
@@ -42,6 +42,7 @@ function login(req, res) {
 
     req.session.user = {
       user_id: user.user_id,
+      name: user.name || user.email?.split('@')[0] || 'User',
       email: user.email,
       role: user.role,
       verification_status: user.verification_status
@@ -133,6 +134,52 @@ function loginWithGoogle(req, res) {
   }
 }
 
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, error: 'Vui lòng nhập email' });
+  }
+
+  const result = await authService.forgotPassword(email);
+  if (result.err === 404) {
+    return res.status(404).json({ success: false, error: result.message });
+  }
+  if (result.err !== 0) {
+    return res.status(500).json({ success: false, error: result.message });
+  }
+  return res.status(200).json({ success: true, message: 'Mã OTP đã được gửi vào email của bạn' });
+}
+
+function resetPassword(req, res) {
+  const { email, otp, new_password } = req.body;
+  if (!email || !otp || !new_password) {
+    return res.status(400).json({ success: false, error: 'Thiếu thông tin. Cần email, otp và new_password' });
+  }
+  if (new_password.length < 6) {
+    return res.status(400).json({ success: false, error: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+  }
+
+  const result = authService.resetPassword(email, otp, new_password);
+  if (result.err !== 0) {
+    return res.status(400).json({ success: false, error: result.message });
+  }
+  return res.status(200).json({ success: true, message: 'Đặt lại mật khẩu thành công' });
+}
+
+// Xác thực OTP (bước trung gian trước khi đổi mật khẩu)
+function verifyOTP(req, res) {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ success: false, error: 'Thiếu thông tin. Cần email và otp' });
+  }
+
+  const result = authService.verifyOTP(email, otp);
+  if (result.err !== 0) {
+    return res.status(400).json({ success: false, error: result.message });
+  }
+  return res.status(200).json({ success: true, message: 'Mã OTP hợp lệ' });
+}
+
 // function createSession(req, user_id, role, verification_status) {
 
 // }
@@ -150,6 +197,9 @@ module.exports = {
   login,
   loginWithGoogle,
   logout,
+  forgotPassword,
+  resetPassword,
+  verifyOTP,
   // createSession,
   getMySession,
 };

@@ -187,11 +187,51 @@ export async function login(email: string, password: string, options?: { signal?
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: JSON.stringify({ id: email, password }),
+    body: JSON.stringify({ email, password }), // đổi từ { id: email } sang đúng chuẩn
     signal: options?.signal,
   });
   const body = await res.json();
   return body;
+}
+
+// Đăng ký tài khoản mới
+export async function signup(
+  name: string,
+  email: string,
+  phone_number: string,
+  password: string,
+  options?: { signal?: AbortSignal }
+): Promise<{ success: boolean; user?: any; error?: string }> {
+  const url = `${BASE_URL}/accounts/signup`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ name, email, phone_number, password }),
+      signal: options?.signal,
+    });
+    const body = await res.json();
+    
+    // Nếu response không thành công, đảm bảo trả về success: false
+    if (!res.ok && !body.success) {
+      return {
+        success: false,
+        error: body.error || `Registration failed with status ${res.status}`
+      };
+    }
+    
+    return body;
+  } catch (error) {
+    console.error('Signup request error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'An unexpected error occurred'
+    };
+  }
 }
 
 // Google OAuth login
@@ -210,3 +250,52 @@ export async function loginWithGoogle(name: string, email: string, picture: stri
   const body = await res.json();
   return body;
 }
+
+// Gửi mã OTP về email để đặt lại mật khẩu
+export async function forgotPassword(email: string, options?: { signal?: AbortSignal }): Promise<{ success: boolean; message?: string; error?: string }> {
+  const url = `${BASE_URL}/auth/forgot-password`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+    signal: options?.signal,
+  });
+  const body = await res.json();
+  return body;
+}
+
+// Xác thực OTP (bước trung gian)
+export async function verifyOTP(email: string, otp: string, options?: { signal?: AbortSignal }): Promise<{ success: boolean; message?: string; error?: string }> {
+  const url = `${BASE_URL}/auth/verify-otp`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ email, otp }),
+    signal: options?.signal,
+  });
+  const body = await res.json();
+  return body;
+}
+
+// Xác thực OTP và đặt mật khẩu mới
+export async function resetPassword(email: string, otp: string, new_password: string, options?: { signal?: AbortSignal }): Promise<{ success: boolean; message?: string; error?: string }> {
+  const url = `${BASE_URL}/auth/reset-password`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ email, otp, new_password }),
+    signal: options?.signal,
+  });
+  const body = await res.json();
+  return body;
+}
+

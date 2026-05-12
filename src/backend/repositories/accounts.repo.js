@@ -1,7 +1,5 @@
 // repositories/accounts.repository.js
-// const db = require("../database/db");
 const db = require("../database/db");
-const { deleteAccount } = require("../services/accounts.service");
 
 class AccountsRepository {
   findAll() {
@@ -12,6 +10,9 @@ class AccountsRepository {
   }
   countRows() {
     return db.prepare("SELECT COUNT(*) AS total FROM USER").get();
+  }
+  getMaxUserId() {
+    return db.prepare("SELECT MAX(user_id) AS max_id FROM USER").get();
   }
   findByPhone(phone) {
     return db
@@ -29,11 +30,10 @@ class AccountsRepository {
       .prepare("SELECT * FROM USER WHERE email=?")
       .all([email]);
   }
-  addAccount(id, mail, phone, password, role, verif, createdAt) {
+  addAccount(id, mail, phone, password, role, verif, createdAt, name) {
     return db
-      // .prepare("INSERT INTO Accounts VALUES (?, ?)")
-      .prepare("INSERT INTO USER (user_id, email, phone_number, password_hash, role, verification_status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-      .run([id, mail, phone, password, role, verif, createdAt, createdAt]);
+      .prepare("INSERT INTO USER (user_id, name, email, phone_number, password_hash, role, verification_status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .run([id, name || null, mail, phone, password, role, verif, createdAt, createdAt]);
   }
   changePassword(id, newPassword, updateTime) {
     return db
@@ -45,6 +45,13 @@ class AccountsRepository {
     return db
       .prepare("DELETE FROM USER WHERE user_id=?")
       .run([id]);
+  }
+  // Dùng cho luồng reset-password qua OTP (tìm theo email)
+  updatePassword(email, newPassword) {
+    const now = new Date().toISOString();
+    return db
+      .prepare("UPDATE USER SET password_hash=?, updated_at=? WHERE email=?")
+      .run([newPassword, now, email]);
   }
 }
 
