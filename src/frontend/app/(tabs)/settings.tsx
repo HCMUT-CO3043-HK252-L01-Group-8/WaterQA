@@ -3,17 +3,20 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTabBarHeight } from '@/hooks/useTabBarHeight';
 import AppHeader from '@/components/AppHeader';
+import { Feather } from '@expo/vector-icons'; // Import thư viện Vector Icons
+import CustomSwitch from '@/components/ui/CustomSwitch';
 
 export default function SettingsScreen() {
     const [emailNotif, setEmailNotif] = useState(true);
     const [language, setLanguage] = useState('vi');
     const tabBarHeight = useTabBarHeight();
 
-    const renderSettingRow = (icon: string, title: string, subtitle: string, rightElement: any, isLast = false) => (
+    // Sửa lại hàm renderSettingRow để nhận tên icon của Feather thay vì string emoji
+    const renderSettingRow = (iconName: keyof typeof Feather.glyphMap, title: string, subtitle: string, rightElement: any, isLast = false) => (
         <View style={[styles.settingRow, isLast && { borderBottomWidth: 0, paddingBottom: 0 }]}>
             <View style={styles.settingRowLeft}>
                 <View style={styles.settingIconBox}>
-                    <Text style={styles.settingIcon}>{icon}</Text>
+                    <Feather name={iconName} size={18} color="#45556C" />
                 </View>
                 <View>
                     <Text style={styles.settingTitle}>{title}</Text>
@@ -21,7 +24,7 @@ export default function SettingsScreen() {
                 </View>
             </View>
             <View style={styles.settingRowRight}>
-                {rightElement ? rightElement : <Text style={styles.chevron}>›</Text>}
+                {rightElement ? rightElement : <Feather name="chevron-right" size={20} color="#90A1B9" />}
             </View>
         </View>
     );
@@ -46,7 +49,7 @@ export default function SettingsScreen() {
                 {/* 2. Thẻ Thông tin tài khoản */}
                 <View style={styles.profileCard}>
                     <View style={styles.avatarBox}>
-                        <Text style={styles.avatarText}>👤</Text>
+                        <Feather name="user" size={24} color="#007595" />
                     </View>
                     <View style={styles.profileInfo}>
                         <Text style={styles.profileName}>Đậu Minh Khôi</Text>
@@ -81,18 +84,15 @@ export default function SettingsScreen() {
                 {/* 4. Cài đặt chung */}
                 <View style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Cài đặt chung</Text>
-                    {renderSettingRow('👤', 'Thông tin cá nhân', 'Quản lý thông tin tài khoản', null)}
+                    {renderSettingRow('user', 'Thông tin cá nhân', 'Quản lý thông tin tài khoản', null)}
                     {renderSettingRow(
-                        '✉️',
+                        'mail',
                         'Nhận thông báo qua email',
                         'Cho phép gửi thông báo qua email',
-                        <Switch
+                        <CustomSwitch
                             value={emailNotif}
                             onValueChange={setEmailNotif}
-                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
-                            thumbColor="#FFFFFF"
-                        />,
-                        true
+                        />
                     )}
                 </View>
 
@@ -100,12 +100,12 @@ export default function SettingsScreen() {
                 <View style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Cài đặt cảnh báo</Text>
                     {renderSettingRow(
-                        '🔔',
+                        'bell',
                         'Ngưỡng cảnh báo WQI',
                         'Thay đổi ngưỡng cảnh báo',
                         <TouchableOpacity style={styles.thresholdBtn}>
                             <Text style={styles.thresholdValue}>80</Text>
-                            <Text style={styles.editIcon}>✏️</Text>
+                            <Feather name="edit-2" size={14} color="#62748E" />
                         </TouchableOpacity>,
                         true
                     )}
@@ -114,17 +114,17 @@ export default function SettingsScreen() {
                 {/* 6. Cài đặt hệ thống */}
                 <View style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Cài đặt hệ thống</Text>
-                    {renderSettingRow('📍', 'Danh sách trạm quan trắc', 'Hiển thị vị trí và thông tin các trạm', null)}
-                    {renderSettingRow('⚙️', 'Quản lý trạm của bạn', 'Quản lý trạm quan trắc của bạn', null, true)}
+                    {renderSettingRow('map-pin', 'Danh sách trạm quan trắc', 'Hiển thị vị trí và thông tin các trạm', null)}
+                    {renderSettingRow('settings', 'Quản lý trạm của bạn', 'Quản lý trạm quan trắc của bạn', null, true)}
                 </View>
 
                 {/* 7. Hỗ trợ & Ngôn ngữ */}
                 <View style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Hỗ trợ</Text>
-                    {renderSettingRow('❓', 'FAQ', 'Nhận trợ giúp về ứng dụng', null)}
+                    {renderSettingRow('help-circle', 'FAQ', 'Nhận trợ giúp về ứng dụng', null)}
 
                     {renderSettingRow(
-                        '🌐',
+                        'globe',
                         'Ngôn ngữ',
                         'Thay đổi ngôn ngữ',
                         <View style={styles.langToggle}>
@@ -143,7 +143,7 @@ export default function SettingsScreen() {
                         </View>
                     )}
 
-                    {renderSettingRow('🚪', 'Đăng xuất', 'Đăng xuất khỏi tài khoản của bạn', null, true)}
+                    {renderSettingRow('log-out', 'Đăng xuất', 'Đăng xuất khỏi tài khoản của bạn', null, true)}
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -162,40 +162,17 @@ const styles = StyleSheet.create({
     header: {
         padding: 16,
     },
-    appTitleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    logoPlaceholder: {
-        width: 35,
-        height: 35,
-        backgroundColor: '#00B8DB',
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8,
-    },
-    logoText: { fontSize: 16 },
-    appName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#0F172B',
-    },
-    appSubtitle: {
-        fontSize: 10,
-        color: '#62748E',
-    },
     pageTitleSection: { marginTop: 10 },
     pageTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
         color: '#0F172B',
         marginBottom: 4,
+        fontFamily: 'Inter-SemiBold', // Thêm font
     },
     pageSubtitle: {
         fontSize: 13,
         color: '#45556C',
+        fontFamily: 'Inter-Regular', // Thêm font
     },
     profileCard: {
         flexDirection: 'row',
@@ -217,18 +194,18 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#007595',
     },
-    avatarText: { fontSize: 24 },
     profileInfo: { flex: 1 },
     profileName: {
         fontSize: 14,
-        fontWeight: 'bold',
         color: '#0F172B',
         marginBottom: 2,
+        fontFamily: 'Inter-SemiBold',
     },
     profileEmail: {
         fontSize: 12,
         color: '#45556C',
         marginBottom: 6,
+        fontFamily: 'Inter-Regular',
     },
     verifyBadge: {
         backgroundColor: '#CBFBF1',
@@ -240,6 +217,7 @@ const styles = StyleSheet.create({
     verifyText: {
         fontSize: 10,
         color: '#00786F',
+        fontFamily: 'Inter-SemiBold',
     },
     statsCard: {
         marginHorizontal: 16,
@@ -252,9 +230,9 @@ const styles = StyleSheet.create({
     },
     statsTitle: {
         fontSize: 14,
-        fontWeight: 'bold',
         color: '#0F172B',
         marginBottom: 16,
+        fontFamily: 'Inter-SemiBold',
     },
     statsRow: {
         flexDirection: 'row',
@@ -272,13 +250,14 @@ const styles = StyleSheet.create({
     },
     statValue: {
         fontSize: 18,
-        fontWeight: 'bold',
         marginBottom: 4,
+        fontFamily: 'Inter-SemiBold',
     },
     statLabel: {
         fontSize: 10,
         color: '#62748E',
         textAlign: 'center',
+        fontFamily: 'Inter-Regular',
     },
     sectionCard: {
         marginHorizontal: 16,
@@ -291,9 +270,9 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 14,
-        fontWeight: 'bold',
         color: '#0F172B',
         marginBottom: 16,
+        fontFamily: 'Inter-SemiBold',
     },
     settingRow: {
         flexDirection: 'row',
@@ -318,23 +297,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 12,
     },
-    settingIcon: { fontSize: 16 },
     settingTitle: {
-        fontSize: 13,
+        fontSize: 14,
         color: '#0F172B',
         marginBottom: 2,
+        fontFamily: 'Inter-SemiBold', // Thay fontWeight bằng fontFamily
     },
     settingSubtitle: {
         fontSize: 11,
         color: '#62748E',
+        fontFamily: 'Inter-Regular',
     },
     settingRowRight: {
         justifyContent: 'center',
         alignItems: 'flex-end',
-    },
-    chevron: {
-        fontSize: 20,
-        color: '#90A1B9',
     },
     thresholdBtn: {
         flexDirection: 'row',
@@ -344,8 +320,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#0F172B',
         marginRight: 4,
+        fontFamily: 'Inter-SemiBold',
     },
-    editIcon: { fontSize: 12 },
     langToggle: {
         flexDirection: 'row',
         backgroundColor: '#F1F5F9',
@@ -368,9 +344,10 @@ const styles = StyleSheet.create({
     langText: {
         fontSize: 11,
         color: '#45556C',
+        fontFamily: 'Inter-Regular',
     },
     langTextActive: {
         color: '#0092B8',
-        fontWeight: '600',
+        fontFamily: 'Inter-SemiBold',
     },
 });
