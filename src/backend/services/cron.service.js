@@ -108,7 +108,7 @@ const startDeviceMonitor = () => {
                 }
                 
                 // Xử lý temp, humi - check threshold
-                const feedThreshold = thresholds.find(t => t.parameter.toLowerCase() === feedKey.toLowerCase());
+                const feedThreshold = thresholds.find(t => t.parameter_name.toLowerCase() === feedKey.toLowerCase());
                 
                 if (feedThreshold) {
                     const { lower_threshold, upper_threshold } = feedThreshold;
