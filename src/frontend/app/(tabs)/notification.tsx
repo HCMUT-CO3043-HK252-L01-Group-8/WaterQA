@@ -37,6 +37,8 @@ export default function NotificationScreen() {
                 {/* 2. Cài đặt cảnh báo */}
                 <View style={styles.settingsCard}>
                     <Text style={styles.settingsTitle}>Cài đặt cảnh báo</Text>
+                    
+                    {/* CÔNG TẮC TỔNG: Thông báo hệ thống */}
                     <View style={styles.settingRow}>
                         <View style={styles.settingTextContainer}>
                             <Text style={styles.settingName}>Thông báo hệ thống</Text>
@@ -48,36 +50,52 @@ export default function NotificationScreen() {
                         />
                     </View>
 
-                    <View style={styles.settingRow}>
-                        <View style={styles.settingTextContainer}>
+                    {/* CÔNG TẮC CON 1 */}
+                    <View 
+                        style={styles.settingRow}
+                        pointerEvents={systemNotif ? "auto" : "none"}
+                    >
+                        {/* Chỉ làm mờ phần chữ */}
+                        <View style={[styles.settingTextContainer, !systemNotif && styles.disabledContent]}>
                             <Text style={styles.settingName}>Cảnh báo cảm biến</Text>
                             <Text style={styles.settingDesc}>Nhận cảnh báo khi cảm biến gặp sự cố</Text>
                         </View>
                         <CustomSwitch
                             value={sensorAlert}
                             onValueChange={setSensorAlert}
+                            disabled={!systemNotif} // Truyền trạng thái vô hiệu hóa vào Switch
                         />
                     </View>
 
-                    <View style={styles.settingRow}>
-                        <View style={styles.settingTextContainer}>
+                    {/* CÔNG TẮC CON 2 */}
+                    <View 
+                        style={styles.settingRow}
+                        pointerEvents={systemNotif ? "auto" : "none"}
+                    >
+                        <View style={[styles.settingTextContainer, !systemNotif && styles.disabledContent]}>
                             <Text style={styles.settingName}>Cảnh báo chất lượng nước</Text>
                             <Text style={styles.settingDesc}>Nhận thông báo khi có dữ liệu mới từ cảm biến</Text>
                         </View>
                         <CustomSwitch
                             value={qualityAlert}
                             onValueChange={setQualityAlert}
+                            disabled={!systemNotif}
                         />
                     </View>
 
-                    <View style={[styles.settingRow, styles.settingRowLast]}>
-                        <View style={styles.settingTextContainer}>
+                    {/* CÔNG TẮC CON 3 */}
+                    <View 
+                        style={[styles.settingRow, styles.settingRowLast]}
+                        pointerEvents={systemNotif ? "auto" : "none"}
+                    >
+                        <View style={[styles.settingTextContainer, !systemNotif && styles.disabledContent]}>
                             <Text style={styles.settingName}>Báo cáo quan trắc hằng ngày</Text>
                             <Text style={styles.settingDesc}>Nhận thông báo thống kê dữ liệu hằng ngày</Text>
                         </View>
                         <CustomSwitch
                             value={dailyReport}
                             onValueChange={setDailyReport}
+                            disabled={!systemNotif}
                         />
                     </View>
                 </View>
@@ -170,7 +188,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: "#0F172B",
         marginBottom: 6,
-        fontFamily: "Inter-SemiBold", // Đã sửa lại thành SemiBold để không lỗi font
+        fontFamily: "Inter-SemiBold", 
     },
     unreadContainer: {
         flexDirection: "row",
@@ -179,7 +197,7 @@ const styles = StyleSheet.create({
     unreadBadge: {
         fontSize: 13,
         color: "#E7000B",
-        fontFamily: "Inter-SemiBold", // Đã sửa lại thành SemiBold
+        fontFamily: "Inter-SemiBold", 
         marginLeft: 7,
     },
     settingsCard: {
@@ -200,7 +218,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#0F172B",
         marginBottom: 16,
-        fontFamily: "Inter-SemiBold", // Đã sửa lại thành SemiBold
+        fontFamily: "Inter-SemiBold", 
     },
     settingRow: {
         flexDirection: "row",
@@ -210,6 +228,9 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: "#F1F5F9",
+    },
+    disabledContent: {
+        opacity: 0.4, // Làm mờ chữ khi bị vô hiệu hóa
     },
     settingRowLast: {
         borderBottomWidth: 0,
@@ -241,7 +262,7 @@ const styles = StyleSheet.create({
     filterLabel: {
         fontSize: 14,
         color: "#45556C",
-        fontFamily: "Inter-SemiBold", // Đã sửa lại thành SemiBold
+        fontFamily: "Inter-SemiBold", 
     },
     filterTabs: {
         flexDirection: "row",

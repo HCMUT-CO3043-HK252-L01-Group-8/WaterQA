@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native'; // Thêm Linking vào đây
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTabBarHeight } from '@/hooks/useTabBarHeight';
 import AppHeader from '@/components/AppHeader';
-import { Feather } from '@expo/vector-icons'; // Import thư viện Vector Icons
+import { Feather } from '@expo/vector-icons';
 import CustomSwitch from '@/components/ui/CustomSwitch';
 
 export default function SettingsScreen() {
@@ -11,9 +11,13 @@ export default function SettingsScreen() {
     const [language, setLanguage] = useState('vi');
     const tabBarHeight = useTabBarHeight();
 
-    // Sửa lại hàm renderSettingRow để nhận tên icon của Feather thay vì string emoji
-    const renderSettingRow = (iconName: keyof typeof Feather.glyphMap, title: string, subtitle: string, rightElement: any, isLast = false) => (
-        <View style={[styles.settingRow, isLast && { borderBottomWidth: 0, paddingBottom: 0 }]}>
+    // 1. SỬA LẠI HÀM NÀY: Chuyển View ngoài cùng thành TouchableOpacity và thêm biến onPress
+    const renderSettingRow = (iconName: keyof typeof Feather.glyphMap, title: string, subtitle: string, rightElement: any, isLast = false, onPress?: () => void) => (
+        <TouchableOpacity 
+            style={[styles.settingRow, isLast && { borderBottomWidth: 0, paddingBottom: 0 }]}
+            onPress={onPress} // Kích hoạt hành động khi bấm
+            activeOpacity={onPress ? 0.7 : 1} // Nếu có link thì khi bấm mới có hiệu ứng mờ
+        >
             <View style={styles.settingRowLeft}>
                 <View style={styles.settingIconBox}>
                     <Feather name={iconName} size={18} color="#45556C" />
@@ -26,7 +30,7 @@ export default function SettingsScreen() {
             <View style={styles.settingRowRight}>
                 {rightElement ? rightElement : <Feather name="chevron-right" size={20} color="#90A1B9" />}
             </View>
-        </View>
+        </TouchableOpacity>
     );
 
     return (
@@ -92,7 +96,8 @@ export default function SettingsScreen() {
                         <CustomSwitch
                             value={emailNotif}
                             onValueChange={setEmailNotif}
-                        />
+                        />,
+                        true
                     )}
                 </View>
 
@@ -121,7 +126,16 @@ export default function SettingsScreen() {
                 {/* 7. Hỗ trợ & Ngôn ngữ */}
                 <View style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Hỗ trợ</Text>
-                    {renderSettingRow('help-circle', 'FAQ', 'Nhận trợ giúp về ứng dụng', null)}
+                    
+                    {/* 2. CHÈN LINK VÀO MỤC FAQ Ở ĐÂY NÈ */}
+                    {renderSettingRow(
+                        'help-circle', 
+                        'FAQ', 
+                        'Nhận trợ giúp về ứng dụng', 
+                        null, 
+                        false, 
+                        () => Linking.openURL('https://github.com/HCMUT-CO3043-HK252-L01-Group-8/WaterQA')
+                    )}
 
                     {renderSettingRow(
                         'globe',
@@ -167,12 +181,12 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: '#0F172B',
         marginBottom: 4,
-        fontFamily: 'Inter-SemiBold', // Thêm font
+        fontFamily: 'Inter-SemiBold',
     },
     pageSubtitle: {
         fontSize: 13,
         color: '#45556C',
-        fontFamily: 'Inter-Regular', // Thêm font
+        fontFamily: 'Inter-Regular',
     },
     profileCard: {
         flexDirection: 'row',
@@ -301,7 +315,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#0F172B',
         marginBottom: 2,
-        fontFamily: 'Inter-SemiBold', // Thay fontWeight bằng fontFamily
+        fontFamily: 'Inter-SemiBold',
     },
     settingSubtitle: {
         fontSize: 11,
