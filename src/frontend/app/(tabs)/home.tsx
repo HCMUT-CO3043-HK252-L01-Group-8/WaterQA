@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import AppHeader from "@/components/AppHeader";
+import { Feather } from "@expo/vector-icons";
 
 export default function HomeDashboard() {
     const tabBarHeight = useTabBarHeight();
@@ -19,17 +20,22 @@ export default function HomeDashboard() {
                     <AppHeader />
 
                     <View style={styles.greetingSection}>
-                        <Text style={styles.greetingTitle}>Xin chào, Đậu Minh Khôi</Text>
+                        <Text style={styles.greetingTitle}>
+                            Xin chào, <Text style={styles.userName}>Đậu Minh Khôi</Text>
+                        </Text>
                         <Text style={styles.greetingSubtitle}>Hãy kiểm tra chất lượng nước của bạn</Text>
                     </View>
                 </View>
 
                 {/* 2. Cảnh báo bất thường */}
                 <View style={styles.alertCard}>
-                    <Text style={styles.alertTitle}>⚠️ Đã phát hiện bất thường với cảm biến pH</Text>
+                    <View style={styles.alertTitleRow}>
+                        <Feather name="alert-triangle" size={14} color="#FF6467" />
+                        <Text style={styles.alertTitle}> Đã phát hiện bất thường với cảm biến pH</Text>
+                    </View>
                     <Text style={styles.alertDescription}>
-                        Đã phát hiện hoạt động bất thường của cảm biến pH vào 06-03-2026 20:36 UTC+7. Kiểm tra cảm biến
-                        hoặc liên hệ với chúng tôi.
+                        Đã phát hiện hoạt động bất thường của cảm biến pH vào 06-03-2026 20:36 UTC+7.
+                        Kiểm tra cảm biến hoặc liên hệ với chúng tôi.
                     </Text>
                     <View style={styles.alertActions}>
                         <TouchableOpacity style={styles.detailButton}>
@@ -46,7 +52,7 @@ export default function HomeDashboard() {
                     <Text style={styles.sectionTitle}>Vị trí</Text>
                     <TouchableOpacity style={styles.pickerBox}>
                         <Text style={styles.pickerText}>Select Location</Text>
-                        <Text style={styles.pickerIcon}>▼</Text>
+                        <Feather name="chevron-down" size={16} color="#666666" />
                     </TouchableOpacity>
                 </View>
 
@@ -141,32 +147,6 @@ const styles = StyleSheet.create({
     header: {
         padding: 16,
     },
-    appTitleRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 20,
-    },
-    logoPlaceholder: {
-        width: 35,
-        height: 35,
-        backgroundColor: "#00B8DB",
-        borderRadius: 12,
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 8,
-    },
-    logoText: {
-        fontSize: 16,
-    },
-    appName: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#0F172B",
-    },
-    appSubtitle: {
-        fontSize: 10,
-        color: "#62748E",
-    },
     greetingSection: {
         marginTop: 10,
     },
@@ -174,10 +154,15 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: "#0F172B",
         marginBottom: 4,
+        fontFamily: "Inter-Regular", // "Xin chào" dùng font thường
+    },
+    userName: {
+        fontFamily: "Inter-Bold", // "Đậu Minh Khôi" dùng font đậm
     },
     greetingSubtitle: {
         fontSize: 13,
         color: "#45556C",
+        fontFamily: "Inter-Regular",
     },
     alertCard: {
         marginHorizontal: 16,
@@ -188,17 +173,22 @@ const styles = StyleSheet.create({
         borderLeftWidth: 4,
         borderLeftColor: "#FF6467",
     },
+    alertTitleRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 6,
+    },
     alertTitle: {
         fontSize: 13,
-        fontWeight: "bold",
         color: "#9F0712",
-        marginBottom: 6,
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     alertDescription: {
         fontSize: 11,
         color: "#C10007",
         lineHeight: 18,
         marginBottom: 12,
+        fontFamily: "Inter-Regular", // Thêm font
     },
     alertActions: {
         flexDirection: "row",
@@ -214,11 +204,13 @@ const styles = StyleSheet.create({
     detailButtonText: {
         color: "#9F0712",
         fontSize: 11,
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     readButtonText: {
         color: "#C10007",
         fontSize: 11,
         textDecorationLine: "underline",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     locationSection: {
         flexDirection: "row",
@@ -228,9 +220,9 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 16,
-        fontWeight: "bold",
-        color: "#000000",
+        color: "#0F172B",
         marginRight: 16,
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     pickerBox: {
         flex: 1,
@@ -246,10 +238,7 @@ const styles = StyleSheet.create({
     pickerText: {
         fontSize: 14,
         color: "#333333",
-    },
-    pickerIcon: {
-        fontSize: 12,
-        color: "#666666",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     wqiCard: {
         marginHorizontal: 16,
@@ -263,14 +252,15 @@ const styles = StyleSheet.create({
     },
     wqiTitle: {
         fontSize: 36,
-        fontWeight: "bold",
         color: "#0F172B",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     wqiSubtitle: {
         fontSize: 15,
         color: "#45556C",
         marginTop: 4,
         marginBottom: 12,
+        fontFamily: "Inter-Regular", // Thêm font
     },
     wqiScoreBadge: {
         backgroundColor: "rgba(0, 201, 80, 0.2)",
@@ -281,8 +271,8 @@ const styles = StyleSheet.create({
     },
     wqiScoreText: {
         fontSize: 16,
-        fontWeight: "bold",
         color: "#159600",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     metricsRow: {
         flexDirection: "row",
@@ -295,17 +285,19 @@ const styles = StyleSheet.create({
     },
     metricValue: {
         fontSize: 18,
-        fontWeight: "600",
         color: "#314158",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     metricLabel: {
         fontSize: 12,
         color: "#62748E",
         marginTop: 4,
+        fontFamily: "Inter-Regular", // Thêm font
     },
     updateTime: {
         fontSize: 11,
-        color: "#000000",
+        color: "#45556C",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     statusRow: {
         flexDirection: "row",
@@ -325,22 +317,24 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: "#45556C",
         marginBottom: 8,
+        fontFamily: "Inter-Regular", // Thêm font
     },
     statusCardValuePositive: {
         fontSize: 16,
-        fontWeight: "600",
         color: "#00A63E",
         marginBottom: 4,
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     statusCardValueNegative: {
         fontSize: 16,
-        fontWeight: "600",
         color: "#E7000B",
         marginBottom: 4,
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     statusCardDesc: {
         fontSize: 10,
         color: "#62748E",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     chartCard: {
         marginHorizontal: 16,
@@ -358,8 +352,8 @@ const styles = StyleSheet.create({
     },
     chartTitle: {
         fontSize: 13,
-        fontWeight: "bold",
         color: "#1D293D",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     filterTabs: {
         flexDirection: "row",
@@ -376,6 +370,7 @@ const styles = StyleSheet.create({
     activeTabText: {
         fontSize: 11,
         color: "#0092B8",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     inactiveTab: {
         paddingVertical: 4,
@@ -384,6 +379,7 @@ const styles = StyleSheet.create({
     inactiveTabText: {
         fontSize: 11,
         color: "#45556C",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     chartPlaceholder: {
         height: 100,
@@ -407,15 +403,17 @@ const styles = StyleSheet.create({
     axisText: {
         fontSize: 12,
         color: "#64748B",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     axisTextHighlight: {
-        fontWeight: "bold",
         color: "#0891B2",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     chartFooter: {
         fontSize: 10,
         color: "#62748E",
         textAlign: "center",
         marginTop: 12,
+        fontFamily: "Inter-Regular", // Thêm font
     },
 });

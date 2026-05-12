@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import AppHeader from "@/components/AppHeader";
+import { Feather } from "@expo/vector-icons"; // Import Feather icons
 
 export default function HistoryScreen() {
     const [activeFilter, setActiveFilter] = useState("Ngày");
@@ -12,7 +13,7 @@ export default function HistoryScreen() {
         <View style={styles.historyCard}>
             <View style={styles.cardLeft}>
                 <View style={styles.iconBox}>
-                    <Text>📊</Text>
+                    <Feather name="activity" size={16} color="#0092B8" />
                 </View>
                 <View>
                     <Text style={styles.wqiText}>{wqi} WQI</Text>
@@ -21,7 +22,7 @@ export default function HistoryScreen() {
             </View>
             <View style={styles.cardRight}>
                 <View style={styles.trendBadge}>
-                    <Text style={styles.trendIcon}>↗</Text>
+                    <Feather name="arrow-up-right" size={12} color="#00A63E" style={styles.trendIcon} />
                     <Text style={styles.trendText}>+{trend}</Text>
                 </View>
                 <Text style={styles.timeText}>{time}</Text>
@@ -50,7 +51,7 @@ export default function HistoryScreen() {
                     <Text style={styles.sectionTitle}>Vị trí</Text>
                     <TouchableOpacity style={styles.pickerBox}>
                         <Text style={styles.pickerText}>Select Location</Text>
-                        <Text style={styles.pickerIcon}>▼</Text>
+                        <Feather name="chevron-down" size={16} color="#666666" />
                     </TouchableOpacity>
                 </View>
 
@@ -59,7 +60,7 @@ export default function HistoryScreen() {
                     <View style={[styles.summaryCard, { backgroundColor: "#ECFEFF", borderColor: "#0092B8" }]}>
                         <View style={styles.summaryHeader}>
                             <View style={styles.smallIcon}>
-                                <Text style={{ fontSize: 10 }}>💧</Text>
+                                <Feather name="droplet" size={12} color="#0092B8" />
                             </View>
                             <Text style={styles.summaryLabel}>Hôm nay</Text>
                         </View>
@@ -70,7 +71,7 @@ export default function HistoryScreen() {
                     <View style={[styles.summaryCard, { backgroundColor: "#F0FDF4", borderColor: "#00A63E" }]}>
                         <View style={styles.summaryHeader}>
                             <View style={styles.smallIcon}>
-                                <Text style={{ fontSize: 10 }}>📈</Text>
+                                <Feather name="trending-up" size={12} color="#00A63E" />
                             </View>
                             <Text style={styles.summaryLabel}>so với Hôm qua</Text>
                         </View>
@@ -95,7 +96,7 @@ export default function HistoryScreen() {
                         ))}
                     </View>
                     <TouchableOpacity style={styles.exportBtn}>
-                        <Text style={styles.exportIcon}>⬇</Text>
+                        <Feather name="download" size={14} color="#209FC1" style={styles.exportIcon} />
                         <Text style={styles.exportText}>Xuất báo cáo</Text>
                     </TouchableOpacity>
                 </View>
@@ -126,39 +127,13 @@ const styles = StyleSheet.create({
     header: {
         padding: 16,
     },
-    appTitleRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 20,
-    },
-    logoPlaceholder: {
-        width: 35,
-        height: 35,
-        backgroundColor: "#00B8DB",
-        borderRadius: 12,
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 8,
-    },
-    logoText: {
-        fontSize: 16,
-    },
-    appName: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#0F172B",
-    },
-    appSubtitle: {
-        fontSize: 10,
-        color: "#62748E",
-    },
     pageTitleSection: {
         marginTop: 10,
     },
     pageTitle: {
         fontSize: 20,
-        fontWeight: "bold",
         color: "#0F172B",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     locationSection: {
         flexDirection: "row",
@@ -168,9 +143,9 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 16,
-        fontWeight: "bold",
         color: "#000000",
         marginRight: 16,
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     pickerBox: {
         flex: 1,
@@ -186,10 +161,7 @@ const styles = StyleSheet.create({
     pickerText: {
         fontSize: 14,
         color: "#333333",
-    },
-    pickerIcon: {
-        fontSize: 12,
-        color: "#666666",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     summarySection: {
         flexDirection: "row",
@@ -214,22 +186,24 @@ const styles = StyleSheet.create({
     summaryLabel: {
         fontSize: 11,
         color: "#45556C",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     summaryValueMain: {
         fontSize: 20,
-        fontWeight: "bold",
         color: "#0F172B",
         marginBottom: 2,
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     summaryValuePositive: {
         fontSize: 20,
-        fontWeight: "bold",
         color: "#008236",
         marginBottom: 2,
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     summaryDesc: {
         fontSize: 10,
         color: "#62748E",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     filterActionSection: {
         flexDirection: "row",
@@ -260,10 +234,11 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 11,
         color: "#45556C",
+        fontFamily: "Inter-Regular", // Thêm font
     },
     tabTextActive: {
         color: "#0092B8",
-        fontWeight: "600",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     exportBtn: {
         flexDirection: "row",
@@ -274,13 +249,12 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     exportIcon: {
-        color: "#209FC1",
         marginRight: 6,
-        fontSize: 12,
     },
     exportText: {
         fontSize: 12,
         color: "#209FC1",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     historyListContainer: {
         marginHorizontal: 16,
@@ -318,13 +292,14 @@ const styles = StyleSheet.create({
     },
     wqiText: {
         fontSize: 13,
-        fontWeight: "bold",
         color: "#0F172B",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     dateText: {
         fontSize: 11,
         color: "#62748E",
         marginTop: 2,
+        fontFamily: "Inter-Regular", // Thêm font
     },
     cardRight: {
         alignItems: "flex-end",
@@ -334,18 +309,17 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     trendIcon: {
-        color: "#00A63E",
-        fontSize: 12,
         marginRight: 2,
     },
     trendText: {
         fontSize: 12,
         color: "#00A63E",
-        fontWeight: "600",
+        fontFamily: "Inter-SemiBold", // Thêm font
     },
     timeText: {
         fontSize: 11,
         color: "#62748E",
         marginTop: 2,
+        fontFamily: "Inter-Regular", // Thêm font
     },
 });

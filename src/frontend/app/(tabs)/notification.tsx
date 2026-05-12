@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import AppHeader from "@/components/AppHeader";
+import { Feather } from "@expo/vector-icons"; 
+import AntDesign from "@expo/vector-icons/AntDesign";
+import CustomSwitch from "@/components/ui/CustomSwitch"; 
 
 export default function NotificationScreen() {
     const [systemNotif, setSystemNotif] = useState(true);
@@ -22,66 +25,59 @@ export default function NotificationScreen() {
                 {/* 1. Header */}
                 <View style={styles.header}>
                     <AppHeader />
-
                     <View style={styles.pageTitleSection}>
                         <Text style={styles.pageTitle}>Cảnh báo</Text>
-                        <Text style={styles.unreadBadge}>● Có 2 cảnh báo chưa đọc</Text>
+                        <View style={styles.unreadContainer}>
+                            <AntDesign name="bell" size={14} color="#E7000B" />
+                            <Text style={styles.unreadBadge}>Có 2 cảnh báo chưa đọc</Text>
+                        </View>
                     </View>
                 </View>
 
                 {/* 2. Cài đặt cảnh báo */}
                 <View style={styles.settingsCard}>
                     <Text style={styles.settingsTitle}>Cài đặt cảnh báo</Text>
-
                     <View style={styles.settingRow}>
-                        <View>
+                        <View style={styles.settingTextContainer}>
                             <Text style={styles.settingName}>Thông báo hệ thống</Text>
                             <Text style={styles.settingDesc}>Cho phép ứng dụng gửi thông báo</Text>
                         </View>
-                        <Switch
+                        <CustomSwitch
                             value={systemNotif}
                             onValueChange={setSystemNotif}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
-                            thumbColor="#FFFFFF"
                         />
                     </View>
 
                     <View style={styles.settingRow}>
-                        <View>
+                        <View style={styles.settingTextContainer}>
                             <Text style={styles.settingName}>Cảnh báo cảm biến</Text>
                             <Text style={styles.settingDesc}>Nhận cảnh báo khi cảm biến gặp sự cố</Text>
                         </View>
-                        <Switch
+                        <CustomSwitch
                             value={sensorAlert}
                             onValueChange={setSensorAlert}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
-                            thumbColor="#FFFFFF"
                         />
                     </View>
 
                     <View style={styles.settingRow}>
-                        <View>
+                        <View style={styles.settingTextContainer}>
                             <Text style={styles.settingName}>Cảnh báo chất lượng nước</Text>
                             <Text style={styles.settingDesc}>Nhận thông báo khi có dữ liệu mới từ cảm biến</Text>
                         </View>
-                        <Switch
+                        <CustomSwitch
                             value={qualityAlert}
                             onValueChange={setQualityAlert}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
-                            thumbColor="#FFFFFF"
                         />
                     </View>
 
                     <View style={[styles.settingRow, styles.settingRowLast]}>
-                        <View>
+                        <View style={styles.settingTextContainer}>
                             <Text style={styles.settingName}>Báo cáo quan trắc hằng ngày</Text>
                             <Text style={styles.settingDesc}>Nhận thông báo thống kê dữ liệu hằng ngày</Text>
                         </View>
-                        <Switch
+                        <CustomSwitch
                             value={dailyReport}
                             onValueChange={setDailyReport}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
-                            thumbColor="#FFFFFF"
                         />
                     </View>
                 </View>
@@ -109,13 +105,15 @@ export default function NotificationScreen() {
                     {/* Critical alert */}
                     <View style={styles.alertCard}>
                         <View style={styles.alertIconBox}>
-                            <Text style={styles.alertIcon}>🚨</Text>
+                            <Feather name="alert-octagon" size={24} color="#E7000B" />
                         </View>
                         <View style={styles.alertContent}>
                             <Text style={styles.alertTitle}>Phát hiện nguy cơ ô nhiễm</Text>
                             <Text style={styles.alertDesc}>Khả năng ô nhiễm nguồn nước tăng</Text>
                             <Text style={styles.alertDesc}>Độ tin cậy: 99%</Text>
-                            <Text style={styles.alertTime}>⏱ 2 giờ trước bởi 268 Lý Thường Kiệt</Text>
+                            <Text style={styles.alertTime}>
+                                <Feather name="clock" size={10} color="#90A1B9" /> 2 giờ trước bởi 268 Lý Thường Kiệt
+                            </Text>
                             <View style={styles.alertActions}>
                                 <TouchableOpacity style={styles.detailBtn}>
                                     <Text style={styles.detailBtnText}>Chi tiết</Text>
@@ -130,13 +128,15 @@ export default function NotificationScreen() {
                     {/* Warning alert */}
                     <View style={styles.alertCard}>
                         <View style={[styles.alertIconBox, styles.alertIconWarning]}>
-                            <Text style={styles.alertIcon}>⚠️</Text>
+                            <Feather name="alert-triangle" size={24} color="#D97706" />
                         </View>
                         <View style={styles.alertContent}>
                             <Text style={styles.alertTitle}>Độ đục tăng cao</Text>
                             <Text style={styles.alertDesc}>Chỉ số NTU vượt ngưỡng cho phép</Text>
                             <Text style={styles.alertDesc}>Độ tin cậy: 87%</Text>
-                            <Text style={styles.alertTime}>⏱ 5 giờ trước bởi 268 Lý Thường Kiệt</Text>
+                            <Text style={styles.alertTime}>
+                                <Feather name="clock" size={10} color="#90A1B9" /> 5 giờ trước bởi 268 Lý Thường Kiệt
+                            </Text>
                             <View style={styles.alertActions}>
                                 <TouchableOpacity style={styles.detailBtn}>
                                     <Text style={styles.detailBtnText}>Chi tiết</Text>
@@ -165,41 +165,22 @@ const styles = StyleSheet.create({
     header: {
         padding: 16,
     },
-    appTitleRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 20,
-    },
-    logoPlaceholder: {
-        width: 35,
-        height: 35,
-        backgroundColor: "#00B8DB",
-        borderRadius: 12,
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 8,
-    },
-    logoText: { fontSize: 16 },
-    appName: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#0F172B",
-    },
-    appSubtitle: {
-        fontSize: 10,
-        color: "#62748E",
-    },
     pageTitleSection: { marginTop: 10 },
     pageTitle: {
         fontSize: 20,
-        fontWeight: "bold",
         color: "#0F172B",
         marginBottom: 6,
+        fontFamily: "Inter-SemiBold", // Đã sửa lại thành SemiBold để không lỗi font
+    },
+    unreadContainer: {
+        flexDirection: "row",
+        alignItems: "center",
     },
     unreadBadge: {
         fontSize: 13,
         color: "#E7000B",
-        fontWeight: "500",
+        fontFamily: "Inter-SemiBold", // Đã sửa lại thành SemiBold
+        marginLeft: 7,
     },
     settingsCard: {
         marginHorizontal: 16,
@@ -217,9 +198,9 @@ const styles = StyleSheet.create({
     },
     settingsTitle: {
         fontSize: 14,
-        fontWeight: "bold",
         color: "#0F172B",
         marginBottom: 16,
+        fontFamily: "Inter-SemiBold", // Đã sửa lại thành SemiBold
     },
     settingRow: {
         flexDirection: "row",
@@ -235,16 +216,20 @@ const styles = StyleSheet.create({
         paddingBottom: 0,
         marginBottom: 0,
     },
+    settingTextContainer: {
+        flex: 1,
+        paddingRight: 16,
+    },
     settingName: {
-        fontSize: 13,
+        fontSize: 12,
         color: "#0F172B",
         marginBottom: 2,
-        maxWidth: 220,
+        fontFamily: "Inter-Regular",
     },
     settingDesc: {
-        fontSize: 11,
+        fontSize: 10,
         color: "#62748E",
-        maxWidth: 220,
+        fontFamily: "Inter-Regular",
     },
     filterRow: {
         flexDirection: "row",
@@ -255,8 +240,8 @@ const styles = StyleSheet.create({
     },
     filterLabel: {
         fontSize: 14,
-        fontWeight: "bold",
-        color: "#0F172B",
+        color: "#45556C",
+        fontFamily: "Inter-SemiBold", // Đã sửa lại thành SemiBold
     },
     filterTabs: {
         flexDirection: "row",
@@ -280,10 +265,11 @@ const styles = StyleSheet.create({
     filterTabText: {
         fontSize: 12,
         color: "#45556C",
+        fontFamily: "Inter-Regular",
     },
     filterTabTextActive: {
         color: "#0092B8",
-        fontWeight: "600",
+        fontFamily: "Inter-SemiBold",
     },
     alertList: {
         marginHorizontal: 16,
@@ -296,11 +282,6 @@ const styles = StyleSheet.create({
         padding: 14,
         borderWidth: 1,
         borderColor: "#E2E8F0",
-        elevation: 1,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 2,
     },
     alertIconBox: {
         width: 44,
@@ -314,24 +295,25 @@ const styles = StyleSheet.create({
     alertIconWarning: {
         backgroundColor: "#FFFBEB",
     },
-    alertIcon: { fontSize: 20 },
     alertContent: { flex: 1 },
     alertTitle: {
         fontSize: 13,
-        fontWeight: "bold",
         color: "#0F172B",
         marginBottom: 4,
+        fontFamily: "Inter-SemiBold",
     },
     alertDesc: {
         fontSize: 12,
         color: "#45556C",
         marginBottom: 2,
+        fontFamily: "Inter-Regular",
     },
     alertTime: {
         fontSize: 11,
         color: "#90A1B9",
         marginTop: 4,
         marginBottom: 10,
+        fontFamily: "Inter-Regular",
     },
     alertActions: {
         flexDirection: "row",
@@ -347,11 +329,12 @@ const styles = StyleSheet.create({
     detailBtnText: {
         fontSize: 12,
         color: "#9F0712",
-        fontWeight: "500",
+        fontFamily: "Inter-SemiBold",
     },
     markReadText: {
         fontSize: 12,
         color: "#C10007",
         textDecorationLine: "underline",
+        fontFamily: "Inter-Regular",
     },
 });
