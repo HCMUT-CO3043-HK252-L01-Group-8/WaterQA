@@ -1,5 +1,14 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { useState } from "react";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    Platform,
+    KeyboardAvoidingView,
+    ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,68 +19,99 @@ export default function ForgotPasswordScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
-                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                    <Ionicons name="chevron-back" size={20} color="#000" />
-                    <Text style={styles.backText}>Quay lại</Text>
-                </TouchableOpacity>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+                <ScrollView
+                    contentContainerStyle={styles.scrollContainer}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                        <View style={styles.backIconCircle}>
+                            <Ionicons name="chevron-back" size={20} color="#333" />
+                        </View>
+                        <Text style={styles.backText}>Quay lại</Text>
+                    </TouchableOpacity>
 
-                <Text style={styles.title}>Bạn quên{"\n"}mật khẩu?</Text>
-                <Text style={styles.subtitle}>Nhập email và chúng tôi sẽ hỗ trợ bạn tạo lại mật khẩu mới</Text>
-
-                <View style={styles.formContainer}>
-                    <Text style={styles.inputLabel}>Email</Text>
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            value={email}
-                            onChangeText={setEmail}
-                            placeholder="Nhập email của bạn..."
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                        />
+                    <View style={styles.headerSection}>
+                        <Text style={styles.title}>Bạn quên</Text>
+                        <Text style={[styles.title, {marginLeft: "25%"}]}>mật khẩu?</Text>
+                        <Text style={styles.subtitle}>Để lại email và chúng tôi sẽ hỗ trợ bạn tạo lại mật khẩu mới</Text>
                     </View>
 
-                    <TouchableOpacity style={styles.submitButton} onPress={() => router.push("/verify-code")}>
-                        <Text style={styles.submitButtonText}>Tiếp tục</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+                    <View style={styles.formContainer}>
+                        <Text style={styles.inputLabel}>Email</Text>
+                        <View style={styles.inputContainer}>
+                            <TextInput
+                                style={styles.input}
+                                value={email}
+                                onChangeText={setEmail}
+                                placeholder="Nhập email của bạn..."
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                            />
+                        </View>
+
+                        <TouchableOpacity style={styles.submitButton} onPress={() => router.push("/verify-code")}>
+                            <Text style={styles.submitButtonText}>Tiếp tục</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: "#FFFFFF" },
-    container: { flex: 1, paddingHorizontal: 24, paddingTop: 20 },
+    scrollContainer: {
+        flexGrow: 1,
+        paddingHorizontal: 24,
+        paddingTop: 10,
+        paddingBottom: 30,
+    },
     backButton: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 40,
-        paddingTop: Platform.OS === "android" ? 40 : 10,
+        marginBottom: 30,
+        alignSelf: "flex-start",
     },
-    backText: { fontSize: 16, marginLeft: 4, fontWeight: "500" },
-    title: { fontSize: 32, fontWeight: "bold", color: "#00A89D", marginBottom: 16, lineHeight: 40 },
-    subtitle: { fontSize: 14, color: "#333", marginBottom: 40, lineHeight: 20 },
-    formContainer: { marginBottom: 40 },
-    inputLabel: { fontSize: 14, fontWeight: "500", color: "#333", marginBottom: 8 },
+    backIconCircle: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: "#F5F5F5",
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 8,
+    },
+    backText: { fontSize: 16, fontWeight: "500", color: "#333" },
+    headerSection: { marginBottom: 32 },
+    title: { fontSize: 48, fontWeight: "bold", color: "#00A89D", marginBottom: 12, lineHeight: 56 },
+    subtitle: { fontSize: 14, color: "#666", lineHeight: 20 },
+    formContainer: { width: "100%" },
+    inputLabel: { fontSize: 14, fontWeight: "600", color: "#333", marginBottom: 8 },
     inputContainer: {
         backgroundColor: "#F5F8F8",
         borderWidth: 1,
         borderColor: "#E0E0E0",
-        borderRadius: 8,
+        borderRadius: 10,
         marginBottom: 24,
         paddingHorizontal: 16,
-        height: 50,
+        height: 52,
         justifyContent: "center",
     },
-    input: { height: "100%", color: "#333" },
+    input: { height: "100%", color: "#333", fontSize: 15 },
     submitButton: {
         backgroundColor: "#00A89D",
-        borderRadius: 8,
-        height: 50,
+        borderRadius: 10,
+        height: 52,
         justifyContent: "center",
         alignItems: "center",
+        shadowColor: "#00A89D",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 3,
     },
     submitButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
 });
