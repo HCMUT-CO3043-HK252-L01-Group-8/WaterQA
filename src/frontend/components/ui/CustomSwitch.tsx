@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Pressable, StyleSheet, useColorScheme } from "react-native";
-// Nhớ đảm bảo bạn có export Colors từ file theme.ts nhé
-import { Colors } from "@/constants/theme"; 
+import { Colors } from "@/constants/theme";
 
 interface CustomSwitchProps {
     value: boolean;
     onValueChange: (value: boolean) => void;
+    disabled?: boolean; // 1. Bổ sung thêm prop disabled
 }
 
 const SWITCH_WIDTH = 52;
@@ -14,8 +14,7 @@ const KNOB_SIZE = 26;
 const PADDING = 2;
 const MAX_TRANSLATE = SWITCH_WIDTH - KNOB_SIZE - PADDING * 2;
 
-export default function CustomSwitch({ value, onValueChange }: CustomSwitchProps) {
-    // Lấy màu từ theme hiện tại (light/dark)
+export default function CustomSwitch({ value, onValueChange, disabled = false }: CustomSwitchProps) {
     const currentTheme = Colors[useColorScheme() ?? "light"];
 
     const translateX = useRef(new Animated.Value(value ? MAX_TRANSLATE : 0)).current;
@@ -30,15 +29,26 @@ export default function CustomSwitch({ value, onValueChange }: CustomSwitchProps
     }, [value]);
 
     const toggleSwitch = () => {
-        onValueChange(!value);
+        if (!disabled) { // Chỉ cho phép đổi trạng thái nếu không bị disabled
+            onValueChange(!value);
+        }
     };
 
     return (
         <Pressable
             onPress={toggleSwitch}
-            style={[styles.container, { backgroundColor: value ? currentTheme.primary : currentTheme.border }]}
+            disabled={disabled}
+            style={[
+                styles.container, 
+                { backgroundColor: value ? currentTheme.primary : currentTheme.border },
+                disabled && styles.containerDisabled // 2. Làm mờ riêng cái nút
+            ]}
         >
-            <Animated.View style={[styles.knob, { transform: [{ translateX }] }]} />
+            <Animated.View style={[
+                styles.knob, 
+                { transform: [{ translateX }] },
+                disabled && styles.knobDisabled // 3. Tắt đổ bóng khi bị vô hiệu hóa
+            ]} />
         </Pressable>
     );
 }
@@ -51,6 +61,9 @@ const styles = StyleSheet.create({
         padding: PADDING,
         justifyContent: "center",
     },
+    containerDisabled: {
+        opacity: 0.5, // Làm mờ nút gạt đi 50%
+    },
     knob: {
         width: KNOB_SIZE,
         height: KNOB_SIZE,
@@ -62,4 +75,8 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
         elevation: 2,
     },
+    knobDisabled: {
+        shadowOpacity: 0, // Xóa shadow trên iOS
+        elevation: 0,     // Xóa shadow trên Android (nguyên nhân gây lỗi lục giác)
+    }
 });
