@@ -66,8 +66,12 @@ class AccountsService {
       console.log("Delete account called");
       return 0;
     } catch (err) {
-      return 500; // temporary. This is expected to give the exact SQL error (eg. account not found...)
+      return 500;
     }
+  }
+
+  updateEmailNotifications(userId, enabled) {
+    return accountsRepo.updateEmailNotifications(userId, enabled);
   }
 }
 

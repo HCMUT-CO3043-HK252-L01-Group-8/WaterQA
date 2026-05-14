@@ -299,3 +299,32 @@ export async function resetPassword(email: string, otp: string, new_password: st
   return body;
 }
 
+// Lấy thông tin tài khoản hiện tại
+export async function getMe(options?: { signal?: AbortSignal }): Promise<{ success: boolean; payload?: { user_id: number; name: string; email: string; phone_number: string; email_notifications: number }; error?: string }> {
+  const url = `${BASE_URL}/accounts/me`;
+  const res = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: { 'Accept': 'application/json' },
+    signal: options?.signal,
+  });
+  const body = await res.json();
+  return body;
+}
+
+// Cập nhật trạng thái nhận thông báo email
+export async function updateEmailNotifications(enabled: boolean, options?: { signal?: AbortSignal }): Promise<{ success: boolean; message?: string; error?: string }> {
+  const url = `${BASE_URL}/accounts/me/email-notifications`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ email_notifications: enabled }),
+    signal: options?.signal,
+  });
+  const body = await res.json();
+  return body;
+}

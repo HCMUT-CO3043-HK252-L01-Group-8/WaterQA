@@ -3,8 +3,11 @@ const db = require("../database/db");
 
 class AccountsRepository {
   findAll() {
+    // Ensure column exists (safe migration)
+    try {
+      db.prepare("ALTER TABLE USER ADD COLUMN email_notifications INTEGER DEFAULT 1").run();
+    } catch (_) { /* column already exists */ }
     return db
-      // .prepare("SELECT phone, hashedPass FROM Accounts ORDER BY phone")
       .prepare("SELECT * FROM USER ORDER BY user_id")
       .all();
   }
@@ -52,6 +55,12 @@ class AccountsRepository {
     return db
       .prepare("UPDATE USER SET password_hash=?, updated_at=? WHERE email=?")
       .run([newPassword, now, email]);
+  }
+  updateEmailNotifications(userId, enabled) {
+    const now = new Date().toISOString();
+    return db
+      .prepare("UPDATE USER SET email_notifications=?, updated_at=? WHERE user_id=?")
+      .run([enabled ? 1 : 0, now, userId]);
   }
 }
 

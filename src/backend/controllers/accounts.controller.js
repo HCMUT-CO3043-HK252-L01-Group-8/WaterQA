@@ -15,6 +15,54 @@ function getAll(req, res) {
     res.status(500).json({ success: false, error: err.message, timestamp: new Date().toISOString() });
   }
 }
+
+function getMe(req, res) {
+  try {
+    if (!req.session || !req.session.user) {
+      return res.status(401).json({ success: false, error: 'Chưa đăng nhập', timestamp: new Date().toISOString() });
+    }
+    const userId = req.session.user.user_id;
+    const users = accountsService.findById(userId);
+    if (!users || users.length === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy user', timestamp: new Date().toISOString() });
+    }
+    const user = users[0];
+    return res.status(200).json({
+      success: true,
+      payload: {
+        user_id: user.user_id,
+        name: user.name,
+        email: user.email,
+        phone_number: user.phone_number,
+        email_notifications: user.email_notifications !== undefined ? user.email_notifications : 1,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, timestamp: new Date().toISOString() });
+  }
+}
+
+function updateEmailNotifications(req, res) {
+  try {
+    if (!req.session || !req.session.user) {
+      return res.status(401).json({ success: false, error: 'Chưa đăng nhập', timestamp: new Date().toISOString() });
+    }
+    const userId = req.session.user.user_id;
+    const { email_notifications } = req.body;
+    if (email_notifications === undefined) {
+      return res.status(400).json({ success: false, error: 'Thiếu trường email_notifications', timestamp: new Date().toISOString() });
+    }
+    accountsService.updateEmailNotifications(userId, !!email_notifications);
+    return res.status(200).json({
+      success: true,
+      message: email_notifications ? 'Bật thông báo email' : 'Tắt thông báo email',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, timestamp: new Date().toISOString() });
+  }
+}
 function findById(req, res) {
   try {
     const bool = accountsService.findById(req.params.id);
@@ -122,6 +170,8 @@ function deleteAccount(req, res) {
 
 module.exports = {
   getAll,
+  getMe,
+  updateEmailNotifications,
   findById,
   showSignupPage,
   signup,

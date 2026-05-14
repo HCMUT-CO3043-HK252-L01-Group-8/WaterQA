@@ -1,7 +1,69 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+
+// Mỗi thông báo có: id, loại (Critical/Warning/Info/Success), và trạng thái đã đọc
+const INITIAL_NOTIFICATIONS = [
+    {
+        id: 1,
+        type: 'Critical',
+        icon: '🚨',
+        bgColor: '#FEF2F2',
+        titleKey: 'notifications.pollutionRisk',
+        descKey: 'notifications.pollutionRiskDesc',
+        extraDesc: (t: any) => '\n' + t('notifications.pollutionConfidence', { percentage: 99 }),
+        timeKey: 'notifications.agoFrom',
+        timeArgs: { time: '2 giờ', location: '268 Lý Thường Kiệt' },
+        accentColor: '#9F0712',
+        accentBg: '#FFE2E2',
+        read: false,
+    },
+    {
+        id: 2,
+        type: 'Warning',
+        icon: '⚠️',
+        bgColor: '#FEFCE8',
+        titleKey: 'notifications.turbidityHigh',
+        descKey: 'notifications.turbidityHighDesc',
+        descArgs: { value: 7 },
+        extraDesc: null,
+        timeKey: 'notifications.agoFrom',
+        timeArgs: { time: '1 ngày', location: '268 Lý Thường Kiệt' },
+        accentColor: '#854D0E',
+        accentBg: '#FEF9C3',
+        read: false,
+    },
+    {
+        id: 3,
+        type: 'Warning',
+        icon: 'ℹ️',
+        bgColor: '#EFF6FF',
+        titleKey: 'notifications.sensorMaintenance',
+        descKey: 'notifications.sensorMaintenanceDesc',
+        extraDesc: null,
+        timeKey: 'notifications.agoFrom',
+        timeArgs: { time: '3 ngày', location: 'Đông Hòa, Dĩ An' },
+        accentColor: '#0C5EDB',
+        accentBg: '#EFF6FF',
+        read: false,
+    },
+    {
+        id: 4,
+        type: 'Info',
+        icon: '✅',
+        bgColor: '#F0FDF4',
+        titleKey: 'notifications.newStation',
+        descKey: 'notifications.newStationDesc',
+        descArgs: { station: '161 Võ Nguyên Giáp' },
+        extraDesc: null,
+        timeKey: 'notifications.agoFrom',
+        timeArgs: { time: '04-03-2026', location: '161 Võ Nguyên Giáp' },
+        accentColor: '#166534',
+        accentBg: '#DCFCE7',
+        read: true, // mục này đã đọc sẵn
+    },
+];
 
 export default function AlertsScreen() {
     const { t } = useTranslation();
@@ -10,11 +72,37 @@ export default function AlertsScreen() {
     const [waterAlert, setWaterAlert] = useState(true);
     const [dailyReport, setDailyReport] = useState(false);
     const [activeTab, setActiveTab] = useState('All');
+    const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    const handleMarkAsRead = (id: number) => {
+        setNotifications(prev =>
+            prev.map(n => n.id === id ? { ...n, read: true } : n)
+        );
+    };
+
+    const handleDetails = (titleKey: string) => {
+        Alert.alert(
+            t(titleKey),
+            'Đang xem chi tiết thông báo này.',
+            [{ text: 'Đóng' }]
+        );
+    };
+
+    // Lọc theo tab và trạng thái chưa đọc/ẩn đi nếu đã đọc
+    const visibleNotifications = notifications.filter(n => {
+        if (n.read) return false; // ẩn thông báo đã đánh dấu đọc
+        if (activeTab === 'All') return true;
+        if (activeTab === 'Critical') return n.type === 'Critical';
+        if (activeTab === 'Warning') return n.type === 'Warning';
+        return false;
+    });
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView 
-                style={styles.container} 
+            <ScrollView
+                style={styles.container}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 100 }}
             >
@@ -29,20 +117,24 @@ export default function AlertsScreen() {
                             <Text style={styles.appSubtitle}>{t('app.subtitle')}</Text>
                         </View>
                     </View>
-                    
+
                     <View style={styles.pageTitleSection}>
                         <Text style={styles.pageTitle}>{t('notifications.pageTitle')}</Text>
-                        <View style={styles.unreadBadge}>
-                            <View style={styles.dotRed} />
-                            <Text style={styles.unreadText}>{t('notifications.unreadCount', { count: 2 })}</Text>
-                        </View>
+                        {unreadCount > 0 ? (
+                            <View style={styles.unreadBadge}>
+                                <View style={styles.dotRed} />
+                                <Text style={styles.unreadText}>{t('notifications.unreadCount', { count: unreadCount })}</Text>
+                            </View>
+                        ) : (
+                            <Text style={styles.allReadText}>✅ Tất cả đã được đọc</Text>
+                        )}
                     </View>
                 </View>
 
                 {/* 2. Cài đặt cảnh báo */}
                 <View style={styles.settingsCard}>
                     <Text style={styles.settingsTitle}>{t('notifications.settingsTitle')}</Text>
-                    
+
                     <View style={styles.settingRow}>
                         <View style={styles.settingTextContainer}>
                             <Text style={styles.settingLabel}>{t('notifications.systemNotification')}</Text>
@@ -51,7 +143,7 @@ export default function AlertsScreen() {
                         <Switch
                             value={sysNotification}
                             onValueChange={setSysNotification}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
                             thumbColor="#FFFFFF"
                         />
                     </View>
@@ -64,7 +156,7 @@ export default function AlertsScreen() {
                         <Switch
                             value={sensorAlert}
                             onValueChange={setSensorAlert}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
                             thumbColor="#FFFFFF"
                         />
                     </View>
@@ -77,7 +169,7 @@ export default function AlertsScreen() {
                         <Switch
                             value={waterAlert}
                             onValueChange={setWaterAlert}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
                             thumbColor="#FFFFFF"
                         />
                     </View>
@@ -90,7 +182,7 @@ export default function AlertsScreen() {
                         <Switch
                             value={dailyReport}
                             onValueChange={setDailyReport}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
                             thumbColor="#FFFFFF"
                         />
                     </View>
@@ -100,100 +192,85 @@ export default function AlertsScreen() {
                 <View style={styles.filterSection}>
                     <Text style={styles.filterTitle}>{t('notifications.filterTitle')}</Text>
                     <View style={styles.filterTabs}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.tabButton, activeTab === 'All' && styles.tabButtonActive]}
                             onPress={() => setActiveTab('All')}
                         >
-                            <Text style={[styles.tabText, activeTab === 'All' && styles.tabTextActive]}>{t('notifications.filterAll')}</Text>
+                            <Text style={[styles.tabText, activeTab === 'All' && styles.tabTextActive]}>
+                                {t('notifications.filterAll')}
+                            </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.tabButton, activeTab === 'Warning' && styles.tabButtonActive]}
                             onPress={() => setActiveTab('Warning')}
                         >
-                            <Text style={[styles.tabText, activeTab === 'Warning' && styles.tabTextActive]}>{t('notifications.filterWarning')}</Text>
+                            <Text style={[styles.tabText, activeTab === 'Warning' && styles.tabTextActive]}>
+                                {t('notifications.filterWarning')}
+                            </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.tabButton, activeTab === 'Critical' && styles.tabButtonActive]}
                             onPress={() => setActiveTab('Critical')}
                         >
-                            <Text style={[styles.tabText, activeTab === 'Critical' && styles.tabTextActive]}>{t('notifications.filterCritical')}</Text>
+                            <Text style={[styles.tabText, activeTab === 'Critical' && styles.tabTextActive]}>
+                                {t('notifications.filterCritical')}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* 4. Danh sách thông báo */}
                 <View style={styles.notificationList}>
-                    {/* Item 1: Critical (Đỏ) */}
-                    <View style={styles.notiItem}>
-                        <View style={styles.notiHeader}>
-                            <View style={[styles.iconBox, { backgroundColor: '#FEF2F2' }]}>
-                                <Text>🚨</Text>
-                            </View>
-                            <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>{t('notifications.pollutionRisk')}</Text>
-                                <Text style={styles.notiDesc}>{t('notifications.pollutionRiskDesc')}{'\n'}{t('notifications.pollutionConfidence', { percentage: 99 })}</Text>
-                                <Text style={styles.notiTime}>🕒 {t('notifications.agoFrom', { time: '2 giờ', location: '268 Lý Thường Kiệt' })}</Text>
-                            </View>
+                    {visibleNotifications.length === 0 ? (
+                        <View style={styles.emptyState}>
+                            <Text style={styles.emptyIcon}>🎉</Text>
+                            <Text style={styles.emptyText}>Không có thông báo nào</Text>
                         </View>
-                        <View style={styles.notiActions}>
-                            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FFE2E2' }]}>
-                                <Text style={[styles.actionBtnText, { color: '#9F0712' }]}>{t('notifications.details')}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <Text style={[styles.actionLinkText, { color: '#C10007' }]}>{t('notifications.markAsRead')}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Item 2: Warning (Vàng) */}
-                    <View style={[styles.notiItem, { opacity: 0.7 }]}>
-                        <View style={styles.notiHeader}>
-                            <View style={[styles.iconBox, { backgroundColor: '#FEFCE8' }]}>
-                                <Text>⚠️</Text>
-                            </View>
-                            <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>{t('notifications.turbidityHigh')}</Text>
-                                <Text style={styles.notiDesc}>{t('notifications.turbidityHighDesc', { value: 7 })}</Text>
-                                <Text style={styles.notiTime}>🕒 {t('notifications.agoFrom', { time: '1 ngày', location: '268 Lý Thường Kiệt' })}</Text>
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* Item 3: Info (Xanh dương) */}
-                    <View style={[styles.notiItem, { opacity: 0.7 }]}>
-                        <View style={styles.notiHeader}>
-                            <View style={[styles.iconBox, { backgroundColor: '#EFF6FF' }]}>
-                                <Text>ℹ️</Text>
-                            </View>
-                            <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>{t('notifications.sensorMaintenance')}</Text>
-                                <Text style={styles.notiDesc}>{t('notifications.sensorMaintenanceDesc')}</Text>
-                                <Text style={styles.notiTime}>🕒 {t('notifications.agoFrom', { time: '3 ngày', location: 'Đông Hòa, Dĩ An' })}</Text>
-                            </View>
-                        </View>
-                        <View style={styles.notiActions}>
-                            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EFF6FF' }]}>
-                                <Text style={[styles.actionBtnText, { color: '#0C5EDB' }]}>{t('notifications.details')}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <Text style={[styles.actionLinkText, { color: '#0C5EDB' }]}>{t('notifications.markAsRead')}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Item 4: Success (Xanh lá) */}
-                    <View style={[styles.notiItem, { opacity: 0.7 }]}>
-                        <View style={styles.notiHeader}>
-                            <View style={[styles.iconBox, { backgroundColor: '#F0FDF4' }]}>
-                                <Text>✅</Text>
-                            </View>
-                            <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>{t('notifications.newStation')}</Text>
-                                <Text style={styles.notiDesc}>{t('notifications.newStationDesc', { station: '161 Võ Nguyên Giáp' })}</Text>
-                                <Text style={styles.notiTime}>🕒 {t('notifications.agoFrom', { time: '04-03-2026', location: '161 Võ Nguyên Giáp' })}</Text>
-                            </View>
-                        </View>
-                    </View>
+                    ) : (
+                        visibleNotifications.map((item, index) => {
+                            const isLast = index === visibleNotifications.length - 1;
+                            const showActions = item.type === 'Critical' || item.type === 'Warning';
+                            return (
+                                <View
+                                    key={item.id}
+                                    style={[styles.notiItem, isLast && { borderBottomWidth: 0, marginBottom: 0 }]}
+                                >
+                                    <View style={styles.notiHeader}>
+                                        <View style={[styles.iconBox, { backgroundColor: item.bgColor }]}>
+                                            <Text>{item.icon}</Text>
+                                        </View>
+                                        <View style={styles.notiContent}>
+                                            <Text style={styles.notiTitle}>{t(item.titleKey)}</Text>
+                                            <Text style={styles.notiDesc}>
+                                                {t(item.descKey, (item as any).descArgs || {})}
+                                                {item.extraDesc ? item.extraDesc(t) : ''}
+                                            </Text>
+                                            <Text style={styles.notiTime}>
+                                                🕒 {t(item.timeKey, item.timeArgs)}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    {showActions && (
+                                        <View style={styles.notiActions}>
+                                            <TouchableOpacity
+                                                style={[styles.actionBtn, { backgroundColor: item.accentBg }]}
+                                                onPress={() => handleDetails(item.titleKey)}
+                                            >
+                                                <Text style={[styles.actionBtnText, { color: item.accentColor }]}>
+                                                    {t('notifications.details')}
+                                                </Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity onPress={() => handleMarkAsRead(item.id)}>
+                                                <Text style={[styles.actionLinkText, { color: item.accentColor }]}>
+                                                    {t('notifications.markAsRead')}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+                                </View>
+                            );
+                        })
+                    )}
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -262,6 +339,11 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: 'bold',
         color: '#FB2C36',
+    },
+    allReadText: {
+        fontSize: 12,
+        color: '#00A63E',
+        fontWeight: '500',
     },
     settingsCard: {
         marginHorizontal: 16,
@@ -351,6 +433,19 @@ const styles = StyleSheet.create({
         borderColor: '#E2E8F0',
         borderRadius: 14,
         paddingTop: 14,
+        paddingBottom: 14,
+    },
+    emptyState: {
+        alignItems: 'center',
+        paddingVertical: 32,
+    },
+    emptyIcon: {
+        fontSize: 36,
+        marginBottom: 10,
+    },
+    emptyText: {
+        fontSize: 14,
+        color: '#62748E',
     },
     notiItem: {
         paddingHorizontal: 14,
