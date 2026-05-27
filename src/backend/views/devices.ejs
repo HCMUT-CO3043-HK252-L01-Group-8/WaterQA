@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Devices</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Devices</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Sensor ID</th>
+                <th>Station ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Unit</th>
+                <th>Status</th>
+                <!-- <th></th> -->
+            </tr>
+        </thead>
+        <tbody>
+            <% devices.forEach(device => { %>
+                <tr>
+                    <td><%= device.sensor_id %></td>
+                    <td><%= device.station_id %></td>
+                    <td><%= device.sensor_name %></td>
+                    <td><%= device.sensor_type %></td>
+                    <td><%= device.unit %></td>
+                    <td><%= device.status %></td>
+                    <!-- <td><a href="switch-sensor/<%= device.sensor_id %>">Switch</a></td> -->
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</body>
+</html>

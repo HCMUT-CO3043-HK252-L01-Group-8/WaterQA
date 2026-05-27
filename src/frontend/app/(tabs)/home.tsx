@@ -1,11 +1,64 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const LOCATIONS = [
+    { id: 1, name: 'Bể nước BK-H6' },
+    { id: 2, name: 'Bể nước BK-B1' },
+    { id: 3, name: 'Bể nước BK-B2' },
+    { id: 4, name: 'Bể nước BK-B3' },
+];
 
 export default function HomeDashboard() {
+    const [userName, setUserName] = useState('Người dùng');
+    const [alertRead, setAlertRead] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
+    const [showLocationModal, setShowLocationModal] = useState(false);
+    const { t } = useTranslation();
+
+    useEffect(() => {
+        // Đọc thông tin từ AsyncStorage
+        const loadData = async () => {
+            try {
+                const storedUserStr = await AsyncStorage.getItem('currentUser');
+                if (storedUserStr) {
+                    const storedUser = JSON.parse(storedUserStr);
+                    if (storedUser.name) setUserName(storedUser.name);
+                }
+                
+                // Kiểm tra xem alert có được đánh dấu là đã đọc không
+                const isAlertRead = await AsyncStorage.getItem('homeAlertRead');
+                setAlertRead(isAlertRead === 'true');
+            } catch (e) {
+                console.error(e);
+            }
+        };
+        loadData();
+    }, []);
+
+    const handleMarkAlertAsRead = async () => {
+        setAlertRead(true);
+        try {
+            await AsyncStorage.setItem('homeAlertRead', 'true');
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleSelectLocation = (location: typeof LOCATIONS[0]) => {
+        setSelectedLocation(location);
+        setShowLocationModal(false);
+    };
+
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                style={styles.container} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
                 {/* 1. Header & Lời chào */}
                 <View style={styles.header}>
                     <View style={styles.appTitleRow}>
@@ -13,46 +66,92 @@ export default function HomeDashboard() {
                             <Text style={styles.logoText}>💧</Text>
                         </View>
                         <View>
-                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                            <Text style={styles.appName}>{t('app.name')}</Text>
+                            <Text style={styles.appSubtitle}>{t('app.subtitle')}</Text>
                         </View>
                     </View>
                     
                     <View style={styles.greetingSection}>
-                        <Text style={styles.greetingTitle}>Xin chào, Đậu Minh Khôi</Text>
-                        <Text style={styles.greetingSubtitle}>Hãy kiểm tra chất lượng nước của bạn</Text>
+                        <Text style={styles.greetingTitle}>{t('home.greeting', { name: userName })}</Text>
+                        <Text style={styles.greetingSubtitle}>{t('home.greetingSubtitle')}</Text>
                     </View>
                 </View>
 
                 {/* 2. Cảnh báo bất thường */}
+                {!alertRead && (
                 <View style={styles.alertCard}>
-                    <Text style={styles.alertTitle}>⚠️ Đã phát hiện bất thường với cảm biến pH</Text>
+                    <Text style={styles.alertTitle}>{t('home.alertDetected')}</Text>
                     <Text style={styles.alertDescription}>
-                        Đã phát hiện hoạt động bất thường của cảm biến pH vào 06-03-2026 20:36 UTC+7. Kiểm tra cảm biến hoặc liên hệ với chúng tôi.
+                        {t('home.alertDescription')}
                     </Text>
                     <View style={styles.alertActions}>
                         <TouchableOpacity style={styles.detailButton}>
-                            <Text style={styles.detailButtonText}>Chi tiết</Text>
+                            <Text style={styles.detailButtonText}>{t('home.details')}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text style={styles.readButtonText}>Đánh dấu đã đọc</Text>
+                        <TouchableOpacity onPress={handleMarkAlertAsRead}>
+                            <Text style={styles.readButtonText}>{t('home.markAsRead')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+                )}
 
                 {/* 3. Chọn vị trí */}
                 <View style={styles.locationSection}>
-                    <Text style={styles.sectionTitle}>Vị trí</Text>
-                    <TouchableOpacity style={styles.pickerBox}>
-                        <Text style={styles.pickerText}>Select Location</Text>
+                    <Text style={styles.sectionTitle}>{t('home.location')}</Text>
+                    <TouchableOpacity 
+                        style={styles.pickerBox}
+                        onPress={() => setShowLocationModal(true)}
+                    >
+                        <Text style={styles.pickerText}>{selectedLocation.name}</Text>
                         <Text style={styles.pickerIcon}>▼</Text>
                     </TouchableOpacity>
                 </View>
 
+                {/* Location Selection Modal */}
+                <Modal
+                    visible={showLocationModal}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowLocationModal(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>{t('home.selectLocation')}</Text>
+                                <TouchableOpacity onPress={() => setShowLocationModal(false)}>
+                                    <Text style={styles.closeButton}>✕</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <FlatList
+                                data={LOCATIONS}
+                                keyExtractor={(item) => item.id.toString()}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.locationItem,
+                                            selectedLocation.id === item.id && styles.selectedLocationItem
+                                        ]}
+                                        onPress={() => handleSelectLocation(item)}
+                                    >
+                                        <Text 
+                                            style={[
+                                                styles.locationItemText,
+                                                selectedLocation.id === item.id && styles.selectedLocationItemText
+                                            ]}
+                                        >
+                                            {item.name}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        </View>
+                    </View>
+                </Modal>
+
                 {/* 4. Thẻ Chỉ số WQI chính */}
                 <View style={styles.wqiCard}>
-                    <Text style={styles.wqiTitle}>An toàn</Text>
-                    <Text style={styles.wqiSubtitle}>Chỉ số chất lượng nước (WQI)</Text>
+                    <Text style={styles.wqiTitle}>{t('home.wqiTitle')}</Text>
+                    <Text style={styles.wqiSubtitle}>{t('home.wqiSubtitle')}</Text>
                     
                     <View style={styles.wqiScoreBadge}>
                         <Text style={styles.wqiScoreText}>96</Text>
@@ -61,50 +160,50 @@ export default function HomeDashboard() {
                     <View style={styles.metricsRow}>
                         <View style={styles.metricItem}>
                             <Text style={styles.metricValue}>7.0</Text>
-                            <Text style={styles.metricLabel}>pH</Text>
+                            <Text style={styles.metricLabel}>{t('home.pH')}</Text>
                         </View>
                         <View style={styles.metricItem}>
                             <Text style={styles.metricValue}>67</Text>
-                            <Text style={styles.metricLabel}>Hardness (mg/l)</Text>
+                            <Text style={styles.metricLabel}>{t('home.hardness')}</Text>
                         </View>
                         <View style={styles.metricItem}>
                             <Text style={styles.metricValue}>0.5</Text>
-                            <Text style={styles.metricLabel}>Clo (mg/l)</Text>
+                            <Text style={styles.metricLabel}>{t('home.chlorine')}</Text>
                         </View>
                         <View style={styles.metricItem}>
                             <Text style={styles.metricValue}>1</Text>
-                            <Text style={styles.metricLabel}>NTU</Text>
+                            <Text style={styles.metricLabel}>{t('home.turbidity')}</Text>
                         </View>
                     </View>
                     
-                    <Text style={styles.updateTime}>Cập nhật lần cuối: 06-03-2026 20:36 UTC+7</Text>
+                    <Text style={styles.updateTime}>{t('home.lastUpdate')}</Text>
                 </View>
 
                 {/* 5. Thẻ Trạng thái phụ */}
                 <View style={styles.statusRow}>
                     <View style={styles.statusCard}>
-                        <Text style={styles.statusCardLabel}>so với 05-03-2026</Text>
+                        <Text style={styles.statusCardLabel}>{t('home.compared')}</Text>
                         <Text style={styles.statusCardValuePositive}>+2</Text>
-                        <Text style={styles.statusCardDesc}>Chỉ số WQI</Text>
+                        <Text style={styles.statusCardDesc}>{t('home.wqiTitle')}</Text>
                     </View>
                     
                     <View style={styles.statusCard}>
-                        <Text style={styles.statusCardLabel}>Trạng thái cảm biến</Text>
+                        <Text style={styles.statusCardLabel}>{t('home.sensorStatus')}</Text>
                         <Text style={styles.statusCardValueNegative}>3/4</Text>
-                        <Text style={styles.statusCardDesc}>Vui lòng kiểm tra cảm biến pH</Text>
+                        <Text style={styles.statusCardDesc}>{t('home.sensorCheck')}</Text>
                     </View>
                 </View>
 
                 {/* 6. Biểu đồ Thống kê */}
                 <View style={styles.chartCard}>
                     <View style={styles.chartHeader}>
-                        <Text style={styles.chartTitle}>Thống kê chất lượng nước</Text>
+                        <Text style={styles.chartTitle}>{t('home.statistics')}</Text>
                         <View style={styles.filterTabs}>
                             <TouchableOpacity style={styles.activeTab}>
-                                <Text style={styles.activeTabText}>Theo tuần</Text>
+                                <Text style={styles.activeTabText}>{t('home.weekly')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.inactiveTab}>
-                                <Text style={styles.inactiveTabText}>Theo tháng</Text>
+                                <Text style={styles.inactiveTabText}>{t('home.monthly')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -122,11 +221,8 @@ export default function HomeDashboard() {
                             <Text style={styles.axisText}>CN</Text>
                         </View>
                     </View>
-                    <Text style={styles.chartFooter}>Biểu đồ dự đoán WQI</Text>
+                    <Text style={styles.chartFooter}>{t('home.predictedChart')}</Text>
                 </View>
-
-                {/* Tạo khoảng trống ở dưới cùng cho dễ cuộn */}
-                <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
     );
@@ -143,7 +239,6 @@ const styles = StyleSheet.create({
     },
     header: {
         padding: 16,
-        // Đã xóa paddingTop: 40 ở đây
     },
     appTitleRow: {
         flexDirection: 'row',
@@ -421,5 +516,54 @@ const styles = StyleSheet.create({
         color: '#62748E',
         textAlign: 'center',
         marginTop: 12,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        width: '80%',
+        maxHeight: '70%',
+        paddingTop: 16,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingBottom: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E2E8F0',
+    },
+    modalTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#0F172B',
+    },
+    closeButton: {
+        fontSize: 20,
+        color: '#999999',
+        fontWeight: 'bold',
+    },
+    locationItem: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+    },
+    selectedLocationItem: {
+        backgroundColor: '#E8FEED',
+    },
+    locationItemText: {
+        fontSize: 14,
+        color: '#0F172B',
+    },
+    selectedLocationItemText: {
+        color: '#00C950',
+        fontWeight: '600',
     },
 });

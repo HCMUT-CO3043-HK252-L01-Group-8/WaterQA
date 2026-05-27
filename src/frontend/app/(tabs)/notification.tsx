@@ -1,17 +1,111 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+
+// Mỗi thông báo có: id, loại (Critical/Warning/Info/Success), và trạng thái đã đọc
+const INITIAL_NOTIFICATIONS = [
+    {
+        id: 1,
+        type: 'Critical',
+        icon: '🚨',
+        bgColor: '#FEF2F2',
+        titleKey: 'notifications.pollutionRisk',
+        descKey: 'notifications.pollutionRiskDesc',
+        extraDesc: (t: any) => '\n' + t('notifications.pollutionConfidence', { percentage: 99 }),
+        timeKey: 'notifications.agoFrom',
+        timeArgs: { time: '2 giờ', location: '268 Lý Thường Kiệt' },
+        accentColor: '#9F0712',
+        accentBg: '#FFE2E2',
+        read: false,
+    },
+    {
+        id: 2,
+        type: 'Warning',
+        icon: '⚠️',
+        bgColor: '#FEFCE8',
+        titleKey: 'notifications.turbidityHigh',
+        descKey: 'notifications.turbidityHighDesc',
+        descArgs: { value: 7 },
+        extraDesc: null,
+        timeKey: 'notifications.agoFrom',
+        timeArgs: { time: '1 ngày', location: '268 Lý Thường Kiệt' },
+        accentColor: '#854D0E',
+        accentBg: '#FEF9C3',
+        read: false,
+    },
+    {
+        id: 3,
+        type: 'Warning',
+        icon: 'ℹ️',
+        bgColor: '#EFF6FF',
+        titleKey: 'notifications.sensorMaintenance',
+        descKey: 'notifications.sensorMaintenanceDesc',
+        extraDesc: null,
+        timeKey: 'notifications.agoFrom',
+        timeArgs: { time: '3 ngày', location: 'Đông Hòa, Dĩ An' },
+        accentColor: '#0C5EDB',
+        accentBg: '#EFF6FF',
+        read: false,
+    },
+    {
+        id: 4,
+        type: 'Info',
+        icon: '✅',
+        bgColor: '#F0FDF4',
+        titleKey: 'notifications.newStation',
+        descKey: 'notifications.newStationDesc',
+        descArgs: { station: '161 Võ Nguyên Giáp' },
+        extraDesc: null,
+        timeKey: 'notifications.agoFrom',
+        timeArgs: { time: '04-03-2026', location: '161 Võ Nguyên Giáp' },
+        accentColor: '#166534',
+        accentBg: '#DCFCE7',
+        read: true, // mục này đã đọc sẵn
+    },
+];
 
 export default function AlertsScreen() {
+    const { t } = useTranslation();
     const [sysNotification, setSysNotification] = useState(true);
     const [sensorAlert, setSensorAlert] = useState(true);
     const [waterAlert, setWaterAlert] = useState(true);
     const [dailyReport, setDailyReport] = useState(false);
     const [activeTab, setActiveTab] = useState('All');
+    const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    const handleMarkAsRead = (id: number) => {
+        setNotifications(prev =>
+            prev.map(n => n.id === id ? { ...n, read: true } : n)
+        );
+    };
+
+    const handleDetails = (titleKey: string) => {
+        Alert.alert(
+            t(titleKey),
+            'Đang xem chi tiết thông báo này.',
+            [{ text: 'Đóng' }]
+        );
+    };
+
+    // Lọc theo tab và trạng thái chưa đọc/ẩn đi nếu đã đọc
+    const visibleNotifications = notifications.filter(n => {
+        if (n.read) return false; // ẩn thông báo đã đánh dấu đọc
+        if (activeTab === 'All') return true;
+        if (activeTab === 'Critical') return n.type === 'Critical';
+        if (activeTab === 'Warning') return n.type === 'Warning';
+        return false;
+    });
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.container}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
                 {/* 1. Header */}
                 <View style={styles.header}>
                     <View style={styles.appTitleRow}>
@@ -19,72 +113,76 @@ export default function AlertsScreen() {
                             <Text style={styles.logoText}>💧</Text>
                         </View>
                         <View>
-                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                            <Text style={styles.appName}>{t('app.name')}</Text>
+                            <Text style={styles.appSubtitle}>{t('app.subtitle')}</Text>
                         </View>
                     </View>
-                    
+
                     <View style={styles.pageTitleSection}>
-                        <Text style={styles.pageTitle}>Cảnh báo</Text>
-                        <View style={styles.unreadBadge}>
-                            <View style={styles.dotRed} />
-                            <Text style={styles.unreadText}>Có 2 cảnh báo chưa đọc</Text>
-                        </View>
+                        <Text style={styles.pageTitle}>{t('notifications.pageTitle')}</Text>
+                        {unreadCount > 0 ? (
+                            <View style={styles.unreadBadge}>
+                                <View style={styles.dotRed} />
+                                <Text style={styles.unreadText}>{t('notifications.unreadCount', { count: unreadCount })}</Text>
+                            </View>
+                        ) : (
+                            <Text style={styles.allReadText}>✅ Tất cả đã được đọc</Text>
+                        )}
                     </View>
                 </View>
 
                 {/* 2. Cài đặt cảnh báo */}
                 <View style={styles.settingsCard}>
-                    <Text style={styles.settingsTitle}>Cài đặt cảnh báo</Text>
-                    
+                    <Text style={styles.settingsTitle}>{t('notifications.settingsTitle')}</Text>
+
                     <View style={styles.settingRow}>
                         <View style={styles.settingTextContainer}>
-                            <Text style={styles.settingLabel}>Thông báo hệ thống</Text>
-                            <Text style={styles.settingDesc}>Cho phép ứng dụng gửi thông báo</Text>
+                            <Text style={styles.settingLabel}>{t('notifications.systemNotification')}</Text>
+                            <Text style={styles.settingDesc}>{t('notifications.systemNotificationDesc')}</Text>
                         </View>
                         <Switch
                             value={sysNotification}
                             onValueChange={setSysNotification}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
                             thumbColor="#FFFFFF"
                         />
                     </View>
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingTextContainer}>
-                            <Text style={styles.settingLabel}>Cảnh báo cảm biến</Text>
-                            <Text style={styles.settingDesc}>Nhận cảnh báo khi cảm biến gặp sự cố</Text>
+                            <Text style={styles.settingLabel}>{t('notifications.sensorAlert')}</Text>
+                            <Text style={styles.settingDesc}>{t('notifications.sensorAlertDesc')}</Text>
                         </View>
                         <Switch
                             value={sensorAlert}
                             onValueChange={setSensorAlert}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
                             thumbColor="#FFFFFF"
                         />
                     </View>
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingTextContainer}>
-                            <Text style={styles.settingLabel}>Cảnh báo chất lượng nước</Text>
-                            <Text style={styles.settingDesc}>Nhận thông báo khi có dữ liệu mới từ cảm biến</Text>
+                            <Text style={styles.settingLabel}>{t('notifications.waterAlert')}</Text>
+                            <Text style={styles.settingDesc}>{t('notifications.waterAlertDesc')}</Text>
                         </View>
                         <Switch
                             value={waterAlert}
                             onValueChange={setWaterAlert}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
                             thumbColor="#FFFFFF"
                         />
                     </View>
 
                     <View style={[styles.settingRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
                         <View style={styles.settingTextContainer}>
-                            <Text style={styles.settingLabel}>Báo cáo quan trắc hằng ngày</Text>
-                            <Text style={styles.settingDesc}>Nhận thông báo thống kê dữ liệu hằng ngày</Text>
+                            <Text style={styles.settingLabel}>{t('notifications.dailyReport')}</Text>
+                            <Text style={styles.settingDesc}>{t('notifications.dailyReportDesc')}</Text>
                         </View>
                         <Switch
                             value={dailyReport}
                             onValueChange={setDailyReport}
-                            trackColor={{ false: "#E2E8F0", true: "#00B8DB" }}
+                            trackColor={{ false: '#E2E8F0', true: '#00B8DB' }}
                             thumbColor="#FFFFFF"
                         />
                     </View>
@@ -92,105 +190,88 @@ export default function AlertsScreen() {
 
                 {/* 3. Bộ lọc */}
                 <View style={styles.filterSection}>
-                    <Text style={styles.filterTitle}>Bộ lọc</Text>
+                    <Text style={styles.filterTitle}>{t('notifications.filterTitle')}</Text>
                     <View style={styles.filterTabs}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.tabButton, activeTab === 'All' && styles.tabButtonActive]}
                             onPress={() => setActiveTab('All')}
                         >
-                            <Text style={[styles.tabText, activeTab === 'All' && styles.tabTextActive]}>All</Text>
+                            <Text style={[styles.tabText, activeTab === 'All' && styles.tabTextActive]}>
+                                {t('notifications.filterAll')}
+                            </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.tabButton, activeTab === 'Warning' && styles.tabButtonActive]}
                             onPress={() => setActiveTab('Warning')}
                         >
-                            <Text style={[styles.tabText, activeTab === 'Warning' && styles.tabTextActive]}>Warning</Text>
+                            <Text style={[styles.tabText, activeTab === 'Warning' && styles.tabTextActive]}>
+                                {t('notifications.filterWarning')}
+                            </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.tabButton, activeTab === 'Critical' && styles.tabButtonActive]}
                             onPress={() => setActiveTab('Critical')}
                         >
-                            <Text style={[styles.tabText, activeTab === 'Critical' && styles.tabTextActive]}>Critical</Text>
+                            <Text style={[styles.tabText, activeTab === 'Critical' && styles.tabTextActive]}>
+                                {t('notifications.filterCritical')}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* 4. Danh sách thông báo */}
                 <View style={styles.notificationList}>
-                    {/* Item 1: Critical (Đỏ) */}
-                    <View style={styles.notiItem}>
-                        <View style={styles.notiHeader}>
-                            <View style={[styles.iconBox, { backgroundColor: '#FEF2F2' }]}>
-                                <Text>🚨</Text>
-                            </View>
-                            <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>Phát hiện nguy cơ ô nhiễm</Text>
-                                <Text style={styles.notiDesc}>Khả năng ô nhiễm nguồn nước tăng{'\n'}Độ tin cậy: 99%</Text>
-                                <Text style={styles.notiTime}>🕒 2 giờ trước bởi 268 Lý Thường Kiệt</Text>
-                            </View>
+                    {visibleNotifications.length === 0 ? (
+                        <View style={styles.emptyState}>
+                            <Text style={styles.emptyIcon}>🎉</Text>
+                            <Text style={styles.emptyText}>Không có thông báo nào</Text>
                         </View>
-                        <View style={styles.notiActions}>
-                            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FFE2E2' }]}>
-                                <Text style={[styles.actionBtnText, { color: '#9F0712' }]}>Chi tiết</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <Text style={[styles.actionLinkText, { color: '#C10007' }]}>Đánh dấu đã đọc</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Item 2: Warning (Vàng) */}
-                    <View style={[styles.notiItem, { opacity: 0.7 }]}>
-                        <View style={styles.notiHeader}>
-                            <View style={[styles.iconBox, { backgroundColor: '#FEFCE8' }]}>
-                                <Text>⚠️</Text>
-                            </View>
-                            <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>Độ đục tăng cao</Text>
-                                <Text style={styles.notiDesc}>Turbidity = 7 NTU{'\n'}Có thể có tạp chất trong nước</Text>
-                                <Text style={styles.notiTime}>🕒 1 ngày trước bởi 268 Lý Thường Kiệt</Text>
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* Item 3: Info (Xanh dương) */}
-                    <View style={[styles.notiItem, { opacity: 0.7 }]}>
-                        <View style={styles.notiHeader}>
-                            <View style={[styles.iconBox, { backgroundColor: '#EFF6FF' }]}>
-                                <Text>ℹ️</Text>
-                            </View>
-                            <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>Kiểm tra cảm biến pH</Text>
-                                <Text style={styles.notiDesc}>Cảm biến pH đã đến kỳ kiểm tra</Text>
-                                <Text style={styles.notiTime}>🕒 3 ngày trước bởi Đông Hòa, Dĩ An</Text>
-                            </View>
-                        </View>
-                        <View style={styles.notiActions}>
-                            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EFF6FF' }]}>
-                                <Text style={[styles.actionBtnText, { color: '#0C5EDB' }]}>Chi tiết</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <Text style={[styles.actionLinkText, { color: '#0C5EDB' }]}>Đánh dấu đã đọc</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Item 4: Success (Xanh lá) */}
-                    <View style={[styles.notiItem, { opacity: 0.7 }]}>
-                        <View style={styles.notiHeader}>
-                            <View style={[styles.iconBox, { backgroundColor: '#F0FDF4' }]}>
-                                <Text>✅</Text>
-                            </View>
-                            <View style={styles.notiContent}>
-                                <Text style={styles.notiTitle}>Cập nhật trạm quan sát mới</Text>
-                                <Text style={styles.notiDesc}>161 Võ Nguyên Giáp đã được thiết lập</Text>
-                                <Text style={styles.notiTime}>🕒 04-03-2026 bởi 161 Võ Nguyên Giáp</Text>
-                            </View>
-                        </View>
-                    </View>
+                    ) : (
+                        visibleNotifications.map((item, index) => {
+                            const isLast = index === visibleNotifications.length - 1;
+                            const showActions = item.type === 'Critical' || item.type === 'Warning';
+                            return (
+                                <View
+                                    key={item.id}
+                                    style={[styles.notiItem, isLast && { borderBottomWidth: 0, marginBottom: 0 }]}
+                                >
+                                    <View style={styles.notiHeader}>
+                                        <View style={[styles.iconBox, { backgroundColor: item.bgColor }]}>
+                                            <Text>{item.icon}</Text>
+                                        </View>
+                                        <View style={styles.notiContent}>
+                                            <Text style={styles.notiTitle}>{t(item.titleKey)}</Text>
+                                            <Text style={styles.notiDesc}>
+                                                {t(item.descKey, (item as any).descArgs || {})}
+                                                {item.extraDesc ? item.extraDesc(t) : ''}
+                                            </Text>
+                                            <Text style={styles.notiTime}>
+                                                🕒 {t(item.timeKey, item.timeArgs)}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    {showActions && (
+                                        <View style={styles.notiActions}>
+                                            <TouchableOpacity
+                                                style={[styles.actionBtn, { backgroundColor: item.accentBg }]}
+                                                onPress={() => handleDetails(item.titleKey)}
+                                            >
+                                                <Text style={[styles.actionBtnText, { color: item.accentColor }]}>
+                                                    {t('notifications.details')}
+                                                </Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity onPress={() => handleMarkAsRead(item.id)}>
+                                                <Text style={[styles.actionLinkText, { color: item.accentColor }]}>
+                                                    {t('notifications.markAsRead')}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+                                </View>
+                            );
+                        })
+                    )}
                 </View>
-
-                <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
     );
@@ -258,6 +339,11 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: 'bold',
         color: '#FB2C36',
+    },
+    allReadText: {
+        fontSize: 12,
+        color: '#00A63E',
+        fontWeight: '500',
     },
     settingsCard: {
         marginHorizontal: 16,
@@ -347,6 +433,19 @@ const styles = StyleSheet.create({
         borderColor: '#E2E8F0',
         borderRadius: 14,
         paddingTop: 14,
+        paddingBottom: 14,
+    },
+    emptyState: {
+        alignItems: 'center',
+        paddingVertical: 32,
+    },
+    emptyIcon: {
+        fontSize: 36,
+        marginBottom: 10,
+    },
+    emptyText: {
+        fontSize: 14,
+        color: '#62748E',
     },
     notiItem: {
         paddingHorizontal: 14,

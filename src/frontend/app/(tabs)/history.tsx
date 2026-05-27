@@ -1,11 +1,35 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+
+const LOCATIONS = [
+    { id: 1, name: 'Bể nước BK-H6' },
+    { id: 2, name: 'Bể nước BK-B1' },
+    { id: 3, name: 'Bể nước BK-B2' },
+    { id: 4, name: 'Bể nước BK-B3' },
+];
 
 export default function HistoryScreen() {
-    const [activeFilter, setActiveFilter] = useState('Ngày');
+    const { t } = useTranslation();
+    const [activeFilter, setActiveFilter] = useState(t('history.daily'));
+    const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
+    const [showLocationModal, setShowLocationModal] = useState(false);
 
-    const renderHistoryCard = (wqi, date, time, trend) => (
+    const handleSelectLocation = (location: typeof LOCATIONS[0]) => {
+        setSelectedLocation(location);
+        setShowLocationModal(false);
+    };
+
+    const handleExportReport = () => {
+        Alert.alert(
+            "Xuất báo cáo",
+            "Tính năng xuất báo cáo đang được phát triển.",
+            [{ text: "OK" }]
+        );
+    };
+
+    const renderHistoryCard = (wqi: string, date: string, time: string, trend: string) => (
         <View style={styles.historyCard}>
             <View style={styles.cardLeft}>
                 <View style={styles.iconBox}>
@@ -28,7 +52,11 @@ export default function HistoryScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                style={styles.container} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
                 {/* 1. Header */}
                 <View style={styles.header}>
                     <View style={styles.appTitleRow}>
@@ -36,50 +64,94 @@ export default function HistoryScreen() {
                             <Text style={styles.logoText}>💧</Text>
                         </View>
                         <View>
-                            <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                            <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                            <Text style={styles.appName}>{t('app.name')}</Text>
+                            <Text style={styles.appSubtitle}>{t('app.subtitle')}</Text>
                         </View>
                     </View>
                     
                     <View style={styles.pageTitleSection}>
-                        <Text style={styles.pageTitle}>Lịch sử quang trắc</Text>
+                        <Text style={styles.pageTitle}>{t('history.title')}</Text>
                     </View>
                 </View>
 
                 {/* 2. Chọn vị trí */}
                 <View style={styles.locationSection}>
-                    <Text style={styles.sectionTitle}>Vị trí</Text>
-                    <TouchableOpacity style={styles.pickerBox}>
-                        <Text style={styles.pickerText}>Select Location</Text>
+                    <Text style={styles.sectionTitle}>{t('home.location')}</Text>
+                    <TouchableOpacity 
+                        style={styles.pickerBox}
+                        onPress={() => setShowLocationModal(true)}
+                    >
+                        <Text style={styles.pickerText}>{selectedLocation.name}</Text>
                         <Text style={styles.pickerIcon}>▼</Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* Location Selection Modal */}
+                <Modal
+                    visible={showLocationModal}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowLocationModal(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>{t('home.selectLocation')}</Text>
+                                <TouchableOpacity onPress={() => setShowLocationModal(false)}>
+                                    <Text style={styles.closeButton}>✕</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <FlatList
+                                data={LOCATIONS}
+                                keyExtractor={(item) => item.id.toString()}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.locationItem,
+                                            selectedLocation.id === item.id && styles.selectedLocationItem
+                                        ]}
+                                        onPress={() => handleSelectLocation(item)}
+                                    >
+                                        <Text 
+                                            style={[
+                                                styles.locationItemText,
+                                                selectedLocation.id === item.id && styles.selectedLocationItemText
+                                            ]}
+                                        >
+                                            {item.name}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        </View>
+                    </View>
+                </Modal>
 
                 {/* 3. Thẻ thống kê nhanh */}
                 <View style={styles.summarySection}>
                     <View style={[styles.summaryCard, { backgroundColor: '#ECFEFF', borderColor: '#0092B8' }]}>
                         <View style={styles.summaryHeader}>
                             <View style={styles.smallIcon}><Text style={{fontSize: 10}}>💧</Text></View>
-                            <Text style={styles.summaryLabel}>Hôm nay</Text>
+                            <Text style={styles.summaryLabel}>{t('history.today')}</Text>
                         </View>
                         <Text style={styles.summaryValueMain}>92</Text>
-                        <Text style={styles.summaryDesc}>WQI trung bình</Text>
+                        <Text style={styles.summaryDesc}>{t('history.wqiAverage')}</Text>
                     </View>
 
                     <View style={[styles.summaryCard, { backgroundColor: '#F0FDF4', borderColor: '#00A63E' }]}>
                         <View style={styles.summaryHeader}>
                             <View style={styles.smallIcon}><Text style={{fontSize: 10}}>📈</Text></View>
-                            <Text style={styles.summaryLabel}>so với Hôm qua</Text>
+                            <Text style={styles.summaryLabel}>{t('history.compareWith')} {t('history.yesterday')}</Text>
                         </View>
                         <Text style={styles.summaryValuePositive}>+3</Text>
-                        <Text style={styles.summaryDesc}>Chỉ số WQI</Text>
+                        <Text style={styles.summaryDesc}>{t('history.wqiIndex')}</Text>
                     </View>
                 </View>
 
                 {/* 4. Bộ lọc & Xuất báo cáo */}
                 <View style={styles.filterActionSection}>
                     <View style={styles.filterTabs}>
-                        {['Ngày', 'Tháng', 'Năm'].map((filter) => (
+                        {[t('history.daily'), t('history.monthly'), t('history.yearly')].map((filter) => (
                             <TouchableOpacity 
                                 key={filter}
                                 style={[styles.tabButton, activeFilter === filter && styles.tabButtonActive]}
@@ -91,9 +163,9 @@ export default function HistoryScreen() {
                             </TouchableOpacity>
                         ))}
                     </View>
-                    <TouchableOpacity style={styles.exportBtn}>
+                    <TouchableOpacity style={styles.exportBtn} onPress={handleExportReport}>
                         <Text style={styles.exportIcon}>⬇</Text>
-                        <Text style={styles.exportText}>Xuất báo cáo</Text>
+                        <Text style={styles.exportText}>{t('history.export')}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -106,8 +178,6 @@ export default function HistoryScreen() {
                     {renderHistoryCard('82', '02-03-2026', '11:10', '1')}
                     {renderHistoryCard('81', '01-03-2026', '08:30', '5')}
                 </View>
-
-                <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
     );
@@ -346,5 +416,54 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: '#62748E',
         marginTop: 2,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        width: '80%',
+        maxHeight: '70%',
+        paddingTop: 16,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingBottom: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E2E8F0',
+    },
+    modalTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#0F172B',
+    },
+    closeButton: {
+        fontSize: 20,
+        color: '#999999',
+        fontWeight: 'bold',
+    },
+    locationItem: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+    },
+    selectedLocationItem: {
+        backgroundColor: '#E8FEED',
+    },
+    locationItemText: {
+        fontSize: 14,
+        color: '#0F172B',
+    },
+    selectedLocationItemText: {
+        color: '#00C950',
+        fontWeight: '600',
     },
 });
