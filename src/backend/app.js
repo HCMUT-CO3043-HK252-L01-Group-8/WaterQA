@@ -104,5 +104,5 @@ app.listen(port, async () => {
     Turbidity: 4.052135727552661,
   };
 
-  await predict(rawSampleInput)
+  console.log(await predict(rawSampleInput))
 });
