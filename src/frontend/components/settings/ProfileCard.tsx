@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/Card";
+import Card from "@/components/ui/Card";
 import { Feather } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
 
