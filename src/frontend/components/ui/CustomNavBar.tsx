@@ -42,7 +42,7 @@ const TabItem = ({ route, isFocused, label, onPress }: any) => {
 
     const animatedMaskStyle = useAnimatedStyle(() => {
         return {
-            maxWidth: progress.value * route.name.length * BASE_SIZE,
+            maxWidth: progress.value * (route.name.length * BASE_SIZE + BASE_SIZE),
             marginLeft: progress.value * 8,
             opacity: progress.value,
         };
