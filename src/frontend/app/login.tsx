@@ -8,21 +8,53 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    Alert,
+    ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import { authServices } from "@/services/authServices";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "@/store/slices/authSlice";
 
 export default function LoginScreen() {
     const router = useRouter();
-    const [email, setEmail] = useState("myemail@gmail.com");
+    const dispatch = useDispatch();
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = () => {
-        router.dismissAll();
-        router.prefetch("/(tabs)/home")
-        router.replace("/(tabs)/home")
+    const handleLogin = async () => {
+        if (!email.trim() || !password.trim()) {
+            Alert.alert("Lỗi", "Vui lòng nhập đầy đủ email và mật khẩu");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await authServices.login(email.trim(), password);
+
+            if (res.success) {
+                const profileRes = await authServices.getMe();
+
+                if (profileRes.success && profileRes.payload) {
+                    dispatch(setCredentials({ user: profileRes.payload }));
+                    router.dismissAll();
+                    router.replace("/(tabs)/home");
+                } else {
+                    Alert.alert("Lỗi", "Đăng nhập thành công nhưng không thể tải thông tin tài khoản.");
+                }
+            } else {
+                Alert.alert("Đăng nhập thất bại", res.error || "Tài khoản hoặc mật khẩu không đúng.");
+            }
+        } catch (error: any) {
+            console.error("Lỗi đăng nhập:", error);
+            Alert.alert("Lỗi kết nối", error?.error || "Không thể kết nối đến máy chủ. Vui lòng thử lại.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -33,7 +65,7 @@ export default function LoginScreen() {
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
                 >
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()} disabled={loading}>
                         <View style={styles.backIconCircle}>
                             <Ionicons name="chevron-back" size={20} color="#333" />
                         </View>
@@ -55,8 +87,11 @@ export default function LoginScreen() {
                                 placeholder="Nhập email của bạn"
                                 keyboardType="email-address"
                                 autoCapitalize="none"
+                                editable={!loading}
                             />
-                            <Ionicons name="checkmark-circle" size={20} color="#00A89D" style={styles.icon} />
+                            {email.length > 0 && (
+                                <Ionicons name="checkmark-circle" size={20} color="#00A89D" style={styles.icon} />
+                            )}
                         </View>
 
                         <Text style={styles.inputLabel}>Mật khẩu</Text>
@@ -67,6 +102,7 @@ export default function LoginScreen() {
                                 onChangeText={setPassword}
                                 placeholder="••••••••"
                                 secureTextEntry={!showPassword}
+                                editable={!loading}
                             />
                             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                                 <Ionicons
@@ -78,12 +114,20 @@ export default function LoginScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        <TouchableOpacity onPress={() => router.push("/forgot-password")}>
+                        <TouchableOpacity onPress={() => router.push("/forgot-password")} disabled={loading}>
                             <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                            <Text style={styles.loginButtonText}>Đăng nhập</Text>
+                        <TouchableOpacity
+                            style={[styles.loginButton, loading && { opacity: 0.7 }]}
+                            onPress={handleLogin}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator color="#FFFFFF" />
+                            ) : (
+                                <Text style={styles.loginButtonText}>Đăng nhập</Text>
+                            )}
                         </TouchableOpacity>
                     </View>
 
@@ -94,7 +138,7 @@ export default function LoginScreen() {
                             <View style={styles.line} />
                         </View>
 
-                        <TouchableOpacity style={styles.googleButton}>
+                        <TouchableOpacity style={styles.googleButton} disabled={loading}>
                             <FontAwesome5 name="google" size={18} color="#DB4437" />
                             <Text style={styles.googleButtonText}>Đăng nhập với Google</Text>
                         </TouchableOpacity>
@@ -106,22 +150,9 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: "#FFFFFF",
-    },
-    scrollContainer: {
-        flexGrow: 1,
-        paddingHorizontal: 24,
-        paddingTop: 10,
-        paddingBottom: 30,
-    },
-    backButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 30,
-        alignSelf: "flex-start",
-    },
+    safeArea: { flex: 1, backgroundColor: "#FFFFFF" },
+    scrollContainer: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 10, paddingBottom: 30 },
+    backButton: { flexDirection: "row", alignItems: "center", marginBottom: 30, alignSelf: "flex-start" },
     backIconCircle: {
         width: 36,
         height: 36,
@@ -131,33 +162,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginRight: 8,
     },
-    backText: {
-        fontSize: 16,
-        fontWeight: "500",
-        color: "#333",
-    },
-    headerSection: {
-        marginBottom: 32,
-    },
-    title: {
-        fontSize: 48,
-        fontWeight: "bold",
-        color: "#00A89D",
-        marginBottom: 8,
-    },
-    subtitle: {
-        fontSize: 14,
-        color: "#666",
-    },
-    formContainer: {
-        width: "100%",
-    },
-    inputLabel: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#333",
-        marginBottom: 8,
-    },
+    backText: { fontSize: 16, fontWeight: "500", color: "#333" },
+    headerSection: { marginBottom: 32 },
+    title: { fontSize: 48, fontWeight: "bold", color: "#00A89D", marginBottom: 8 },
+    subtitle: { fontSize: 14, color: "#666" },
+    formContainer: { width: "100%" },
+    inputLabel: { fontSize: 14, fontWeight: "600", color: "#333", marginBottom: 8 },
     inputContainer: {
         flexDirection: "row",
         alignItems: "center",
@@ -169,22 +179,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         height: 52,
     },
-    input: {
-        flex: 1,
-        height: "100%",
-        color: "#333",
-        fontSize: 15,
-    },
-    icon: {
-        marginLeft: 10,
-    },
-    forgotPasswordText: {
-        color: "#00A89D",
-        textAlign: "right",
-        fontSize: 14,
-        fontWeight: "600",
-        marginBottom: 30,
-    },
+    input: { flex: 1, height: "100%", color: "#333", fontSize: 15 },
+    icon: { marginLeft: 10 },
+    forgotPasswordText: { color: "#00A89D", textAlign: "right", fontSize: 14, fontWeight: "600", marginBottom: 30 },
     loginButton: {
         backgroundColor: "#00A89D",
         borderRadius: 10,
@@ -197,29 +194,11 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 3,
     },
-    loginButtonText: {
-        color: "#FFFFFF",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
-    socialContainer: {
-        marginTop: 40,
-    },
-    dividerRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 24,
-    },
-    line: {
-        flex: 1,
-        height: 1,
-        backgroundColor: "#EEEEEE",
-    },
-    dividerText: {
-        marginHorizontal: 16,
-        color: "#999",
-        fontSize: 13,
-    },
+    loginButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
+    socialContainer: { marginTop: 40 },
+    dividerRow: { flexDirection: "row", alignItems: "center", marginBottom: 24 },
+    line: { flex: 1, height: 1, backgroundColor: "#EEEEEE" },
+    dividerText: { marginHorizontal: 16, color: "#999", fontSize: 13 },
     googleButton: {
         flexDirection: "row",
         alignItems: "center",
@@ -230,10 +209,5 @@ const styles = StyleSheet.create({
         height: 52,
         backgroundColor: "#FFFFFF",
     },
-    googleButtonText: {
-        color: "#333",
-        fontSize: 15,
-        fontWeight: "600",
-        marginLeft: 12,
-    },
+    googleButtonText: { color: "#333", fontSize: 15, fontWeight: "600", marginLeft: 12 },
 });

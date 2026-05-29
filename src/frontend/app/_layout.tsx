@@ -45,6 +45,7 @@ export default function RootLayout() {
                     <Stack.Screen name="login" options={{ headerShown: false, animation: "ios_from_right" }} />
                     <Stack.Screen name="register" options={{ headerShown: false, animation: "ios_from_right" }} />
                     <Stack.Screen name="forgot-password" options={{ headerShown: false, animation: "ios_from_right" }} />
+                    <Stack.Screen name="reset-password" options={{ headerShown: false, animation: "ios_from_right" }} />
 
                     <Stack.Screen
                         name="verify-code"

@@ -8,14 +8,50 @@ import {
     Platform,
     KeyboardAvoidingView,
     ScrollView,
+    Alert,
+    ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { authServices } from "@/services/authServices";
 
 export default function ForgotPasswordScreen() {
     const router = useRouter();
     const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
+        const trimmedEmail = email.trim();
+        if (!trimmedEmail) {
+            Alert.alert("Lỗi", "Vui lòng nhập địa chỉ email của bạn");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(trimmedEmail)) {
+            Alert.alert("Lỗi", "Địa chỉ email không hợp lệ");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await authServices.forgotPassword(trimmedEmail);
+            if (response?.success) {
+                router.push({
+                    pathname: "/verify-code",
+                    params: { email: trimmedEmail },
+                });
+            } else {
+                Alert.alert("Lỗi", response?.error || "Không thể gửi mã OTP. Vui lòng thử lại.");
+            }
+        } catch (error) {
+            console.error("Error in FORGOT PASSWORD:", error)
+            Alert.alert("Lỗi", "Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -34,8 +70,10 @@ export default function ForgotPasswordScreen() {
 
                     <View style={styles.headerSection}>
                         <Text style={styles.title}>Bạn quên</Text>
-                        <Text style={[styles.title, {marginLeft: "25%"}]}>mật khẩu?</Text>
-                        <Text style={styles.subtitle}>Để lại email và chúng tôi sẽ hỗ trợ bạn tạo lại mật khẩu mới</Text>
+                        <Text style={[styles.title, { marginLeft: "25%" }]}>mật khẩu?</Text>
+                        <Text style={styles.subtitle}>
+                            Để lại email và chúng tôi sẽ hỗ trợ bạn tạo lại mật khẩu mới
+                        </Text>
                     </View>
 
                     <View style={styles.formContainer}>
@@ -48,11 +86,20 @@ export default function ForgotPasswordScreen() {
                                 placeholder="Nhập email của bạn..."
                                 keyboardType="email-address"
                                 autoCapitalize="none"
+                                editable={!loading}
                             />
                         </View>
 
-                        <TouchableOpacity style={styles.submitButton} onPress={() => router.push("/verify-code")}>
-                            <Text style={styles.submitButtonText}>Tiếp tục</Text>
+                        <TouchableOpacity
+                            style={[styles.submitButton, loading && { opacity: 0.7 }]}
+                            onPress={handleSubmit}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator color="#FFFFFF" />
+                            ) : (
+                                <Text style={styles.submitButtonText}>Tiếp tục</Text>
+                            )}
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -63,18 +110,8 @@ export default function ForgotPasswordScreen() {
 
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: "#FFFFFF" },
-    scrollContainer: {
-        flexGrow: 1,
-        paddingHorizontal: 24,
-        paddingTop: 10,
-        paddingBottom: 30,
-    },
-    backButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 30,
-        alignSelf: "flex-start",
-    },
+    scrollContainer: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 10, paddingBottom: 30 },
+    backButton: { flexDirection: "row", alignItems: "center", marginBottom: 30, alignSelf: "flex-start" },
     backIconCircle: {
         width: 36,
         height: 36,
