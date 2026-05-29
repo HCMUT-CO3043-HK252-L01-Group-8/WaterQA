@@ -1,170 +1,108 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import AlertCard from "@/components/notification/AlertCard";
+import NotificationSettings from "@/components/notification/NotificationSettings";
+import NotificationSkeleton from "@/components/notification/NotificationSkeleton";
+import AppHeader from "@/components/ui/AppHeader";
+import CustomFilterTab from "@/components/ui/CustomFilterTab";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
-import AppHeader from "@/components/AppHeader";
-import { Feather } from "@expo/vector-icons"; 
 import AntDesign from "@expo/vector-icons/AntDesign";
-import CustomSwitch from "@/components/ui/CustomSwitch"; 
+import { useEffect, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+const FILTER_OPTIONS = [
+    { label: "Tất cả", value: "all" },
+    { label: "Cảnh báo", value: "warning" },
+    { label: "Nghiêm trọng", value: "critical" },
+];
+
+const MOCK_ALERTS = [
+    {
+        id: "1",
+        type: "critical" as const,
+        title: "Phát hiện nguy cơ ô nhiễm",
+        desc: "Khả năng ô nhiễm nguồn nước tăng\nĐộ tin cậy: 99%",
+        time: "2 giờ trước bởi 268 Lý Thường Kiệt",
+    },
+    {
+        id: "2",
+        type: "warning" as const,
+        title: "Độ đục tăng cao",
+        desc: "Chỉ số NTU vượt ngưỡng cho phép\nĐộ tin cậy: 87%",
+        time: "5 giờ trước bởi 268 Lý Thường Kiệt",
+    },
+];
+
+const DEFAULT_FILTER = "all";
 
 export default function NotificationScreen() {
-    const [systemNotif, setSystemNotif] = useState(true);
-    const [sensorAlert, setSensorAlert] = useState(true);
-    const [qualityAlert, setQualityAlert] = useState(true);
-    const [dailyReport, setDailyReport] = useState(false);
-    const [activeFilter, setActiveFilter] = useState("All");
     const tabBarHeight = useTabBarHeight();
+    const [isLoading, setIsLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [activeFilter, setActiveFilter] = useState(DEFAULT_FILTER);
+    const [alerts, setAlerts] = useState(MOCK_ALERTS);
+
+    const fetchNotifications = async () => {
+        try {
+            await new Promise((resolve) => setTimeout(resolve, 1200));
+        } catch (error) {
+            console.error("Lỗi tải cảnh báo:", error);
+        } finally {
+            setIsLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchNotifications();
+    };
+
+    if (isLoading || refreshing) return <NotificationSkeleton />;
+
+    const filteredAlerts = alerts.filter((alert) => alert.type === activeFilter || activeFilter === DEFAULT_FILTER);
 
     return (
         <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
             <ScrollView
                 style={styles.container}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: tabBarHeight }}
+                contentContainerStyle={{ paddingBottom: tabBarHeight + 20 }}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#E7000B"]} />}
             >
-                {/* 1. Header */}
                 <View style={styles.header}>
                     <AppHeader />
                     <View style={styles.pageTitleSection}>
                         <Text style={styles.pageTitle}>Cảnh báo</Text>
                         <View style={styles.unreadContainer}>
                             <AntDesign name="bell" size={14} color="#E7000B" />
-                            <Text style={styles.unreadBadge}>Có 2 cảnh báo chưa đọc</Text>
+                            <Text style={styles.unreadBadge}>Có {filteredAlerts.length} cảnh báo chưa đọc</Text>
                         </View>
                     </View>
                 </View>
 
-                {/* 2. Cài đặt cảnh báo */}
-                <View style={styles.settingsCard}>
-                    <Text style={styles.settingsTitle}>Cài đặt cảnh báo</Text>
-                    
-                    {/* CÔNG TẮC TỔNG: Thông báo hệ thống */}
-                    <View style={styles.settingRow}>
-                        <View style={styles.settingTextContainer}>
-                            <Text style={styles.settingName}>Thông báo hệ thống</Text>
-                            <Text style={styles.settingDesc}>Cho phép ứng dụng gửi thông báo</Text>
-                        </View>
-                        <CustomSwitch
-                            value={systemNotif}
-                            onValueChange={setSystemNotif}
-                        />
-                    </View>
+                <NotificationSettings />
 
-                    {/* CÔNG TẮC CON 1 */}
-                    <View 
-                        style={styles.settingRow}
-                        pointerEvents={systemNotif ? "auto" : "none"}
-                    >
-                        {/* Chỉ làm mờ phần chữ */}
-                        <View style={[styles.settingTextContainer, !systemNotif && styles.disabledContent]}>
-                            <Text style={styles.settingName}>Cảnh báo cảm biến</Text>
-                            <Text style={styles.settingDesc}>Nhận cảnh báo khi cảm biến gặp sự cố</Text>
-                        </View>
-                        <CustomSwitch
-                            value={sensorAlert}
-                            onValueChange={setSensorAlert}
-                            disabled={!systemNotif} // Truyền trạng thái vô hiệu hóa vào Switch
-                        />
-                    </View>
-
-                    {/* CÔNG TẮC CON 2 */}
-                    <View 
-                        style={styles.settingRow}
-                        pointerEvents={systemNotif ? "auto" : "none"}
-                    >
-                        <View style={[styles.settingTextContainer, !systemNotif && styles.disabledContent]}>
-                            <Text style={styles.settingName}>Cảnh báo chất lượng nước</Text>
-                            <Text style={styles.settingDesc}>Nhận thông báo khi có dữ liệu mới từ cảm biến</Text>
-                        </View>
-                        <CustomSwitch
-                            value={qualityAlert}
-                            onValueChange={setQualityAlert}
-                            disabled={!systemNotif}
-                        />
-                    </View>
-
-                    {/* CÔNG TẮC CON 3 */}
-                    <View 
-                        style={[styles.settingRow, styles.settingRowLast]}
-                        pointerEvents={systemNotif ? "auto" : "none"}
-                    >
-                        <View style={[styles.settingTextContainer, !systemNotif && styles.disabledContent]}>
-                            <Text style={styles.settingName}>Báo cáo quan trắc hằng ngày</Text>
-                            <Text style={styles.settingDesc}>Nhận thông báo thống kê dữ liệu hằng ngày</Text>
-                        </View>
-                        <CustomSwitch
-                            value={dailyReport}
-                            onValueChange={setDailyReport}
-                            disabled={!systemNotif}
-                        />
-                    </View>
-                </View>
-
-                {/* 3. Bộ lọc */}
                 <View style={styles.filterRow}>
                     <Text style={styles.filterLabel}>Bộ lọc</Text>
-                    <View style={styles.filterTabs}>
-                        {["All", "Warning", "Critical"].map((f) => (
-                            <TouchableOpacity
-                                key={f}
-                                style={[styles.filterTab, activeFilter === f && styles.filterTabActive]}
-                                onPress={() => setActiveFilter(f)}
-                            >
-                                <Text style={[styles.filterTabText, activeFilter === f && styles.filterTabTextActive]}>
-                                    {f}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    <CustomFilterTab
+                        options={FILTER_OPTIONS}
+                        activeOption={activeFilter}
+                        onOptionChange={setActiveFilter}
+                    />
                 </View>
 
-                {/* 4. Danh sách cảnh báo */}
                 <View style={styles.alertList}>
-                    {/* Critical alert */}
-                    <View style={styles.alertCard}>
-                        <View style={styles.alertIconBox}>
-                            <Feather name="alert-octagon" size={24} color="#E7000B" />
+                    {filteredAlerts.length ? (
+                        filteredAlerts.map((alert) => <AlertCard key={alert.id} alert={alert} />)
+                    ) : (
+                        <View style={styles.emptyState}>
+                            <Text style={styles.emptyStateText}>Trạng thái cảm biến đang ổn định.</Text>
                         </View>
-                        <View style={styles.alertContent}>
-                            <Text style={styles.alertTitle}>Phát hiện nguy cơ ô nhiễm</Text>
-                            <Text style={styles.alertDesc}>Khả năng ô nhiễm nguồn nước tăng</Text>
-                            <Text style={styles.alertDesc}>Độ tin cậy: 99%</Text>
-                            <Text style={styles.alertTime}>
-                                <Feather name="clock" size={10} color="#90A1B9" /> 2 giờ trước bởi 268 Lý Thường Kiệt
-                            </Text>
-                            <View style={styles.alertActions}>
-                                <TouchableOpacity style={styles.detailBtn}>
-                                    <Text style={styles.detailBtnText}>Chi tiết</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity>
-                                    <Text style={styles.markReadText}>Đánh dấu đã đọc</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* Warning alert */}
-                    <View style={styles.alertCard}>
-                        <View style={[styles.alertIconBox, styles.alertIconWarning]}>
-                            <Feather name="alert-triangle" size={24} color="#D97706" />
-                        </View>
-                        <View style={styles.alertContent}>
-                            <Text style={styles.alertTitle}>Độ đục tăng cao</Text>
-                            <Text style={styles.alertDesc}>Chỉ số NTU vượt ngưỡng cho phép</Text>
-                            <Text style={styles.alertDesc}>Độ tin cậy: 87%</Text>
-                            <Text style={styles.alertTime}>
-                                <Feather name="clock" size={10} color="#90A1B9" /> 5 giờ trước bởi 268 Lý Thường Kiệt
-                            </Text>
-                            <View style={styles.alertActions}>
-                                <TouchableOpacity style={styles.detailBtn}>
-                                    <Text style={styles.detailBtnText}>Chi tiết</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity>
-                                    <Text style={styles.markReadText}>Đánh dấu đã đọc</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
+                    )}
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -172,86 +110,13 @@ export default function NotificationScreen() {
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: "#FFFFFF",
-    },
-    container: {
-        flex: 1,
-        backgroundColor: "#FFFFFF",
-    },
-    header: {
-        padding: 16,
-    },
-    pageTitleSection: { marginTop: 10 },
-    pageTitle: {
-        fontSize: 20,
-        color: "#0F172B",
-        marginBottom: 6,
-        fontFamily: "Inter-SemiBold", 
-    },
-    unreadContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    unreadBadge: {
-        fontSize: 13,
-        color: "#E7000B",
-        fontFamily: "Inter-SemiBold", 
-        marginLeft: 7,
-    },
-    settingsCard: {
-        marginHorizontal: 16,
-        backgroundColor: "#FFFFFF",
-        borderRadius: 14,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: "#E2E8F0",
-        marginBottom: 20,
-        elevation: 1,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-    },
-    settingsTitle: {
-        fontSize: 14,
-        color: "#0F172B",
-        marginBottom: 16,
-        fontFamily: "Inter-SemiBold", 
-    },
-    settingRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingBottom: 16,
-        marginBottom: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: "#F1F5F9",
-    },
-    disabledContent: {
-        opacity: 0.4, // Làm mờ chữ khi bị vô hiệu hóa
-    },
-    settingRowLast: {
-        borderBottomWidth: 0,
-        paddingBottom: 0,
-        marginBottom: 0,
-    },
-    settingTextContainer: {
-        flex: 1,
-        paddingRight: 16,
-    },
-    settingName: {
-        fontSize: 12,
-        color: "#0F172B",
-        marginBottom: 2,
-        fontFamily: "Inter-Regular",
-    },
-    settingDesc: {
-        fontSize: 10,
-        color: "#62748E",
-        fontFamily: "Inter-Regular",
-    },
+    safeArea: { flex: 1, backgroundColor: "#FFFFFF" },
+    container: { flex: 1, backgroundColor: "#FFFFFF" },
+    header: { padding: 16 },
+    pageTitleSection: { marginTop: 5, flexDirection: "row", justifyContent: "space-between" },
+    pageTitle: { fontSize: 24, color: "#0F172B", fontFamily: "Inter-SemiBold" },
+    unreadContainer: { flexDirection: "row", alignItems: "center" },
+    unreadBadge: { fontSize: 13, color: "#E7000B", fontFamily: "Inter-SemiBold", marginLeft: 7 },
     filterRow: {
         flexDirection: "row",
         alignItems: "center",
@@ -259,103 +124,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         marginBottom: 16,
     },
-    filterLabel: {
-        fontSize: 14,
-        color: "#45556C",
-        fontFamily: "Inter-SemiBold", 
-    },
-    filterTabs: {
-        flexDirection: "row",
-        backgroundColor: "#F1F5F9",
-        borderRadius: 10,
-        padding: 4,
-    },
-    filterTab: {
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-    },
-    filterTabActive: {
-        backgroundColor: "#FFFFFF",
-        elevation: 1,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 1,
-    },
-    filterTabText: {
-        fontSize: 12,
-        color: "#45556C",
-        fontFamily: "Inter-Regular",
-    },
-    filterTabTextActive: {
-        color: "#0092B8",
-        fontFamily: "Inter-SemiBold",
-    },
-    alertList: {
-        marginHorizontal: 16,
-        gap: 12,
-    },
-    alertCard: {
-        flexDirection: "row",
-        backgroundColor: "#FFFFFF",
-        borderRadius: 14,
-        padding: 14,
-        borderWidth: 1,
-        borderColor: "#E2E8F0",
-    },
-    alertIconBox: {
-        width: 44,
-        height: 44,
-        backgroundColor: "#FFF0F0",
-        borderRadius: 12,
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 12,
-    },
-    alertIconWarning: {
-        backgroundColor: "#FFFBEB",
-    },
-    alertContent: { flex: 1 },
-    alertTitle: {
-        fontSize: 13,
-        color: "#0F172B",
-        marginBottom: 4,
-        fontFamily: "Inter-SemiBold",
-    },
-    alertDesc: {
-        fontSize: 12,
-        color: "#45556C",
-        marginBottom: 2,
-        fontFamily: "Inter-Regular",
-    },
-    alertTime: {
-        fontSize: 11,
-        color: "#90A1B9",
-        marginTop: 4,
-        marginBottom: 10,
-        fontFamily: "Inter-Regular",
-    },
-    alertActions: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-    },
-    detailBtn: {
-        backgroundColor: "#FFE2E2",
-        paddingVertical: 5,
-        paddingHorizontal: 14,
-        borderRadius: 8,
-    },
-    detailBtnText: {
-        fontSize: 12,
-        color: "#9F0712",
-        fontFamily: "Inter-SemiBold",
-    },
-    markReadText: {
-        fontSize: 12,
-        color: "#C10007",
-        textDecorationLine: "underline",
-        fontFamily: "Inter-Regular",
-    },
+    filterLabel: { fontSize: 14, color: "#45556C", fontFamily: "Inter-SemiBold" },
+    alertList: { marginHorizontal: 16, gap: 12 },
+    emptyState: { paddingVertical: 30, alignItems: "center", justifyContent: "center" },
+    emptyStateText: { color: "#90A1B9", fontFamily: "Inter-Regular", fontSize: 13 },
 });

@@ -1,5 +1,6 @@
 import { Feather } from "@expo/vector-icons";
-import { Platform, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import CustomSwitch from "./CustomSwitch";
 
 interface SettingRowProps {
     title: string;
@@ -53,14 +54,7 @@ function SettingRow({
 
             <View style={styles.settingRowRight}>
                 {isToggle ? (
-                    <Switch
-                        trackColor={{ false: "#E2E8F0", true: "#00A89D" }}
-                        thumbColor={"#FFFFFF"}
-                        ios_backgroundColor="#E2E8F0"
-                        onValueChange={onToggle}
-                        value={toggleValue}
-                        style={Platform.OS === "ios" ? { transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] } : {}}
-                    />
+                    <CustomSwitch value={toggleValue} onValueChange={(val) => onToggle && onToggle(val)} />
                 ) : rightElement ? (
                     rightElement
                 ) : (

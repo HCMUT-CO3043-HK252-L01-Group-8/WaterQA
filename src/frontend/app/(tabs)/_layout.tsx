@@ -1,8 +1,7 @@
+import CustomNavBar from "@/components/ui/CustomNavBar";
 import { Tabs } from "expo-router";
-import CustomNavBar from "@/components/CustomNavBar";
 
 export default function TabLayout() {
-
     return (
         <Tabs
             screenOptions={{
@@ -16,25 +15,25 @@ export default function TabLayout() {
             <Tabs.Screen
                 name="home"
                 options={{
-                    title: "Home"
+                    title: "Home",
                 }}
             />
             <Tabs.Screen
                 name="history"
                 options={{
-                    title: "History"
+                    title: "History",
                 }}
             />
             <Tabs.Screen
                 name="notification"
                 options={{
-                    title: "Notification"
+                    title: "Notification",
                 }}
             />
             <Tabs.Screen
                 name="settings"
                 options={{
-                    title: "Settings"
+                    title: "Settings",
                 }}
             />
         </Tabs>

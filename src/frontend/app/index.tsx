@@ -1,12 +1,8 @@
 import { Redirect } from "expo-router";
 import { useState, useEffect } from "react";
 
-export default function Index() {
+export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    if (!isAuthenticated) {
-        return <Redirect href="/login" />;
-    }
-
-    return <Redirect href="/(tabs)/home" />;
+    return <Redirect href={isAuthenticated ? "/(tabs)/home" : "/welcome"} />;
 }
