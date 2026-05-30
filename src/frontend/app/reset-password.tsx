@@ -15,12 +15,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { authServices } from "@/services/authServices";
+import { useTranslation } from "react-i18next";
 
 export default function ResetPasswordScreen() {
     const router = useRouter();
     const params = useLocalSearchParams<{ email: string; otp: string }>();
     const email = Array.isArray(params.email) ? params.email[0] : params.email;
     const otp = Array.isArray(params.otp) ? params.otp[0] : params.otp;
+    const { t } = useTranslation();
 
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,15 +32,15 @@ export default function ResetPasswordScreen() {
 
     const handleResetPassword = async () => {
         if (!newPassword || newPassword.length < 6) {
-            Alert.alert("Lỗi", "Mật khẩu mới phải có ít nhất 6 ký tự");
+            Alert.alert(t("common.error", "Lỗi"), "Mật khẩu mới phải có ít nhất 6 ký tự");
             return;
         }
         if (newPassword !== confirmPassword) {
-            Alert.alert("Lỗi", "Mật khẩu xác nhận không khớp");
+            Alert.alert(t("common.error", "Lỗi"), "Mật khẩu xác nhận không khớp");
             return;
         }
         if (!email || !otp) {
-            Alert.alert("Lỗi", "Thông tin xác thực không hợp lệ. Vui lòng thử lại từ đầu.");
+            Alert.alert(t("common.error", "Lỗi"), "Thông tin xác thực không hợp lệ. Vui lòng thử lại từ đầu.");
             router.replace("/forgot-password");
             return;
         }
@@ -47,15 +49,20 @@ export default function ResetPasswordScreen() {
         try {
             const response = await authServices.resetPassword(email, otp, newPassword);
             if (response.success) {
-                Alert.alert("Thành công! 🎉", "Mật khẩu của bạn đã được đặt lại. Vui lòng đăng nhập lại.", [
-                    { text: "Đăng nhập", onPress: () => router.replace("/login") },
-                ]);
+                Alert.alert(
+                    t("common.success", "Thành công! 🎉"),
+                    "Mật khẩu của bạn đã được đặt lại. Vui lòng đăng nhập lại.",
+                    [{ text: t("auth.loginBtn", "Đăng nhập"), onPress: () => router.replace("/login") }],
+                );
             } else {
-                Alert.alert("Lỗi", response.error || "Không thể đặt lại mật khẩu. Vui lòng thử lại.");
+                Alert.alert(
+                    t("common.error", "Lỗi"),
+                    response.error || "Không thể đặt lại mật khẩu. Vui lòng thử lại.",
+                );
             }
         } catch (error) {
-            console.error("Error in RESET PASSWORD:", error)
-            Alert.alert("Lỗi", "Không thể kết nối tới server. Vui lòng thử lại.");
+            console.error("Error in RESET PASSWORD:", error);
+            Alert.alert(t("common.error", "Lỗi"), "Không thể kết nối tới server. Vui lòng thử lại.");
         } finally {
             setLoading(false);
         }
@@ -73,25 +80,28 @@ export default function ResetPasswordScreen() {
                         <View style={styles.backIconCircle}>
                             <Ionicons name="close" size={20} color="#333" />
                         </View>
-                        <Text style={styles.backText}>Hủy</Text>
+                        <Text style={styles.backText}>{t("common.cancel", "Hủy")}</Text>
                     </TouchableOpacity>
 
                     <View style={styles.headerSection}>
-                        <Text style={styles.title}>Mật khẩu</Text>
-                        <Text style={[styles.title, { marginLeft: "20%" }]}>mới 🔒</Text>
+                        <Text style={styles.title}>{t("auth.resetTitle1", "Mật khẩu")}</Text>
+                        <Text style={[styles.title, { marginLeft: "20%" }]}>{t("auth.resetTitle2", "mới 🔒")}</Text>
                         <Text style={styles.subtitle}>
-                            Mã OTP đã được xác thực. Vui lòng tạo mật khẩu mới cho tài khoản.
+                            {t(
+                                "auth.resetSubtitle",
+                                "Mã OTP đã được xác thực. Vui lòng tạo mật khẩu mới cho tài khoản.",
+                            )}
                         </Text>
                     </View>
 
                     <View style={styles.formContainer}>
-                        <Text style={styles.inputLabel}>Mật khẩu mới</Text>
+                        <Text style={styles.inputLabel}>{t("auth.newPassword", "Mật khẩu mới")}</Text>
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
                                 value={newPassword}
                                 onChangeText={setNewPassword}
-                                placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                                placeholder={t("auth.newPasswordPlaceholder", "Nhập mật khẩu (ít nhất 6 ký tự)")}
                                 secureTextEntry={!showPassword}
                                 editable={!loading}
                             />
@@ -100,13 +110,13 @@ export default function ResetPasswordScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        <Text style={styles.inputLabel}>Xác nhận mật khẩu</Text>
+                        <Text style={styles.inputLabel}>{t("auth.confirmNewPassword", "Xác nhận mật khẩu")}</Text>
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
-                                placeholder="Nhập lại mật khẩu mới"
+                                placeholder={t("auth.confirmNewPasswordPlaceholder", "Nhập lại mật khẩu mới")}
                                 secureTextEntry={!showConfirmPassword}
                                 editable={!loading}
                             />
@@ -123,7 +133,9 @@ export default function ResetPasswordScreen() {
                             {loading ? (
                                 <ActivityIndicator color="#FFFFFF" />
                             ) : (
-                                <Text style={styles.submitButtonText}>Xác nhận & Lưu</Text>
+                                <Text style={styles.submitButtonText}>
+                                    {t("auth.saveAndConfirm", "Xác nhận & Lưu")}
+                                </Text>
                             )}
                         </TouchableOpacity>
                     </View>

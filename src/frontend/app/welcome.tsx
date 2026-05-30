@@ -1,9 +1,11 @@
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function WelcomeScreen() {
     const router = useRouter();
+    const { t } = useTranslation();
 
     return (
         <ImageBackground
@@ -14,21 +16,22 @@ export default function WelcomeScreen() {
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.container}>
                     <View style={styles.header}>
-                        <Text style={styles.title}>Welcome</Text>
+                        <Text style={styles.title}>{t("auth.welcome", "Welcome")}</Text>
                         <Text style={styles.subtitle}>
-                            Chào mừng bạn đến với <Text style={styles.registerLink}>WaterQA</Text>
+                            {t("auth.welcomeSubtitle", "Chào mừng bạn đến với")}{" "}
+                            <Text style={styles.registerLink}>WaterQA</Text>
                         </Text>
                     </View>
 
                     <View style={styles.footer}>
                         <TouchableOpacity style={styles.primaryButton} onPress={() => router.push("/login")}>
-                            <Text style={styles.primaryButtonText}>Đăng nhập</Text>
+                            <Text style={styles.primaryButtonText}>{t("auth.loginBtn", "Đăng nhập")}</Text>
                         </TouchableOpacity>
 
                         <View style={styles.registerContainer}>
-                            <Text style={styles.registerText}>Khách hàng mới? </Text>
+                            <Text style={styles.registerText}>{t("auth.newCustomer", "Khách hàng mới? ")}</Text>
                             <TouchableOpacity onPress={() => router.push("/register")}>
-                                <Text style={styles.registerLink}>Tạo tài khoản</Text>
+                                <Text style={styles.registerLink}>{t("auth.createAccount", "Tạo tài khoản")}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

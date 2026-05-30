@@ -15,11 +15,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { authServices } from "@/services/authServices";
+import { useTranslation } from "react-i18next";
 
 export default function ForgotPasswordScreen() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
+    const { t } = useTranslation();
 
     const handleSubmit = async () => {
         const trimmedEmail = email.trim();
@@ -43,11 +45,11 @@ export default function ForgotPasswordScreen() {
                     params: { email: trimmedEmail },
                 });
             } else {
-                Alert.alert("Lỗi", response?.error || "Không thể gửi mã OTP. Vui lòng thử lại.");
+                Alert.alert(t('common.error', 'Lỗi'), response.error || "Failed");
             }
         } catch (error) {
             console.error("Error in FORGOT PASSWORD:", error)
-            Alert.alert("Lỗi", "Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng.");
+            Alert.alert(t('common.error', 'Lỗi'), "Network Error");
         } finally {
             setLoading(false);
         }
@@ -65,25 +67,25 @@ export default function ForgotPasswordScreen() {
                         <View style={styles.backIconCircle}>
                             <Ionicons name="chevron-back" size={20} color="#333" />
                         </View>
-                        <Text style={styles.backText}>Quay lại</Text>
+                        <Text style={styles.backText}>{t('common.back', 'Quay lại')}</Text>
                     </TouchableOpacity>
 
                     <View style={styles.headerSection}>
-                        <Text style={styles.title}>Bạn quên</Text>
-                        <Text style={[styles.title, { marginLeft: "25%" }]}>mật khẩu?</Text>
+                        <Text style={styles.title}>{t('auth.forgotTitle1', 'Bạn quên')}</Text>
+                        <Text style={[styles.title, { marginLeft: "25%" }]}>{t('auth.forgotTitle2', 'mật khẩu?')}</Text>
                         <Text style={styles.subtitle}>
-                            Để lại email và chúng tôi sẽ hỗ trợ bạn tạo lại mật khẩu mới
+                            {t('auth.forgotSubtitle', 'Để lại email và chúng tôi sẽ hỗ trợ')}
                         </Text>
                     </View>
 
                     <View style={styles.formContainer}>
-                        <Text style={styles.inputLabel}>Email</Text>
+                        <Text style={styles.inputLabel}>{t('common.email', 'Email')}</Text>
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
                                 value={email}
                                 onChangeText={setEmail}
-                                placeholder="Nhập email của bạn..."
+                                placeholder={t('auth.emailPlaceholder', 'Nhập email...')}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                                 editable={!loading}
@@ -98,7 +100,7 @@ export default function ForgotPasswordScreen() {
                             {loading ? (
                                 <ActivityIndicator color="#FFFFFF" />
                             ) : (
-                                <Text style={styles.submitButtonText}>Tiếp tục</Text>
+                                <Text style={styles.submitButtonText}>{t('common.continue', 'Tiếp tục')}</Text>
                             )}
                         </TouchableOpacity>
                     </View>

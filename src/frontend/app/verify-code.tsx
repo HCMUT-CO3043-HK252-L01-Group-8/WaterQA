@@ -14,9 +14,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { authServices } from "@/services/authServices";
+import { useTranslation } from "react-i18next";
 
 export default function VerifyCodeScreen() {
     const router = useRouter();
+    const { t } = useTranslation();
     const { email } = useLocalSearchParams<{ email: string }>();
     const inputRefs = useRef<(TextInput | null)[]>([]);
     const [countdown, setCountdown] = useState(60);
@@ -34,7 +36,7 @@ export default function VerifyCodeScreen() {
         if (finalCode.length === 6) {
             Keyboard.dismiss();
             if (!email) {
-                Alert.alert("Lỗi", "Không tìm thấy thông tin email.");
+                Alert.alert(t("common.error", "Lỗi"), "Không tìm thấy thông tin email.");
                 return;
             }
 
@@ -42,17 +44,16 @@ export default function VerifyCodeScreen() {
             try {
                 const response = await authServices.verifyOTP(email, finalCode);
                 if (response.success) {
-                    // Dùng replace để đóng modal và mở trang Đổi mật khẩu
                     router.replace({
                         pathname: "/reset-password",
                         params: { email, otp: finalCode },
                     });
                 } else {
-                    Alert.alert("Lỗi", response.error || "Mã OTP không đúng hoặc đã hết hạn");
+                    Alert.alert(t("common.error", "Lỗi"), response.error || "Mã OTP không đúng hoặc đã hết hạn");
                 }
             } catch (error) {
-                console.error("Error in VERIFY CODE:", error)
-                Alert.alert("Lỗi", "Không thể kết nối tới máy chủ.");
+                console.error("Error in VERIFY CODE:", error);
+                Alert.alert(t("common.error", "Lỗi"), "Không thể kết nối tới máy chủ.");
             } finally {
                 setLoading(false);
             }
@@ -64,14 +65,15 @@ export default function VerifyCodeScreen() {
         try {
             const response = await authServices.forgotPassword(email);
             if (response.success) {
-                setCountdown(60); // Reset bộ đếm
-                setCode(["", "", "", "", "", ""]); // Xóa trắng các ô nhập
+                setCountdown(60);
+                setCode(["", "", "", "", "", ""]);
                 inputRefs.current[0]?.focus();
             } else {
-                Alert.alert("Lỗi", response.error || "Không thể gửi lại mã.");
+                Alert.alert(t("common.error", "Lỗi"), response.error || "Không thể gửi lại mã.");
             }
         } catch (error) {
-            Alert.alert("Lỗi", "Lỗi mạng khi gửi lại mã.");
+            console.error("Error in VERIFY CODE:", error)
+            Alert.alert(t("common.error", "Lỗi"), "Lỗi mạng khi gửi lại mã.");
         }
     };
 
@@ -118,11 +120,11 @@ export default function VerifyCodeScreen() {
         <SafeAreaView style={styles.safeArea}>
             <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
                 <View style={styles.card}>
-                    <Text style={styles.title}>Nhập mã xác thực</Text>
+                    <Text style={styles.title}>{t("auth.verifyTitle", "Nhập mã xác thực")}</Text>
                     <Text style={styles.subtitle}>
-                        Đoạn mã 6 chữ số đã được gửi đến địa chỉ email{" "}
-                        <Text style={{ fontWeight: "bold", color: "#00A89D" }}>{email}</Text>, vui lòng nhập vào bên
-                        dưới
+                        {t("auth.verifySubtitle1", "Đoạn mã 6 chữ số đã được gửi đến địa chỉ email ")}
+                        <Text style={{ fontWeight: "bold", color: "#00A89D" }}>{email}</Text>
+                        {t("auth.verifySubtitle2", ", vui lòng nhập vào bên dưới")}
                     </Text>
 
                     <View style={styles.otpContainer}>
@@ -144,10 +146,10 @@ export default function VerifyCodeScreen() {
                     </View>
 
                     <View style={styles.resendContainer}>
-                        <Text style={styles.resendText}>Chưa nhận được mã? </Text>
+                        <Text style={styles.resendText}>{t("auth.notReceivedCode", "Chưa nhận được mã? ")}</Text>
                         <TouchableOpacity disabled={countdown > 0 || loading} onPress={handleResendCode}>
                             <Text style={[styles.resendLink, countdown > 0 && styles.resendLinkDisabled]}>
-                                Gửi lại {countdown > 0 ? `(${countdown}s)` : ""}
+                                {t("auth.resendCode", "Gửi lại")} {countdown > 0 ? `(${countdown}s)` : ""}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -161,7 +163,7 @@ export default function VerifyCodeScreen() {
                             {loading ? (
                                 <ActivityIndicator color="#FFF" />
                             ) : (
-                                <Text style={styles.primaryButtonText}>Kiểm tra</Text>
+                                <Text style={styles.primaryButtonText}>{t("auth.checkCode", "Kiểm tra")}</Text>
                             )}
                         </TouchableOpacity>
 
@@ -170,7 +172,7 @@ export default function VerifyCodeScreen() {
                             onPress={() => router.back()}
                             disabled={loading}
                         >
-                            <Text style={styles.secondaryButtonText}>Hủy</Text>
+                            <Text style={styles.secondaryButtonText}>{t("common.cancel", "Hủy")}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

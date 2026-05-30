@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { authServices } from "@/services/authServices";
+import { useTranslation } from "react-i18next";
 
 export default function RegisterScreen() {
     const router = useRouter();
@@ -27,10 +28,11 @@ export default function RegisterScreen() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [agreeTerms, setAgreeTerms] = useState(false);
     const [loading, setLoading] = useState(false);
+    const { t } = useTranslation();
 
     const handleRegister = async () => {
-        if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
-            Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin.");
+        if (!name.trim() || !email.trim() || !password.trim()) {
+            Alert.alert("Lỗi", "Vui lòng nhập các thông tin bắt buộc.");
             return;
         }
 
@@ -60,20 +62,20 @@ export default function RegisterScreen() {
             const res = await authServices.signup(name.trim(), email.trim(), phone.trim(), password);
 
             if (res.success) {
-                Alert.alert("Thành công! 🎉", "Tài khoản của bạn đã được đăng ký thành công.", [
-                    {
-                        text: "Đăng nhập ngay",
-                        onPress: () => {
-                            router.replace("/login");
-                        },
-                    },
-                ]);
+                if (Platform.OS === "web") {
+                    window.alert(t("common.success", "Thành công!"));
+                    router.replace("/login");
+                } else {
+                    Alert.alert(t("common.success", "Thành công! 🎉"), "Tạo tài khoản thành công", [
+                        { text: t("auth.loginBtn", "Đăng nhập"), onPress: () => router.replace("/login") },
+                    ]);
+                }
             } else {
-                Alert.alert("Đăng ký thất bại", res.error || "Email hoặc Số điện thoại có thể đã được sử dụng.");
+                Alert.alert(t("common.error", "Lỗi"), res.error || "Lỗi đăng ký.");
             }
         } catch (error: any) {
             console.error("Lỗi đăng ký:", error);
-            Alert.alert("Lỗi kết nối", error?.error || "Không thể kết nối đến máy chủ. Vui lòng thử lại.");
+            Alert.alert(t("common.error", "Lỗi"), error?.error || "Error");
         } finally {
             setLoading(false);
         }
@@ -91,58 +93,66 @@ export default function RegisterScreen() {
                         <View style={styles.backIconCircle}>
                             <Ionicons name="chevron-back" size={20} color="#333" />
                         </View>
-                        <Text style={styles.backText}>Quay lại</Text>
+                        <Text style={styles.backText}>{t("common.back", "Quay lại")}</Text>
                     </TouchableOpacity>
 
                     <View style={styles.headerSection}>
-                        <Text style={styles.title}>Đăng ký</Text>
-                        <Text style={styles.subtitle}>Đăng ký tài khoản mới</Text>
+                        <Text style={styles.title}>{t("auth.registerTitle", "Đăng ký")}</Text>
+                        <Text style={styles.subtitle}>{t("auth.registerSubtitle", "Đăng ký tài khoản mới")}</Text>
                     </View>
 
                     <View style={styles.formContainer}>
-                        <Text style={styles.inputLabel}>Tên</Text>
+                        <Text style={styles.inputLabel}>
+                            {t("auth.displayName", "Tên hiển thị")} <Text style={styles.required}>*</Text>
+                        </Text>
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
                                 value={name}
                                 onChangeText={setName}
-                                placeholder="Nhập họ tên của bạn"
+                                placeholder={t("auth.namePlaceholder", "Nhập họ tên")}
                                 editable={!loading}
                             />
                         </View>
 
-                        <Text style={styles.inputLabel}>Email</Text>
+                        <Text style={styles.inputLabel}>
+                            {t("common.email", "Email")} <Text style={styles.required}>*</Text>
+                        </Text>
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
                                 value={email}
                                 onChangeText={setEmail}
-                                placeholder="Nhập email của bạn"
+                                placeholder={t("auth.emailPlaceholder", "Nhập email")}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                                 editable={!loading}
                             />
                         </View>
 
-                        <Text style={styles.inputLabel}>Số điện thoại</Text>
+                        <Text style={styles.inputLabel}>
+                            {t("auth.phoneNumber", "Số điện thoại")} <Text style={styles.optional}>(tùy chọn)</Text>
+                        </Text>
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
                                 value={phone}
                                 onChangeText={setPhone}
-                                placeholder="Nhập số điện thoại"
+                                placeholder={t("auth.phonePlaceholder", "Nhập số điện thoại")}
                                 keyboardType="phone-pad"
                                 editable={!loading}
                             />
                         </View>
 
-                        <Text style={styles.inputLabel}>Mật khẩu</Text>
+                        <Text style={styles.inputLabel}>
+                            {t("auth.passwordLabel", "Mật khẩu")} <Text style={styles.required}>*</Text>
+                        </Text>
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
                                 value={password}
                                 onChangeText={setPassword}
-                                placeholder="••••••••"
+                                placeholder={t("auth.passwordHint", "Ít nhất 6 ký tự")}
                                 secureTextEntry={!showPassword}
                                 editable={!loading}
                             />
@@ -156,13 +166,15 @@ export default function RegisterScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        <Text style={styles.inputLabel}>Xác nhận mật khẩu</Text>
+                        <Text style={styles.inputLabel}>
+                            {t("auth.confirmPassword", "Xác nhận mật khẩu")} <Text style={styles.required}>*</Text>
+                        </Text>
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
-                                placeholder="••••••••"
+                                placeholder={t("auth.confirmPasswordPlaceholder", "Nhập lại mật khẩu")}
                                 secureTextEntry={!showConfirmPassword}
                                 editable={!loading}
                             />
@@ -185,19 +197,26 @@ export default function RegisterScreen() {
                             <View style={[styles.checkbox, agreeTerms && styles.checkboxChecked]}>
                                 {agreeTerms && <Ionicons name="checkmark" size={14} color="#FFF" />}
                             </View>
-                            <Text style={styles.checkboxText}>Đồng ý với điều khoản và điều kiện</Text>
+                            <Text style={styles.checkboxText}>{t("auth.agreeTerms", "Đồng ý với điều khoản")}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={[styles.registerButton, loading && { opacity: 0.7 }]}
+                            style={[styles.registerButton, (!agreeTerms || loading) && { opacity: 0.7 }]}
                             onPress={handleRegister}
-                            disabled={loading}
+                            disabled={!agreeTerms || loading}
                         >
                             {loading ? (
                                 <ActivityIndicator color="#FFFFFF" />
                             ) : (
-                                <Text style={styles.registerButtonText}>Đăng ký</Text>
+                                <Text style={styles.registerButtonText}>{t("auth.registerTitle", "Đăng ký")}</Text>
                             )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.loginLink} onPress={() => router.replace("/login")}>
+                            <Text style={styles.loginLinkText}>
+                                {t("auth.alreadyHaveAccount", "Đã có tài khoản? ")}{" "}
+                                <Text style={styles.loginLinkBold}>{t("auth.loginBtn", "Đăng nhập")}</Text>
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -225,6 +244,8 @@ const styles = StyleSheet.create({
     subtitle: { fontSize: 14, color: "#666" },
     formContainer: { width: "100%" },
     inputLabel: { fontSize: 14, fontWeight: "600", color: "#333", marginBottom: 8 },
+    required: { color: "#E53935", fontWeight: "600" },
+    optional: { color: "#999", fontWeight: "400", fontSize: 12 },
     inputContainer: {
         flexDirection: "row",
         alignItems: "center",
@@ -250,7 +271,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     checkboxChecked: { backgroundColor: "#00A89D" },
-    checkboxText: { fontSize: 14, color: "#333" },
+    checkboxText: { fontSize: 14, color: "#333", flex: 1 },
     registerButton: {
         backgroundColor: "#00A89D",
         borderRadius: 10,
@@ -262,6 +283,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 8,
         elevation: 3,
+        marginBottom: 16,
     },
     registerButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
+    loginLink: { alignItems: "center", paddingVertical: 8 },
+    loginLinkText: { fontSize: 14, color: "#666" },
+    loginLinkBold: { color: "#00A89D", fontWeight: "600" },
 });
