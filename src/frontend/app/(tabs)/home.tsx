@@ -10,6 +10,9 @@ import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { telemetryServices } from "@/services/telemetryServices";
+import { useTranslation } from "react-i18next";
 
 const LOCATIONS = ["268 Lý Thường Kiệt", "KTX Khu A - ĐHQG", "Khu Công Nghệ Cao", "Hồ Đá - Làng Đại Học"];
 
@@ -19,35 +22,58 @@ export default function HomeDashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showToast, setShowToast] = useState(false);
-
-    const [userName] = useState("Đậu Minh Khôi");
+    const [userName, setUserName] = useState("Người dùng");
     const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
     const [waterMetrics, setWaterMetrics] = useState({ wqi: 0, pH: 0, hardness: 0, clo: 0, ntu: 0, lastUpdated: "" });
     const [statusData, setStatusData] = useState({ wqiChange: "", sensorStatus: "", sensorIssue: "" });
     const [showAlertBanner, setShowAlertBanner] = useState(false);
+    const { t } = useTranslation();
+
+    useEffect(() => {
+        const loadUser = async () => {
+            try {
+                const storedUserStr = await AsyncStorage.getItem("currentUser");
+                if (storedUserStr) {
+                    const storedUser = JSON.parse(storedUserStr);
+                    if (storedUser.name) setUserName(storedUser.name);
+                }
+            } catch (error) {
+                console.error("Lỗi load user:", error);
+            }
+        };
+        loadUser();
+    }, []);
 
     const fetchDashboardData = async () => {
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            const randomWqi = Math.floor(Math.random() * 100);
+            const snapshot = await telemetryServices.getLatestTelemetrySnapshot();
+
+            const tempVal = Number(snapshot.temp.value) || 0;
+            const humiVal = Number(snapshot.humi.value) || 0;
+            const lightVal = Number(snapshot.leakage.value) || 0;
 
             setWaterMetrics({
-                wqi: randomWqi,
-                pH: 7.0,
-                hardness: 67,
+                wqi: tempVal,
+                pH: 7.2,
+                hardness: humiVal,
                 clo: 0.5,
-                ntu: 1,
-                lastUpdated: "06-03-2026 20:36 UTC+7",
-            });
-            setStatusData({
-                wqiChange: randomWqi >= 80 ? "+2" : "-15",
-                sensorStatus: randomWqi >= 80 ? "Hoạt động tốt" : "3/4",
-                sensorIssue: randomWqi >= 80 ? "Tất cả cảm biến ổn định" : "Vui lòng kiểm tra cảm biến",
+                ntu: lightVal,
+                lastUpdated: new Date(snapshot.fetchedAt).toLocaleString("vi-VN"),
             });
 
-            setShowAlertBanner(randomWqi < 80);
+            setStatusData({
+                wqiChange: tempVal >= 80 ? "+2" : "-15",
+                sensorStatus: snapshot.temp.value
+                    ? t("home.sensorGood", "Hoạt động tốt")
+                    : t("home.sensorDisconnect", "Mất kết nối"),
+                sensorIssue: snapshot.temp.value
+                    ? t("home.sensorStable", "Tất cả cảm biến ổn định")
+                    : t("home.sensorCheck", "Kiểm tra kết nối trạm"),
+            });
+
+            setShowAlertBanner(tempVal < 80);
         } catch (error) {
-            console.error("Lỗi:", error);
+            console.error("Lỗi fetch data IoT:", error);
         } finally {
             setIsLoading(false);
             setRefreshing(false);
@@ -57,12 +83,12 @@ export default function HomeDashboard() {
     useEffect(() => {
         setIsLoading(true);
         fetchDashboardData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedLocation]);
 
     const onRefresh = async () => {
         setRefreshing(true);
         await fetchDashboardData();
-
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
     };
@@ -71,7 +97,12 @@ export default function HomeDashboard() {
 
     return (
         <View style={styles.mainContainer}>
-            <CustomToast visible={showToast} topInset={insets.top} message="Đã cập nhật dữ liệu mới!" type="success" />
+            <CustomToast
+                visible={showToast}
+                topInset={insets.top}
+                message={t("common.success", "Đã cập nhật dữ liệu mới!")}
+                type="success"
+            />
 
             <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
                 <ScrollView
@@ -86,17 +117,23 @@ export default function HomeDashboard() {
                         <AppHeader />
                         <View style={styles.greetingSection}>
                             <Text style={styles.greetingTitle}>
-                                Xin chào, <Text style={styles.userName}>{userName}</Text>
+                                {t("home.greeting", "Xin chào, ").replace("{{name}}", "")}
+                                <Text style={styles.userName}>{userName}</Text>
                             </Text>
-                            <Text style={styles.greetingSubtitle}>Hãy kiểm tra chất lượng nước của bạn</Text>
+                            <Text style={styles.greetingSubtitle}>
+                                {t("home.greetingSubtitle", "Hãy kiểm tra chất lượng nước của bạn")}
+                            </Text>
                         </View>
                     </View>
 
                     <AlertBanner
                         visible={showAlertBanner}
                         type="error"
-                        title="Đã phát hiện bất thường với cảm biến pH"
-                        message="Đã phát hiện hoạt động bất thường của cảm biến pH. Kiểm tra cảm biến hoặc liên hệ với chúng tôi."
+                        title={t("home.alertDetected", "Đã phát hiện bất thường với cảm biến pH")}
+                        message={t(
+                            "home.alertDescription",
+                            "Dữ liệu quan trắc cho thấy nguồn nước có dấu hiệu bất thường. Vui lòng kiểm tra.",
+                        )}
                         dateText={waterMetrics.lastUpdated}
                         onClose={() => setShowAlertBanner(false)}
                         onPressDetail={() => console.log("Xem chi tiết")}

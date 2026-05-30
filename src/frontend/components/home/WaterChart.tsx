@@ -2,6 +2,7 @@ import BaseChart from "@/components/ui/BaseChart";
 import CustomFilterTab from "@/components/ui/CustomFilterTab";
 import { useRef, useState } from "react";
 import { Animated } from "react-native";
+import { useTranslation } from "react-i18next";
 
 const MOCK_DATA = {
     day: {
@@ -15,6 +16,7 @@ const MOCK_DATA = {
 };
 
 export default function WaterChart() {
+    const { t } = useTranslation();
     const [chartFilter, setChartFilter] = useState<"day" | "month">("day");
     const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -28,20 +30,20 @@ export default function WaterChart() {
 
     return (
         <BaseChart
-            title="Thống kê chất lượng nước"
+            title={t("home.waterQualityStats", "Thống kê chất lượng nước")}
             data={MOCK_DATA[chartFilter].data}
             labels={MOCK_DATA[chartFilter].labels}
             smooth={true}
             highlightMax={true}
             lineColor="#00A89D"
             chartHeight={120}
-            footerText="Biểu đồ dự đoán WQI"
+            footerText={t("home.wqiPredictionChart", "Biểu đồ dự đoán WQI")}
             fadeAnim={fadeAnim}
             headerRight={
                 <CustomFilterTab
                     options={[
-                        { label: "Theo ngày", value: "day" },
-                        { label: "Theo tháng", value: "month" },
+                        { label: t("history.daily", "Ngày"), value: "day" },
+                        { label: t("history.monthly", "Tháng"), value: "month" },
                     ]}
                     activeOption={chartFilter}
                     onOptionChange={handleFilterChange}

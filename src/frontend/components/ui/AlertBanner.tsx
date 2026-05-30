@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useRef } from "react";
 import { Animated, Dimensions, LayoutAnimation, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -15,6 +16,7 @@ interface AlertBannerProps {
 }
 
 function AlertBanner({ visible, type = "error", title, message, dateText, onClose, onPressDetail }: AlertBannerProps) {
+    const { t } = useTranslation();
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const translateXAnim = useRef(new Animated.Value(0)).current;
     const opacityAnim = useRef(new Animated.Value(1)).current;
@@ -100,7 +102,7 @@ function AlertBanner({ visible, type = "error", title, message, dateText, onClos
             </View>
             <Text style={[styles.alertDescription, { color: theme.subText }]}>
                 {message}
-                {dateText && `\nThời gian: ${dateText}`}
+                {dateText && `\n${t("common.time", "Thời gian")}: ${dateText}`}
             </Text>
             <View style={styles.alertActions}>
                 {onPressDetail && (
@@ -108,11 +110,15 @@ function AlertBanner({ visible, type = "error", title, message, dateText, onClos
                         onPress={onPressDetail}
                         style={[styles.detailButton, { backgroundColor: theme.border + "30" }]}
                     >
-                        <Text style={[styles.detailButtonText, { color: theme.text }]}>Chi tiết</Text>
+                        <Text style={[styles.detailButtonText, { color: theme.text }]}>
+                            {t("notifications.details", "Chi tiết")}
+                        </Text>
                     </TouchableOpacity>
                 )}
                 <TouchableOpacity onPress={handleClose}>
-                    <Text style={[styles.readButtonText, { color: theme.subText }]}>Đánh dấu đã đọc</Text>
+                    <Text style={[styles.readButtonText, { color: theme.subText }]}>
+                        {t("notifications.markAsRead", "Đánh dấu đã đọc")}
+                    </Text>
                 </TouchableOpacity>
             </View>
         </Animated.View>

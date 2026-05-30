@@ -2,21 +2,27 @@ import AppHeader from "@/components/ui/AppHeader";
 import { SkeletonBlock, SkeletonContainer } from "@/components/ui/Skeleton";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 interface HomeSkeletonProps {
     userName: string;
 }
 
 export default function HomeSkeleton({ userName }: HomeSkeletonProps) {
+    const { t } = useTranslation();
+
     return (
         <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
             <View style={styles.header}>
                 <AppHeader />
                 <View style={styles.greetingSection}>
                     <Text style={styles.greetingTitle}>
-                        Xin chào, <Text style={styles.userName}>{userName}</Text>
+                        {t("home.greeting", "Xin chào, ").replace("{{name}}", "")}
+                        <Text style={styles.userName}>{userName}</Text>
                     </Text>
-                    <Text style={styles.greetingSubtitle}>Hãy kiểm tra chất lượng nước của bạn</Text>
+                    <Text style={styles.greetingSubtitle}>
+                        {t("home.greetingSubtitle", "Hãy kiểm tra chất lượng nước của bạn")}
+                    </Text>
                 </View>
             </View>
 

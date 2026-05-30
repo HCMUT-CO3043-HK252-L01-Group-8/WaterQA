@@ -2,6 +2,7 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import { Animated, Dimensions, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 const screenHeight = Dimensions.get("window").height;
 
@@ -12,6 +13,7 @@ interface LocationSelectorProps {
 }
 
 export default function LocationSelector({ locations, selectedLocation, onSelect }: LocationSelectorProps) {
+    const { t } = useTranslation();
     const [isModalVisible, setModalVisible] = useState(false);
     const insets = useSafeAreaInsets();
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -60,7 +62,7 @@ export default function LocationSelector({ locations, selectedLocation, onSelect
                         ]}
                     >
                         <View style={styles.sheetHeader}>
-                            <Text style={styles.sheetTitle}>Chọn trạm quan trắc</Text>
+                            <Text style={styles.sheetTitle}>{t("home.selectLocation", "Chọn trạm quan trắc")}</Text>
                             <TouchableOpacity onPress={() => closeModal()}>
                                 <Ionicons name="close" size={24} color="#333" />
                             </TouchableOpacity>

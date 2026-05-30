@@ -2,8 +2,11 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function AppHeader() {
+    const { t } = useTranslation();
+
     return (
         <View style={styles.appTitleRow}>
             <LinearGradient
@@ -19,8 +22,8 @@ export default function AppHeader() {
                 />
             </LinearGradient>
             <View>
-                <Text style={styles.appName}>Theo dõi chất lượng nước thông minh</Text>
-                <Text style={styles.appSubtitle}>Ứng dụng hàng đầu Việt Nam</Text>
+                <Text style={styles.appName}>{t("app.name", "Theo dõi chất lượng nước thông minh")}</Text>
+                <Text style={styles.appSubtitle}>{t("app.subtitle", "Ứng dụng hàng đầu Việt Nam")}</Text>
             </View>
         </View>
     );
