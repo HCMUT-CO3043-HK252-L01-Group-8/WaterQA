@@ -1,6 +1,7 @@
 import Card from "@/components/ui/Card";
 import { Feather } from "@expo/vector-icons";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface AlertData {
     type: "critical" | "warning";
@@ -10,6 +11,7 @@ interface AlertData {
 }
 
 export default function AlertCard({ alert }: { alert: AlertData }) {
+    const { t } = useTranslation();
     const isCritical = alert.type === "critical";
 
     const iconName = isCritical ? "alert-octagon" : "alert-triangle";
@@ -31,10 +33,14 @@ export default function AlertCard({ alert }: { alert: AlertData }) {
                 </Text>
                 <View style={styles.alertActions}>
                     <TouchableOpacity style={[styles.detailBtn, { backgroundColor: btnBgColor }]}>
-                        <Text style={[styles.detailBtnText, { color: btnTextColor }]}>Chi tiết</Text>
+                        <Text style={[styles.detailBtnText, { color: btnTextColor }]}>
+                            {t("notifications.details", "Chi tiết")}
+                        </Text>
                     </TouchableOpacity>
                     <TouchableOpacity>
-                        <Text style={[styles.markReadText, { color: mainColor }]}>Đánh dấu đã đọc</Text>
+                        <Text style={[styles.markReadText, { color: mainColor }]}>
+                            {t("notifications.markAsRead", "Đánh dấu đã đọc")}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>

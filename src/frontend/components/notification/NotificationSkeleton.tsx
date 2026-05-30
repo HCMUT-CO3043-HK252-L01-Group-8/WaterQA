@@ -3,17 +3,20 @@ import { SkeletonBlock, SkeletonContainer } from "@/components/ui/Skeleton";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 export default function NotificationSkeleton() {
+    const { t } = useTranslation();
+
     return (
         <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
             <View style={styles.header}>
                 <AppHeader />
                 <View style={styles.pageTitleSection}>
-                    <Text style={styles.pageTitle}>Cảnh báo</Text>
+                    <Text style={styles.pageTitle}>{t("notifications.pageTitle", "Cảnh báo")}</Text>
                     <View style={styles.unreadContainer}>
                         <AntDesign name="bell" size={14} color="#94A3B8" />
-                        <Text style={styles.unreadBadge}>Đang tải dữ liệu...</Text>
+                        <Text style={styles.unreadBadge}>{t("common.loading", "Đang tải dữ liệu...")}</Text>
                     </View>
                 </View>
             </View>

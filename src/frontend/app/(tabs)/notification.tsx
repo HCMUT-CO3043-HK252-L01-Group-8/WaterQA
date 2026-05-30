@@ -8,12 +8,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const FILTER_OPTIONS = [
-    { label: "Tất cả", value: "all" },
-    { label: "Cảnh báo", value: "warning" },
-    { label: "Nghiêm trọng", value: "critical" },
-];
+import { useTranslation } from "react-i18next";
 
 const MOCK_ALERTS = [
     {
@@ -40,6 +35,13 @@ export default function NotificationScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [activeFilter, setActiveFilter] = useState(DEFAULT_FILTER);
     const [alerts, setAlerts] = useState(MOCK_ALERTS);
+    const { t } = useTranslation();
+
+    const FILTER_OPTIONS = [
+        { label: t("notifications.filterAll", "Tất cả"), value: "all" },
+        { label: t("notifications.filterWarning", "Cảnh báo"), value: "warning" },
+        { label: t("notifications.filterCritical", "Nghiêm trọng"), value: "critical" },
+    ];
 
     const fetchNotifications = async () => {
         try {
@@ -76,10 +78,15 @@ export default function NotificationScreen() {
                 <View style={styles.header}>
                     <AppHeader />
                     <View style={styles.pageTitleSection}>
-                        <Text style={styles.pageTitle}>Cảnh báo</Text>
+                        <Text style={styles.pageTitle}>{t("notifications.pageTitle", "Cảnh báo")}</Text>
                         <View style={styles.unreadContainer}>
                             <AntDesign name="bell" size={14} color="#E7000B" />
-                            <Text style={styles.unreadBadge}>Có {filteredAlerts.length} cảnh báo chưa đọc</Text>
+                            <Text style={styles.unreadBadge}>
+                                {t("notifications.unreadCount", { count: filteredAlerts.length }).replace(
+                                    "{{count}}",
+                                    filteredAlerts.length.toString(),
+                                )}
+                            </Text>
                         </View>
                     </View>
                 </View>
@@ -87,7 +94,7 @@ export default function NotificationScreen() {
                 <NotificationSettings />
 
                 <View style={styles.filterRow}>
-                    <Text style={styles.filterLabel}>Bộ lọc</Text>
+                    <Text style={styles.filterLabel}>{t("notifications.filterTitle", "Bộ lọc")}</Text>
                     <CustomFilterTab
                         options={FILTER_OPTIONS}
                         activeOption={activeFilter}
@@ -100,7 +107,9 @@ export default function NotificationScreen() {
                         filteredAlerts.map((alert) => <AlertCard key={alert.id} alert={alert} />)
                     ) : (
                         <View style={styles.emptyState}>
-                            <Text style={styles.emptyStateText}>Trạng thái cảm biến đang ổn định.</Text>
+                            <Text style={styles.emptyStateText}>
+                                {t("notifications.emptyState", "Trạng thái cảm biến đang ổn định.")}
+                            </Text>
                         </View>
                     )}
                 </View>
