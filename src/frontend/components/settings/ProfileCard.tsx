@@ -1,19 +1,30 @@
 import Card from "@/components/ui/Card";
 import { Feather } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
-export default function ProfileCard() {
+interface ProfileCardProps {
+    name?: string;
+    email?: string;
+    isVerified?: boolean;
+}
+
+export default function ProfileCard({ name, email, isVerified = true }: ProfileCardProps) {
+    const { t } = useTranslation();
+
     return (
         <Card style={styles.profileCard}>
             <View style={styles.avatarBox}>
                 <Feather name="user" size={24} color="#007595" />
             </View>
             <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>Đậu Minh Khôi</Text>
-                <Text style={styles.profileEmail}>khoidau123@gmail.com</Text>
-                <View style={styles.verifyBadge}>
-                    <Text style={styles.verifyText}>Người dùng đã xác minh</Text>
-                </View>
+                <Text style={styles.profileName}>{name || t("common.defaultUser", "Người dùng")}</Text>
+                <Text style={styles.profileEmail}>{email || t("common.noEmail", "Chưa cập nhật email")}</Text>
+                {isVerified && (
+                    <View style={styles.verifyBadge}>
+                        <Text style={styles.verifyText}>{t("settings.verifiedUser", "Người dùng đã xác minh")}</Text>
+                    </View>
+                )}
             </View>
         </Card>
     );

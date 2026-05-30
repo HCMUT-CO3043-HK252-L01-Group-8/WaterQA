@@ -1,24 +1,27 @@
 import Card from "@/components/ui/Card";
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function StatsCard() {
+    const { t } = useTranslation();
+
     return (
         <Card>
-            <Text style={styles.statsTitle}>Thống kê</Text>
+            <Text style={styles.statsTitle}>{t("settings.statistics", "Thống kê")}</Text>
             <View style={styles.statsRow}>
                 <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: "#0092B8" }]}>82</Text>
-                    <Text style={styles.statLabel}>WQI trung bình</Text>
+                    <Text style={styles.statLabel}>{t("settings.averageWQI", "WQI trung bình")}</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: "#00A63E" }]}>4</Text>
-                    <Text style={styles.statLabel}>Phiên hoạt động</Text>
+                    <Text style={styles.statLabel}>{t("settings.activeSessions", "Phiên hoạt động")}</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
                     <Text style={[styles.statValue, { color: "#45556C" }]}>2</Text>
-                    <Text style={styles.statLabel}>Cảnh báo chưa đọc</Text>
+                    <Text style={styles.statLabel}>{t("settings.unreadAlerts", "Cảnh báo chưa đọc")}</Text>
                 </View>
             </View>
         </Card>

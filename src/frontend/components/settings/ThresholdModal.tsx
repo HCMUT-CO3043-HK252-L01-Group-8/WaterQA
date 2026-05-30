@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 import React, { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface ThresholdModalProps {
     isVisible: boolean;
@@ -18,6 +19,7 @@ export default function ThresholdModal({
     adminDefault,
     onSave,
 }: ThresholdModalProps) {
+    const { t } = useTranslation();
     const [tempValue, setTempValue] = useState(currentValue);
 
     return (
@@ -25,14 +27,17 @@ export default function ThresholdModal({
             <Pressable style={styles.overlay} onPress={onClose}>
                 <Pressable style={styles.content}>
                     <View style={styles.header}>
-                        <Text style={styles.title}>Tùy chỉnh ngưỡng cảnh báo</Text>
+                        <Text style={styles.title}>{t("settings.wqiThreshold", "Tùy chỉnh ngưỡng cảnh báo")}</Text>
                         <TouchableOpacity onPress={onClose}>
                             <Feather name="x" size={20} color="#62748E" />
                         </TouchableOpacity>
                     </View>
 
                     <Text style={styles.desc}>
-                        Ứng dụng sẽ gửi cảnh báo khi chỉ số WQI xuống dưới mức bạn thiết lập.
+                        {t(
+                            "settings.thresholdDesc",
+                            "Ứng dụng sẽ gửi cảnh báo khi chỉ số WQI xuống dưới mức bạn thiết lập.",
+                        )}
                     </Text>
 
                     <View style={styles.sliderContainer}>
@@ -53,11 +58,10 @@ export default function ThresholdModal({
                             thumbTintColor="#0891B2"
                         />
 
-                        {/* Đánh dấu mức Admin Default */}
                         <View style={styles.markerContainer}>
                             <View style={[styles.adminMarker, { left: `${adminDefault}%` }]} />
                             <Text style={[styles.adminLabel, { left: `${adminDefault - 15}%` }]}>
-                                Mặc định HT: {adminDefault}
+                                {t("settings.systemDefault", "Mặc định HT:")} {adminDefault}
                             </Text>
                         </View>
                     </View>
@@ -69,7 +73,7 @@ export default function ThresholdModal({
                             onClose();
                         }}
                     >
-                        <Text style={styles.saveBtnText}>Lưu thiết lập</Text>
+                        <Text style={styles.saveBtnText}>{t("common.saveSettings", "Lưu thiết lập")}</Text>
                     </TouchableOpacity>
                 </Pressable>
             </Pressable>
