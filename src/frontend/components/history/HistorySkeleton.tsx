@@ -2,13 +2,16 @@ import AppHeader from "@/components/ui/AppHeader";
 import { SkeletonBlock, SkeletonContainer } from "@/components/ui/Skeleton";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 export default function HistorySkeleton() {
+    const { t } = useTranslation();
+
     return (
         <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
             <View style={styles.header}>
                 <AppHeader />
-                <Text style={styles.pageTitle}>Lịch sử quan trắc</Text>
+                <Text style={styles.pageTitle}>{t("history.title", "Lịch sử quan trắc")}</Text>
             </View>
 
             <SkeletonContainer style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -26,7 +29,7 @@ export default function HistorySkeleton() {
                     <SkeletonBlock style={{ width: 110, height: 32 }} />
                 </View>
 
-                <View style={{ flex: 1, padding: 14 }}>
+                <View style={{ flex: 1, padding: 14, borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 14 }}>
                     {[1, 2, 3, 4].map((item) => (
                         <View key={item} style={styles.historyRow}>
                             <View style={styles.rowLeft}>

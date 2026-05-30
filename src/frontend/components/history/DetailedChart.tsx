@@ -1,4 +1,5 @@
 import BaseChart from "@/components/ui/BaseChart";
+import { useTranslation } from "react-i18next";
 
 interface DetailedChartProps {
     data: number[];
@@ -6,9 +7,11 @@ interface DetailedChartProps {
 }
 
 export default function DetailedChart({ data, labels }: DetailedChartProps) {
+    const { t } = useTranslation();
+
     return (
         <BaseChart
-            title="Biến động WQI"
+            title={t("history.wqiFluctuation", "Biến động WQI")}
             data={data}
             labels={labels}
             smooth={false}

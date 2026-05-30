@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
@@ -31,10 +30,9 @@ export default function HistoryList({ data }: { data: HistoryItem[] }) {
                             </View>
                         </View>
                         <View style={styles.cardRight}>
-                            <View style={styles.trendBadge}>
-                                <Feather name={trendIcon} size={12} color={trendColor} style={styles.trendIcon} />
-                                <Text style={[styles.trendText, { color: trendColor }]}>{item.trend}</Text>
-                            </View>
+                            <Text style={[styles.trendText, { color: trendColor }]}>
+                                <Feather name={trendIcon as any} size={12} /> {item.trend}
+                            </Text>
                             <Text style={styles.timeText}>{item.time}</Text>
                         </View>
                     </View>
@@ -80,8 +78,6 @@ const styles = StyleSheet.create({
     wqiText: { fontSize: 13, color: "#0F172B", fontFamily: "Inter-SemiBold" },
     dateText: { fontSize: 11, color: "#62748E", marginTop: 2, fontFamily: "Inter-Regular" },
     cardRight: { alignItems: "flex-end" },
-    trendBadge: { flexDirection: "row", alignItems: "center" },
-    trendIcon: { marginRight: 2 },
-    trendText: { fontSize: 12, fontFamily: "Inter-SemiBold" },
+    trendText: { fontSize: 13, fontFamily: "Inter-SemiBold" },
     timeText: { fontSize: 11, color: "#62748E", marginTop: 2, fontFamily: "Inter-Regular" },
 });

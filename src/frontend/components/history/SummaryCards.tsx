@@ -1,5 +1,6 @@
 import StatBox from "@/components/ui/StatBox";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface SummaryCardsProps {
     todayWqi: number;
@@ -7,6 +8,7 @@ interface SummaryCardsProps {
 }
 
 export default function SummaryCards({ todayWqi, trendValue }: SummaryCardsProps) {
+    const { t } = useTranslation();
     const isPositive = trendValue.includes("+");
     const trendColor = isPositive ? "#00A63E" : "#E7000B";
 
@@ -14,18 +16,18 @@ export default function SummaryCards({ todayWqi, trendValue }: SummaryCardsProps
         <View style={styles.row}>
             <StatBox
                 icon="droplet"
-                label="Hôm nay"
+                label={t("history.today", "Hôm nay")}
                 value={todayWqi}
-                desc="WQI trung bình"
+                desc={t("history.avgWqi", "WQI trung bình")}
                 valueColor="#0092B8"
                 bgColor="#ECFEFF"
                 borderColor="#0092B8"
             />
             <StatBox
                 icon={isPositive ? "trending-up" : "trending-down"}
-                label="so với Hôm qua"
+                label={t("history.comparedToYesterday", "so với Hôm qua")}
                 value={trendValue}
-                desc="Chỉ số WQI"
+                desc={t("home.wqiSubtitle", "Chỉ số WQI")}
                 valueColor={trendColor}
                 bgColor={isPositive ? "#F0FDF4" : "#FEF2F2"}
                 borderColor={trendColor}

@@ -9,6 +9,7 @@ import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 const LOCATIONS = ["268 Lý Thường Kiệt", "KTX Khu A - ĐHQG", "Khu Công Nghệ Cao", "Hồ Đá - Làng Đại Học"];
 
@@ -26,6 +27,7 @@ const CHART_LABELS = ["01/03", "02/03", "03/03", "04/03", "05/03", "06/03"];
 
 export default function HistoryScreen() {
     const tabBarHeight = useTabBarHeight();
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
@@ -68,7 +70,7 @@ export default function HistoryScreen() {
             >
                 <View style={styles.header}>
                     <AppHeader />
-                    <Text style={styles.pageTitle}>Lịch sử quan trắc</Text>
+                    <Text style={styles.pageTitle}>{t("history.title", "Lịch sử quan trắc")}</Text>
                 </View>
 
                 <LocationSelector
