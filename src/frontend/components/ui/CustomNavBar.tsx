@@ -17,6 +17,8 @@ function getIconByRouteName(routeName: string, color: string) {
             return <Feather name="home" size={18} color={color} />;
         case "history":
             return <AntDesign name="bar-chart" size={18} color={color} />;
+        case "iot-dashboard":
+            return <Feather name="activity" size={18} color={color} />;
         case "notification":
             return <Feather name="bell" size={18} color={color} />;
         case "settings":
@@ -109,10 +111,10 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: PRIMARY_COLOR,
-        width: "70%",
+        width: "85%",
         alignSelf: "center",
         borderRadius: 36 + 15 * 2,
-        paddingHorizontal: 12,
+        paddingHorizontal: 8,
         paddingVertical: 15,
         shadowColor: "#333333" + "CC",
         shadowOffset: { width: 0, height: 10 },
@@ -125,7 +127,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         height: 36,
-        paddingHorizontal: 13,
+        paddingHorizontal: 10,
         borderRadius: 30,
     },
     text: {

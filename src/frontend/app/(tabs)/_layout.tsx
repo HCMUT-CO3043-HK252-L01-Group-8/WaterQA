@@ -25,6 +25,12 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="iot-dashboard"
+                options={{
+                    title: "IoT",
+                }}
+            />
+            <Tabs.Screen
                 name="notification"
                 options={{
                     title: "Notification",
