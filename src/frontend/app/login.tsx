@@ -276,7 +276,7 @@ export default function LoginScreen() {
                                 <FontAwesome5 name="google" size={18} color="#DB4437" />
                             )}
                             <Text style={styles.googleButtonText}>
-                                {googleLoading ? t('auth.openingGoogle', 'Đang mở Google...') : t('auth.loginWithGoogle', 'Đăng nhập với Google')}}
+                                {googleLoading ? t('auth.openingGoogle', 'Đang mở Google...') : t('auth.loginWithGoogle', 'Đăng nhập với Google')}
                             </Text>
                         </TouchableOpacity>
                     </View>
