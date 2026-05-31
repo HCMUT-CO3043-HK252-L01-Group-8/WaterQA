@@ -16,6 +16,8 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    primary: '#00B8DB', // Màu xanh chủ đạo của app khi bật Switch
+    border: '#E2E8F0',  // Màu xám nhạt khi tắt Switch
   },
   dark: {
     text: '#ECEDEE',
@@ -24,6 +26,8 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    primary: '#00B8DB', // Giữ nguyên màu xanh hoặc đổi màu khác cho Dark mode
+    border: '#E2E8F0',  // Màu xám đậm cho nền Switch khi tắt ở Dark mode
   },
 };
 

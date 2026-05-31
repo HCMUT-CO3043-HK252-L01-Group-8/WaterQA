@@ -1,469 +1,96 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
+import DetailedChart from "@/components/history/DetailedChart";
+import FilterAndExport from "@/components/history/FilterAndExport";
+import HistoryList from "@/components/history/HistoryList";
+import HistorySkeleton from "@/components/history/HistorySkeleton";
+import SummaryCards from "@/components/history/SummaryCards";
+import AppHeader from "@/components/ui/AppHeader";
+import LocationSelector from "@/components/ui/LocationSelector";
+import { useTabBarHeight } from "@/hooks/useTabBarHeight";
+import { useEffect, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
-const LOCATIONS = [
-    { id: 1, name: 'Bể nước BK-H6' },
-    { id: 2, name: 'Bể nước BK-B1' },
-    { id: 3, name: 'Bể nước BK-B2' },
-    { id: 4, name: 'Bể nước BK-B3' },
+const LOCATIONS = ["268 Lý Thường Kiệt", "KTX Khu A - ĐHQG", "Khu Công Nghệ Cao", "Hồ Đá - Làng Đại Học"];
+
+const HISTORY_LIST = [
+    { id: "1", wqi: "92", date: "06-03-2026", time: "20:36", trend: "+3" },
+    { id: "2", wqi: "89", date: "05-03-2026", time: "14:20", trend: "+1" },
+    { id: "3", wqi: "88", date: "04-03-2026", time: "09:15", trend: "+2" },
+    { id: "4", wqi: "86", date: "03-03-2026", time: "18:45", trend: "+4" },
+    { id: "5", wqi: "82", date: "02-03-2026", time: "11:10", trend: "-3" },
+    { id: "6", wqi: "85", date: "01-03-2026", time: "08:30", trend: "+5" },
 ];
 
+const CHART_DATA = [85, 82, 86, 88, 89, 92];
+const CHART_LABELS = ["01/03", "02/03", "03/03", "04/03", "05/03", "06/03"];
+
 export default function HistoryScreen() {
+    const tabBarHeight = useTabBarHeight();
     const { t } = useTranslation();
-    const [activeFilter, setActiveFilter] = useState(t('history.daily'));
+    const [isLoading, setIsLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
-    const [showLocationModal, setShowLocationModal] = useState(false);
+    const [activeFilter, setActiveFilter] = useState("day");
 
-    const handleSelectLocation = (location: typeof LOCATIONS[0]) => {
-        setSelectedLocation(location);
-        setShowLocationModal(false);
+    const fetchHistoryData = async () => {
+        try {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+        } catch (error) {
+            console.error("Lỗi tải lịch sử:", error);
+        } finally {
+            setIsLoading(false);
+            setRefreshing(false);
+        }
     };
 
-    const handleExportReport = () => {
-        Alert.alert(
-            "Xuất báo cáo",
-            "Tính năng xuất báo cáo đang được phát triển.",
-            [{ text: "OK" }]
-        );
+    useEffect(() => {
+        setIsLoading(true);
+        fetchHistoryData();
+    }, [selectedLocation]);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchHistoryData();
     };
 
-    const renderHistoryCard = (wqi: string, date: string, time: string, trend: string) => (
-        <View style={styles.historyCard}>
-            <View style={styles.cardLeft}>
-                <View style={styles.iconBox}>
-                    <Text>📊</Text>
-                </View>
-                <View>
-                    <Text style={styles.wqiText}>{wqi} WQI</Text>
-                    <Text style={styles.dateText}>{date}</Text>
-                </View>
-            </View>
-            <View style={styles.cardRight}>
-                <View style={styles.trendBadge}>
-                    <Text style={styles.trendIcon}>↗</Text>
-                    <Text style={styles.trendText}>+{trend}</Text>
-                </View>
-                <Text style={styles.timeText}>{time}</Text>
-            </View>
-        </View>
-    );
+    const handleExport = () => {
+        console.log("Xuất báo cáo cho:", selectedLocation, activeFilter);
+    };
+
+    if (isLoading && !refreshing) return <HistorySkeleton />;
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <ScrollView 
-                style={styles.container} 
+        <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+            <ScrollView
+                style={styles.container}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 100 }}
+                contentContainerStyle={{ paddingBottom: tabBarHeight + 20 }}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#00A89D"]} />}
             >
-                {/* 1. Header */}
                 <View style={styles.header}>
-                    <View style={styles.appTitleRow}>
-                        <View style={styles.logoPlaceholder}>
-                            <Text style={styles.logoText}>💧</Text>
-                        </View>
-                        <View>
-                            <Text style={styles.appName}>{t('app.name')}</Text>
-                            <Text style={styles.appSubtitle}>{t('app.subtitle')}</Text>
-                        </View>
-                    </View>
-                    
-                    <View style={styles.pageTitleSection}>
-                        <Text style={styles.pageTitle}>{t('history.title')}</Text>
-                    </View>
+                    <AppHeader />
+                    <Text style={styles.pageTitle}>{t("history.title", "Lịch sử quan trắc")}</Text>
                 </View>
 
-                {/* 2. Chọn vị trí */}
-                <View style={styles.locationSection}>
-                    <Text style={styles.sectionTitle}>{t('home.location')}</Text>
-                    <TouchableOpacity 
-                        style={styles.pickerBox}
-                        onPress={() => setShowLocationModal(true)}
-                    >
-                        <Text style={styles.pickerText}>{selectedLocation.name}</Text>
-                        <Text style={styles.pickerIcon}>▼</Text>
-                    </TouchableOpacity>
-                </View>
+                <LocationSelector
+                    locations={LOCATIONS}
+                    selectedLocation={selectedLocation}
+                    onSelect={setSelectedLocation}
+                />
 
-                {/* Location Selection Modal */}
-                <Modal
-                    visible={showLocationModal}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowLocationModal(false)}
-                >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.modalContent}>
-                            <View style={styles.modalHeader}>
-                                <Text style={styles.modalTitle}>{t('home.selectLocation')}</Text>
-                                <TouchableOpacity onPress={() => setShowLocationModal(false)}>
-                                    <Text style={styles.closeButton}>✕</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <FlatList
-                                data={LOCATIONS}
-                                keyExtractor={(item) => item.id.toString()}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.locationItem,
-                                            selectedLocation.id === item.id && styles.selectedLocationItem
-                                        ]}
-                                        onPress={() => handleSelectLocation(item)}
-                                    >
-                                        <Text 
-                                            style={[
-                                                styles.locationItemText,
-                                                selectedLocation.id === item.id && styles.selectedLocationItemText
-                                            ]}
-                                        >
-                                            {item.name}
-                                        </Text>
-                                    </TouchableOpacity>
-                                )}
-                            />
-                        </View>
-                    </View>
-                </Modal>
-
-                {/* 3. Thẻ thống kê nhanh */}
-                <View style={styles.summarySection}>
-                    <View style={[styles.summaryCard, { backgroundColor: '#ECFEFF', borderColor: '#0092B8' }]}>
-                        <View style={styles.summaryHeader}>
-                            <View style={styles.smallIcon}><Text style={{fontSize: 10}}>💧</Text></View>
-                            <Text style={styles.summaryLabel}>{t('history.today')}</Text>
-                        </View>
-                        <Text style={styles.summaryValueMain}>92</Text>
-                        <Text style={styles.summaryDesc}>{t('history.wqiAverage')}</Text>
-                    </View>
-
-                    <View style={[styles.summaryCard, { backgroundColor: '#F0FDF4', borderColor: '#00A63E' }]}>
-                        <View style={styles.summaryHeader}>
-                            <View style={styles.smallIcon}><Text style={{fontSize: 10}}>📈</Text></View>
-                            <Text style={styles.summaryLabel}>{t('history.compareWith')} {t('history.yesterday')}</Text>
-                        </View>
-                        <Text style={styles.summaryValuePositive}>+3</Text>
-                        <Text style={styles.summaryDesc}>{t('history.wqiIndex')}</Text>
-                    </View>
-                </View>
-
-                {/* 4. Bộ lọc & Xuất báo cáo */}
-                <View style={styles.filterActionSection}>
-                    <View style={styles.filterTabs}>
-                        {[t('history.daily'), t('history.monthly'), t('history.yearly')].map((filter) => (
-                            <TouchableOpacity 
-                                key={filter}
-                                style={[styles.tabButton, activeFilter === filter && styles.tabButtonActive]}
-                                onPress={() => setActiveFilter(filter)}
-                            >
-                                <Text style={[styles.tabText, activeFilter === filter && styles.tabTextActive]}>
-                                    {filter}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                    <TouchableOpacity style={styles.exportBtn} onPress={handleExportReport}>
-                        <Text style={styles.exportIcon}>⬇</Text>
-                        <Text style={styles.exportText}>{t('history.export')}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* 5. Danh sách lịch sử */}
-                <View style={styles.historyListContainer}>
-                    {renderHistoryCard('92', '06-03-2026', '20:36', '3')}
-                    {renderHistoryCard('89', '05-03-2026', '14:20', '1')}
-                    {renderHistoryCard('88', '04-03-2026', '09:15', '2')}
-                    {renderHistoryCard('86', '03-03-2026', '18:45', '4')}
-                    {renderHistoryCard('82', '02-03-2026', '11:10', '1')}
-                    {renderHistoryCard('81', '01-03-2026', '08:30', '5')}
-                </View>
+                <SummaryCards todayWqi={92} trendValue={"+3"} />
+                <DetailedChart data={CHART_DATA} labels={CHART_LABELS} />
+                <FilterAndExport activeFilter={activeFilter} onFilterChange={setActiveFilter} onExport={handleExport} />
+                <HistoryList data={HISTORY_LIST} />
             </ScrollView>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    header: {
-        padding: 16,
-    },
-    appTitleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    logoPlaceholder: {
-        width: 35,
-        height: 35,
-        backgroundColor: '#00B8DB',
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8,
-    },
-    logoText: {
-        fontSize: 16,
-    },
-    appName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#0F172B',
-    },
-    appSubtitle: {
-        fontSize: 10,
-        color: '#62748E',
-    },
-    pageTitleSection: {
-        marginTop: 10,
-    },
-    pageTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#0F172B',
-    },
-    locationSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginHorizontal: 16,
-        marginBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#000000',
-        marginRight: 16,
-    },
-    pickerBox: {
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E2E8F0',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-    },
-    pickerText: {
-        fontSize: 14,
-        color: '#333333',
-    },
-    pickerIcon: {
-        fontSize: 12,
-        color: '#666666',
-    },
-    summarySection: {
-        flexDirection: 'row',
-        marginHorizontal: 16,
-        marginBottom: 24,
-        gap: 14,
-    },
-    summaryCard: {
-        flex: 1,
-        borderWidth: 1,
-        borderRadius: 12,
-        padding: 12,
-    },
-    summaryHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    smallIcon: {
-        marginRight: 6,
-    },
-    summaryLabel: {
-        fontSize: 11,
-        color: '#45556C',
-    },
-    summaryValueMain: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#0F172B',
-        marginBottom: 2,
-    },
-    summaryValuePositive: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#008236',
-        marginBottom: 2,
-    },
-    summaryDesc: {
-        fontSize: 10,
-        color: '#62748E',
-    },
-    filterActionSection: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginHorizontal: 16,
-        marginBottom: 16,
-    },
-    filterTabs: {
-        flexDirection: 'row',
-        backgroundColor: '#F1F5F9',
-        borderRadius: 8,
-        padding: 4,
-    },
-    tabButton: {
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        borderRadius: 6,
-    },
-    tabButtonActive: {
-        backgroundColor: '#FFFFFF',
-        elevation: 1,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 1,
-    },
-    tabText: {
-        fontSize: 11,
-        color: '#45556C',
-    },
-    tabTextActive: {
-        color: '#0092B8',
-        fontWeight: '600',
-    },
-    exportBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        backgroundColor: '#F1F5F9',
-        borderRadius: 8,
-    },
-    exportIcon: {
-        color: '#209FC1',
-        marginRight: 6,
-        fontSize: 12,
-    },
-    exportText: {
-        fontSize: 12,
-        color: '#209FC1',
-    },
-    historyListContainer: {
-        marginHorizontal: 16,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 14,
-        padding: 14,
-        borderWidth: 1,
-        borderColor: '#E2E8F0',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-    },
-    historyCard: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
-    },
-    cardLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    iconBox: {
-        width: 35,
-        height: 35,
-        backgroundColor: '#ECFEFF',
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 10,
-    },
-    wqiText: {
-        fontSize: 13,
-        fontWeight: 'bold',
-        color: '#0F172B',
-    },
-    dateText: {
-        fontSize: 11,
-        color: '#62748E',
-        marginTop: 2,
-    },
-    cardRight: {
-        alignItems: 'flex-end',
-    },
-    trendBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    trendIcon: {
-        color: '#00A63E',
-        fontSize: 12,
-        marginRight: 2,
-    },
-    trendText: {
-        fontSize: 12,
-        color: '#00A63E',
-        fontWeight: '600',
-    },
-    timeText: {
-        fontSize: 11,
-        color: '#62748E',
-        marginTop: 2,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        width: '80%',
-        maxHeight: '70%',
-        paddingTop: 16,
-    },
-    modalHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingBottom: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E2E8F0',
-    },
-    modalTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#0F172B',
-    },
-    closeButton: {
-        fontSize: 20,
-        color: '#999999',
-        fontWeight: 'bold',
-    },
-    locationItem: {
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
-    },
-    selectedLocationItem: {
-        backgroundColor: '#E8FEED',
-    },
-    locationItemText: {
-        fontSize: 14,
-        color: '#0F172B',
-    },
-    selectedLocationItemText: {
-        color: '#00C950',
-        fontWeight: '600',
-    },
+    safeArea: { flex: 1, backgroundColor: "#FFFFFF" },
+    container: { flex: 1, backgroundColor: "#FFFFFF" },
+    header: { padding: 16 },
+    pageTitle: { fontSize: 24, color: "#0F172B", fontFamily: "Inter-SemiBold" },
 });
