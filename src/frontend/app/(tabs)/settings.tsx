@@ -14,9 +14,12 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import { authServices } from "@/services/authServices";
+import { useDispatch } from "react-redux";
+import { logoutClient } from "@/store/slices/authSlice";
 
 export default function SettingsScreen() {
     const router = useRouter();
+    const dispatch = useDispatch();
     const tabBarHeight = useTabBarHeight();
     const { t, i18n } = useTranslation();
     const [user, setUser] = useState({ name: "", email: "", role: "user" });
@@ -107,6 +110,7 @@ export default function SettingsScreen() {
                         } catch (e) {
                             console.error("Lỗi gọi API logout:", e);
                         } finally {
+                            dispatch(logoutClient()); // xóa auth state trong Redux
                             await AsyncStorage.removeItem("currentUser");
                             router.replace("/login");
                         }

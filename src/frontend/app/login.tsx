@@ -20,7 +20,7 @@ import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authServices } from "@/services/authServices";
 import { useDispatch } from "react-redux";
-import { setCredentials } from "@/store/slices/authSlice";
+import { setCredentials, logoutClient } from "@/store/slices/authSlice";
 import { useTranslation } from "react-i18next";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -94,14 +94,19 @@ export default function LoginScreen() {
                 );
 
                 if (backendResponse.success) {
-                    const profileRes = await authServices.getMe();
-                    if (profileRes.success && profileRes.payload) {
-                        const finalUser = profileRes.payload;
-                        dispatch(setCredentials({ user: finalUser }));
-                        await AsyncStorage.setItem("currentUser", JSON.stringify(finalUser));
-                        router.dismissAll();
-                        router.replace("/(tabs)/home");
-                    }
+                    // Dùng user từ response login trực tiếp, không chờ getMe() (tránh lỗi cross-origin cookie)
+                    const loginUser = (backendResponse as any).user || {};
+                    dispatch(setCredentials({ user: loginUser }));
+                    await AsyncStorage.setItem("currentUser", JSON.stringify(loginUser));
+                    router.dismissAll();
+                    router.replace("/(tabs)/home");
+                    // Fetch full profile in background
+                    authServices.getMe().then(p => {
+                        if (p.success && p.payload) {
+                            AsyncStorage.setItem("currentUser", JSON.stringify(p.payload));
+                            dispatch(setCredentials({ user: p.payload }));
+                        }
+                    }).catch(() => {});
                 } else {
                     Alert.alert(t("common.error", "Lỗi"), backendResponse.error || "Failed");
                 }
@@ -144,16 +149,21 @@ export default function LoginScreen() {
             const res = await authServices.login(email.trim(), password);
 
             if (res.success) {
-                const profileRes = await authServices.getMe();
-                if (profileRes.success && profileRes.payload) {
-                    const userData = profileRes.payload;
-                    if (rememberMe) await AsyncStorage.setItem("rememberedUser", JSON.stringify(userData));
-                    else await AsyncStorage.removeItem("rememberedUser");
-                    await AsyncStorage.setItem("currentUser", JSON.stringify(userData));
-                    dispatch(setCredentials({ user: userData }));
-                    router.dismissAll();
-                    router.replace("/(tabs)/home");
-                }
+                // Dùng user từ login response trực tiếp — không phụ thuộc vào getMe() cross-origin
+                const loginUser = (res as any).user || {};
+                if (rememberMe) await AsyncStorage.setItem("rememberedUser", JSON.stringify(loginUser));
+                else await AsyncStorage.removeItem("rememberedUser");
+                await AsyncStorage.setItem("currentUser", JSON.stringify(loginUser));
+                dispatch(setCredentials({ user: loginUser }));
+                router.dismissAll();
+                router.replace("/(tabs)/home");
+                // Fetch full profile in background (email_notifications, phone, etc.)
+                authServices.getMe().then(p => {
+                    if (p.success && p.payload) {
+                        AsyncStorage.setItem("currentUser", JSON.stringify(p.payload));
+                        dispatch(setCredentials({ user: p.payload }));
+                    }
+                }).catch(() => {});
             } else {
                 Alert.alert(t("common.error", "Lỗi"), res.error || "Failed");
             }

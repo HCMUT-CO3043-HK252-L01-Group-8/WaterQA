@@ -59,7 +59,7 @@
             "description": "Wrong password",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Mật khẩu không đúng" }
+                "example": { "success": false, "error": "Incorrect password" }
               }
             }
           },
@@ -67,7 +67,7 @@
             "description": "Email not found",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Email không tồn tại" }
+                "example": { "success": false, "error": "Email does not exist" }
               }
             }
           }
@@ -123,7 +123,7 @@
             "description": "Email not found",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Email không tồn tại trong hệ thống" }
+                "example": { "success": false, "error": "Email not found in the system" }
               }
             }
           }
@@ -163,7 +163,7 @@
             "description": "OTP invalid or expired",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Mã OTP không đúng" }
+                "example": { "success": false, "error": "Invalid OTP code" }
               }
             }
           }
@@ -204,7 +204,7 @@
             "description": "OTP invalid or expired",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Mã OTP không hợp lệ hoặc hết hạn" }
+                "example": { "success": false, "error": "OTP is invalid or has expired" }
               }
             }
           }
@@ -374,7 +374,7 @@
             "description": "Not authenticated",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Chưa đăng nhập" }
+                "example": { "success": false, "error": "Not logged in" }
               }
             }
           }
@@ -403,7 +403,7 @@
             "description": "Setting updated",
             "content": {
               "application/json": {
-                "example": { "success": true, "message": "Bật thông báo email", "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": { "success": true, "message": "Email notifications enabled", "timestamp": "2026-05-31T14:21:29.775Z" }
               }
             }
           }
@@ -454,7 +454,7 @@
             "description": "Email already registered",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Email hoặc số điện thoại đã được đăng ký" }
+                "example": { "success": false, "error": "Email or phone number already registered" }
               }
             }
           },
@@ -462,7 +462,7 @@
             "description": "Password confirmation mismatch",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Mật khẩu xác nhận không khớp" }
+                "example": { "success": false, "error": "Password confirmation does not match" }
               }
             }
           }
