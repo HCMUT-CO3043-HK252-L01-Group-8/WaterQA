@@ -22,6 +22,10 @@ import { authServices } from "@/services/authServices";
 import { useDispatch } from "react-redux";
 import { setCredentials, logoutClient } from "@/store/slices/authSlice";
 import { useTranslation } from "react-i18next";
+import Constants from "expo-constants";
+
+// Google OAuth is NOT supported in Expo Go — only works in web or production builds
+const isExpoGo = Constants.appOwnership === "expo";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -129,8 +133,19 @@ export default function LoginScreen() {
     };
 
     const handleGoogleLogin = async () => {
+        // Google OAuth does not work in Expo Go due to redirect URI restrictions.
+        // It only works in production builds or when running on web.
+        if (isExpoGo && Platform.OS !== "web") {
+            Alert.alert(
+                "Not supported in Expo Go",
+                "Google Sign-In does not work in the Expo Go app. Please use email/password login instead.\n\nFor Google login support, build the app as a standalone APK.",
+                [{ text: "OK" }]
+            );
+            return;
+        }
+
         if (!process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID) {
-            Alert.alert("Thiếu cấu hình", "Vui lòng thêm EXPO_PUBLIC_GOOGLE_CLIENT_ID vào file .env.local");
+            Alert.alert("Configuration missing", "EXPO_PUBLIC_GOOGLE_CLIENT_ID is not set.");
             return;
         }
         if (!request) return;
@@ -141,7 +156,7 @@ export default function LoginScreen() {
         } catch (error) {
             setGoogleLoading(false);
             console.error("Error in LOGIN:", error);
-            Alert.alert("Lỗi", "Không thể mở trang đăng nhập Google.");
+            Alert.alert("Error", "Could not open Google sign-in page.");
         }
     };
 
