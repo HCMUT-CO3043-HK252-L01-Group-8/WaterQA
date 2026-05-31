@@ -28,14 +28,15 @@ app.use((req, res, next) => {
     'http://127.0.0.1:8081',
     'http://127.0.0.1:19006',
     'https://waterqa-production.up.railway.app',
-    // Thêm domain Vercel sau khi deploy frontend (dạng: https://waterqa.vercel.app)
   ];
-  
-  if (allowedOrigins.includes(origin) || !origin) {
+  const isAllowed = allowedOrigins.includes(origin)
+    || (origin && origin.endsWith('.trycloudflare.com'))
+    || (origin && origin.endsWith('.vercel.app'));
+
+  if (isAllowed || !origin) {
     res.header('Access-Control-Allow-Origin', origin || '*');
     res.header('Access-Control-Allow-Credentials', 'true');
   } else {
-    // For unknown origins, don't allow credentials
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'false');
   }
@@ -56,9 +57,10 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    httpOnly: true,          // prevents JS access → good security
-    secure: false,           // ← set to true when you use HTTPS later
-    sameSite: 'lax',         // lax is fine when frontend/backend on same hostname
+    httpOnly: true,
+    // Railway HTTPS → cần secure+sameSite=none để cookie cross-origin hoạt động
+    secure: !!process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production',
+    sameSite: (!!process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production') ? 'none' : 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   }
 }));

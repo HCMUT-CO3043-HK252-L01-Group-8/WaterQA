@@ -1,0 +1,975 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "DADN WaterQA API",
+    "description": "REST API for WaterQA water quality monitoring system. Backend deployed at Railway.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://waterqa-production.up.railway.app",
+      "description": "Production (Railway)"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login",
+        "description": "Authenticate user with email and password. Returns user info and sets session cookie.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "admin@waterqa.com" },
+                  "password": { "type": "string", "example": "admin123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "success": true,
+                  "user": {
+                    "user_id": 1,
+                    "name": "Admin",
+                    "email": "admin@waterqa.com",
+                    "role": "Admin",
+                    "verification_status": 1
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong password",
+            "content": {
+              "application/json": {
+                "example": { "success": false, "error": "Mật khẩu không đúng" }
+              }
+            }
+          },
+          "404": {
+            "description": "Email not found",
+            "content": {
+              "application/json": {
+                "example": { "success": false, "error": "Email không tồn tại" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "delete": {
+        "tags": ["Auth"],
+        "summary": "Log out",
+        "description": "Destroy current session and log out user.",
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:38.000Z" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Forgot password — send OTP",
+        "description": "Sends a 6-digit OTP to the given email. OTP expires after 10 minutes.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": { "type": "string", "example": "admin@waterqa.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP sent (or saved to backend logs if email fails)",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:38.000Z" }
+              }
+            }
+          },
+          "404": {
+            "description": "Email not found",
+            "content": {
+              "application/json": {
+                "example": { "success": false, "error": "Email không tồn tại trong hệ thống" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Verify OTP",
+        "description": "Verify the 6-digit OTP for password reset flow.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "otp"],
+                "properties": {
+                  "email": { "type": "string", "example": "admin@waterqa.com" },
+                  "otp": { "type": "string", "example": "123456" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP valid",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:38.000Z" }
+              }
+            }
+          },
+          "400": {
+            "description": "OTP invalid or expired",
+            "content": {
+              "application/json": {
+                "example": { "success": false, "error": "Mã OTP không đúng" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Reset password",
+        "description": "Reset password using email + valid OTP.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "otp", "new_password"],
+                "properties": {
+                  "email": { "type": "string", "example": "admin@waterqa.com" },
+                  "otp": { "type": "string", "example": "123456" },
+                  "new_password": { "type": "string", "example": "newpassword123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successful",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:38.000Z" }
+              }
+            }
+          },
+          "400": {
+            "description": "OTP invalid or expired",
+            "content": {
+              "application/json": {
+                "example": { "success": false, "error": "Mã OTP không hợp lệ hoặc hết hạn" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/google": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login with Google",
+        "description": "Login or auto-register with Google OAuth user info.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "name": { "type": "string", "example": "Gia Minh" },
+                  "email": { "type": "string", "example": "user@gmail.com" },
+                  "picture": { "type": "string", "example": "https://lh3.googleusercontent.com/..." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Google login successful",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "user": {
+                    "user_id": 2,
+                    "email": "user@gmail.com",
+                    "name": "Gia Minh",
+                    "role": "User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/all": {
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get all accounts",
+        "description": "Returns all users in the system.",
+        "responses": {
+          "200": {
+            "description": "List of all users",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "count": 3,
+                  "payload": [
+                    {
+                      "user_id": 1,
+                      "name": "Admin",
+                      "email": "admin@waterqa.com",
+                      "phone_number": null,
+                      "password_hash": "admin123",
+                      "role": "Admin",
+                      "verification_status": 1,
+                      "created_at": "2026-05-31T14:07:04.168Z",
+                      "updated_at": "2026-05-31T14:07:04.168Z",
+                      "email_notifications": 1
+                    }
+                  ],
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/:id": {
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get account by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "payload": [
+                    {
+                      "user_id": 1,
+                      "name": "Admin",
+                      "email": "admin@waterqa.com",
+                      "phone_number": null,
+                      "role": "Admin",
+                      "verification_status": 1,
+                      "created_at": "2026-05-31T14:07:04.168Z"
+                    }
+                  ],
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Account"],
+        "summary": "Delete account",
+        "description": "Deletes own account (must be logged in).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Account deleted successfully"
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      }
+    },
+    "/accounts/me": {
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get my profile info",
+        "description": "Returns current logged-in user's profile (requires session).",
+        "responses": {
+          "200": {
+            "description": "Current user profile",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "payload": {
+                    "user_id": 1,
+                    "name": "Admin",
+                    "email": "admin@waterqa.com",
+                    "phone_number": null,
+                    "email_notifications": 1
+                  },
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "example": { "success": false, "error": "Chưa đăng nhập" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/me/email-notifications": {
+      "put": {
+        "tags": ["Account"],
+        "summary": "Update email notification setting",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email_notifications": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Setting updated",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "message": "Bật thông báo email", "timestamp": "2026-05-31T14:21:29.775Z" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/signup": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Sign up (create account)",
+        "description": "Register a new user account.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "name": { "type": "string", "example": "Nguyen Van A" },
+                  "email": { "type": "string", "example": "user@example.com" },
+                  "phone_number": { "type": "string", "example": "0908765432" },
+                  "password": { "type": "string", "example": "mypassword123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "user": {
+                    "user_id": 4,
+                    "email": "user@example.com",
+                    "name": "Nguyen Van A",
+                    "role": "User"
+                  },
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already registered",
+            "content": {
+              "application/json": {
+                "example": { "success": false, "error": "Email hoặc số điện thoại đã được đăng ký" }
+              }
+            }
+          },
+          "422": {
+            "description": "Password confirmation mismatch",
+            "content": {
+              "application/json": {
+                "example": { "success": false, "error": "Mật khẩu xác nhận không khớp" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/change-password": {
+      "put": {
+        "tags": ["Account"],
+        "summary": "Change password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["currentPassword", "newPassword", "confirmPassword"],
+                "properties": {
+                  "currentPassword": { "type": "string", "example": "oldpassword" },
+                  "newPassword": { "type": "string", "example": "newpassword" },
+                  "confirmPassword": { "type": "string", "example": "newpassword" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+              }
+            }
+          },
+          "422": {
+            "description": "Wrong current password or mismatch",
+            "content": {
+              "application/json": {
+                "example": { "success": false }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/history": {
+      "get": {
+        "tags": ["Data"],
+        "summary": "Get sensor data history",
+        "description": "Returns observation history from the database. Use `rowLimit` to limit the number of records.",
+        "parameters": [
+          {
+            "name": "rowLimit",
+            "in": "query",
+            "required": false,
+            "description": "Number of rows to return (default: no limit)",
+            "schema": { "type": "integer", "example": 10 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Observation history",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "payload": {
+                    "count": 2,
+                    "data": [
+                      {
+                        "observation_id": 2,
+                        "station_id": 1,
+                        "light_intensity": 0.5,
+                        "water_level": 15.23,
+                        "temperature": 32.15,
+                        "humidity": 71.3,
+                        "tank_surface_moisture": 36,
+                        "lid_status": 0,
+                        "leakage_signal": 0,
+                        "intrusion_signal": 0,
+                        "timestamp": "2026-03-29T00:00:00.000Z"
+                      }
+                    ]
+                  },
+                  "timestamp": "2026-05-31T14:21:47.759Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/export": {
+      "get": {
+        "tags": ["Data"],
+        "summary": "Export data as CSV",
+        "parameters": [
+          {
+            "name": "rowLimit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "example": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file download",
+            "content": {
+              "text/csv": {
+                "schema": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/telemetry": {
+      "get": {
+        "tags": ["Data"],
+        "summary": "Fetch live data from Adafruit IO",
+        "parameters": [
+          {
+            "name": "feedKey",
+            "in": "query",
+            "required": true,
+            "description": "Adafruit IO feed key (e.g. temp, humidity, water-level)",
+            "schema": { "type": "string", "example": "temp" }
+          },
+          {
+            "name": "rowLimit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "example": 5 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Telemetry data from Adafruit IO",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "payload": {
+                    "count": 2,
+                    "data": [
+                      { "id": "abc123", "value": "32.5", "created_at": "2026-05-31T13:00:00Z" },
+                      { "id": "abc124", "value": "31.8", "created_at": "2026-05-31T12:55:00Z" }
+                    ]
+                  },
+                  "timestamp": "2026-05-31T14:21:47.759Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Data"],
+        "summary": "(WIP) Receive IoT data",
+        "description": "Endpoint to receive raw sensor data from IoT station.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "stationName": { "type": "string", "example": "Station1" },
+                  "temperature": { "type": "number", "example": 25.5 },
+                  "humidity": { "type": "number", "example": 60 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data received"
+          }
+        }
+      }
+    },
+    "/data/thresholds": {
+      "get": {
+        "tags": ["Data"],
+        "summary": "Get all alert thresholds",
+        "responses": {
+          "200": {
+            "description": "List of thresholds",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "payload": [
+                    {
+                      "threshold_id": 1,
+                      "station_id": 1,
+                      "parameter_name": "temperature",
+                      "lower_threshold": 20,
+                      "upper_threshold": 35,
+                      "severity_level": "high",
+                      "updated_at": "2026-05-31T14:00:00Z",
+                      "set_by_user_id": 1
+                    }
+                  ],
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Data"],
+        "summary": "Add threshold",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["parameter", "lower_threshold", "upper_threshold", "severity"],
+                "properties": {
+                  "parameter": { "type": "string", "example": "temperature" },
+                  "lower_threshold": { "type": "number", "example": 20 },
+                  "upper_threshold": { "type": "number", "example": 70 },
+                  "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"], "example": "high" },
+                  "station": { "type": "string", "example": "1", "description": "Station ID (optional)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Threshold added",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/thresholds/{id}": {
+      "get": {
+        "tags": ["Data"],
+        "summary": "Get threshold by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Threshold found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "payload": {
+                    "threshold_id": 1,
+                    "parameter_name": "temperature",
+                    "lower_threshold": 20,
+                    "upper_threshold": 35,
+                    "severity_level": "high"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Data"],
+        "summary": "Edit threshold",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "parameter": { "type": "string", "example": "temperature" },
+                  "lower_threshold": { "type": "number", "example": 20 },
+                  "upper_threshold": { "type": "number", "example": 67 },
+                  "severity": { "type": "string", "example": "high" },
+                  "station": { "type": "string", "example": "1" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Threshold updated",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Data"],
+        "summary": "Delete threshold",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Threshold deleted",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices": {
+      "get": {
+        "tags": ["Devices"],
+        "summary": "Get all IoT sensors",
+        "responses": {
+          "200": {
+            "description": "List of sensors",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "payload": [
+                    {
+                      "sensor_id": 1,
+                      "station_id": 1,
+                      "sensor_name": "Cảm biến nhiệt độ",
+                      "sensor_type": "temperature",
+                      "unit": "°C",
+                      "status": "active"
+                    }
+                  ],
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Devices"],
+        "summary": "Create (add) device",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["station_id", "sensor_name", "sensor_type", "status"],
+                "properties": {
+                  "station_id": { "type": "integer", "example": 1 },
+                  "sensor_name": { "type": "string", "example": "Cảm biến nhiệt độ" },
+                  "sensor_type": { "type": "string", "example": "temperature" },
+                  "unit": { "type": "string", "example": "°C" },
+                  "status": { "type": "string", "enum": ["active", "inactive"], "example": "active" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Device created",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/{id}": {
+      "get": {
+        "tags": ["Devices"],
+        "summary": "Get device by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "payload": {
+                    "sensor_id": 1,
+                    "station_id": 1,
+                    "sensor_name": "Cảm biến nhiệt độ",
+                    "sensor_type": "temperature",
+                    "unit": "°C",
+                    "status": "active"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Devices"],
+        "summary": "Edit sensor (admin)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "station_id": { "type": "integer", "example": 1 },
+                  "sensor_name": { "type": "string", "example": "Cảm biến nhiệt độ mới" },
+                  "sensor_type": { "type": "string", "example": "temperature" },
+                  "unit": { "type": "string", "example": "°C" },
+                  "status": { "type": "string", "example": "active" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sensor updated",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Devices"],
+        "summary": "Delete device",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device deleted",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/rename/{id}": {
+      "put": {
+        "tags": ["Devices"],
+        "summary": "Rename sensor (user only)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["newName"],
+                "properties": {
+                  "newName": { "type": "string", "example": "Cảm biến hồng ngoại" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sensor renamed",
+            "content": {
+              "application/json": {
+                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "connect.sid",
+        "description": "Session-based authentication. Login first via POST /auth/login to get a session cookie."
+      }
+    }
+  }
+}

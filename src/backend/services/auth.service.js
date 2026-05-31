@@ -56,13 +56,16 @@ class AuthService {
     console.log(`[OTP] ========================================\n`);
 
     try {
-      // GỌI HÀM GỬI QUA BREVO TỪ MAIL SERVICE
-      await mailService.sendOTPEmail(email, otp);
+      // GỌI HÀM GỬI QUA BREVO TỪ MAIL SERVICE — timeout 5s để không treo API
+      const mailTimeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Mail timeout')), 5000)
+      );
+      await Promise.race([mailService.sendOTPEmail(email, otp), mailTimeout]);
       console.log(`[OTP] Email sent successfully via Brevo to ${email}`);
       return { err: 0 };
     } catch (emailErr) {
       console.error('[OTP] Brevo failed:', emailErr.message);
-      // Vẫn cho phép thành công để dùng OTP từ terminal nếu mail lỗi
+      // Vẫn cho phép thành công — dùng OTP từ terminal nếu mail lỗi
       return { err: 0 };
     }
   }
