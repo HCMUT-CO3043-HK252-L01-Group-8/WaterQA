@@ -2,7 +2,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const dbPath = path.join(__dirname, '..', '..', '..', 'data', 'WaterQA.db');
+const dbPath = process.env.DB_PATH || path.join(__dirname, '..', '..', '..', 'data', 'WaterQA.db');
 
 const db = new Database(dbPath, {
   // verbose: console.log, // Disabled for cleaner logs

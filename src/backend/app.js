@@ -4,7 +4,7 @@ const express = require('express');
 // require('./database/initDb');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const path = require('path');
 require('dotenv').config(); // ← load .env file
 
@@ -78,7 +78,6 @@ app.use(`${API_PREFIX}/dashboard`, dashboardRouter);
 app.use(`${API_PREFIX}/data`, dataRouter);
 app.use(`${API_PREFIX}/devices`, deviceRouter);
 app.use(`${API_PREFIX}/model`, modelRouter);
-app.use
 // Special route: / = /dashboard
 app.get('/', (req, res) => {
   res.redirect('/dashboard');
