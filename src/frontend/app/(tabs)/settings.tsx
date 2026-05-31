@@ -8,7 +8,7 @@ import SettingRow from "@/components/ui/SettingRow";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import { Feather } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
-import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -96,28 +96,39 @@ export default function SettingsScreen() {
     };
 
     const handleLogout = () => {
-        Alert.alert(
-            t("settings.logoutConfirmText", "Đăng xuất"),
-            t("settings.confirmLogout", "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?"),
-            [
-                { text: t("settings.cancel", "Hủy"), style: "cancel" },
-                {
-                    text: t("common.logout", "Đăng xuất"),
-                    style: "destructive",
-                    onPress: async () => {
-                        try {
-                            await authServices.logout();
-                        } catch (e) {
-                            console.error("Lỗi gọi API logout:", e);
-                        } finally {
-                            dispatch(logoutClient()); // xóa auth state trong Redux
-                            await AsyncStorage.removeItem("currentUser");
-                            router.replace("/login");
-                        }
+        const performLogout = async () => {
+            try {
+                await authServices.logout();
+            } catch (e) {
+                console.error("Lỗi gọi API logout:", e);
+            } finally {
+                dispatch(logoutClient()); // xóa auth state trong Redux
+                await AsyncStorage.removeItem("currentUser");
+                router.replace("/login");
+            }
+        };
+
+        if (Platform.OS === "web") {
+            const confirmed = window.confirm(
+                t("settings.confirmLogout", "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?")
+            );
+            if (confirmed) {
+                performLogout();
+            }
+        } else {
+            Alert.alert(
+                t("settings.logoutConfirmText", "Đăng xuất"),
+                t("settings.confirmLogout", "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?"),
+                [
+                    { text: t("settings.cancel", "Hủy"), style: "cancel" },
+                    {
+                        text: t("common.logout", "Đăng xuất"),
+                        style: "destructive",
+                        onPress: performLogout,
                     },
-                },
-            ],
-        );
+                ],
+            );
+        }
     };
 
     const openFAQ = () => Linking.openURL("https://github.com/HCMUT-CO3043-HK252-L01-Group-8/WaterQA");

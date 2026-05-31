@@ -1,4 +1,10 @@
 {
+  "name": "waterqa",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node src/backend/app.js",
+    "build": "cd src/backend && npm install && npm rebuild better-sqlite3"
+  },
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
     "better-sqlite3": "^12.8.0",
