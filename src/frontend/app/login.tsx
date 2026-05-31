@@ -37,8 +37,8 @@ export default function LoginScreen() {
     const { t } = useTranslation();
 
     const redirectUri = Platform.select({
-        android: __DEV__ ? "host.exp.exponent:/oauthredirect" : undefined,
-        ios: __DEV__ ? "host.exp.exponent:/oauthredirect" : undefined,
+        android: __DEV__ ? "host.exp.exponent://oauthredirect" : undefined,
+        ios: __DEV__ ? "host.exp.exponent://oauthredirect" : undefined,
         default: AuthSession.makeRedirectUri({
             scheme: "frontend",
         }),
