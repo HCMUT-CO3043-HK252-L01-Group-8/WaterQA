@@ -16,6 +16,35 @@ app.use(express.json());                           // ← optional but good to h
 app.set('view engine', 'ejs');                      // view engine
 app.set('views', path.join(__dirname, 'views'));    // view path
 
+// Enable CORS for frontend development
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  // Allow localhost origins and specific domains
+  const allowedOrigins = [
+    'http://localhost:8081',
+    'http://localhost:19006',
+    'http://localhost:3000',
+    'http://127.0.0.1:8081',
+    'http://127.0.0.1:19006',
+  ];
+  
+  if (allowedOrigins.includes(origin) || !origin) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+  } else {
+    // For unknown origins, don't allow credentials
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'false');
+  }
+  
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, X-AIO-Key');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 
 // Setup express-session (for auth)
 const session = require('express-session');
@@ -26,9 +55,11 @@ app.use(session({
   cookie: {
     httpOnly: true,          // prevents JS access → good security
     secure: false,           // ← set to true when you use HTTPS later
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days (or shorter)
+    sameSite: 'lax',         // lax is fine when frontend/backend on same hostname
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   }
 }));
+
 
 // Import routers
 const accountsRouter = require('./routes/accounts.route');

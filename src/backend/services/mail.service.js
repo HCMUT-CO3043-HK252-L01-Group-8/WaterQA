@@ -63,6 +63,37 @@ const sendAlertEmail = async (toEmail, alertData) => {
     }
 };
 
+const sendOTPEmail = async (toEmail, otp) => {
+    try {
+        const mailOptions = {
+            from: `"WaterQA System" <${process.env.BREVO_SENDER_EMAIL}>`,
+            to: toEmail,
+            subject: '[WaterQA] Mã OTP đặt lại mật khẩu',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                <h2 style="color: #00A89D;">WaterQA - Đặt lại mật khẩu</h2>
+                <p>Bạn đã yêu cầu đặt lại mật khẩu. Sử dụng mã OTP bên dưới:</p>
+                <div style="font-size: 36px; font-weight: bold; letter-spacing: 12px; color: #00A89D; text-align: center; padding: 20px; background: #f5f8f8; border-radius: 8px; margin: 20px 0;">
+                  ${otp}
+                </div>
+                <p style="color: #666;">Mã này có hiệu lực trong <strong>10 phút</strong>.</p>
+                <p style="color: #666;">Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.</p>
+                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+                <p style="color: #aaa; font-size: 12px;">WaterQA - Hệ thống giám sát chất lượng nước</p>
+              </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email OTP đã được gửi thành công: %s', info.messageId);
+        return true;
+    } catch (error) {
+        console.error('Lỗi khi gửi email OTP:', error);
+        throw error;
+    }
+};
+
 module.exports = {
-    sendAlertEmail
+    sendAlertEmail,
+    sendOTPEmail
 };
