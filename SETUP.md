@@ -2,13 +2,12 @@
 
 Hướng dẫn cài đặt và chạy ứng dụng **WaterQA** trên thiết bị di động (Expo Go).
 
-> ✅ **Backend đã được deploy sẵn trên Railway** tại:  
+>  **Backend đã được deploy sẵn trên Railway** tại:  
 > `https://waterqa-production.up.railway.app`  
-> Bạn **KHÔNG cần chạy backend thủ công**. Chỉ cần cài và chạy frontend là xong.
-
+>**KHÔNG cần chạy backend thủ công**. 
 ---
 
-## 🚀 Quick Start (Chạy trên điện thoại)
+## Chạy trên điện thoại
 
 ### Yêu cầu
 
@@ -56,7 +55,7 @@ WaterQA/
 │   │   └── routes/
 │   │
 │   └── frontend/         # React Native + Expo (chạy local)
-│       ├── .env          # ✅ Đã cấu hình sẵn URL backend Railway
+│       ├── .env          # Đã cấu hình sẵn URL backend Railway
 │       ├── app/          # Màn hình ứng dụng
 │       ├── components/   # UI components
 │       ├── services/     # API client
@@ -68,7 +67,7 @@ WaterQA/
 
 ---
 
-## ⚙️ Biến Môi Trường (đã có sẵn)
+## Biến Môi Trường (đã có sẵn)
 
 File `src/frontend/.env` đã được cấu hình sẵn, **không cần thay đổi gì**:
 
@@ -81,7 +80,7 @@ EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...      # iOS OAuth client
 
 ---
 
-## 🔑 Tài Khoản Mặc Định
+##  Tài Khoản Mặc Định
 
 | Email | Mật khẩu | Vai trò |
 |---|---|---|
@@ -91,7 +90,7 @@ Hoặc bạn có thể **Đăng ký tài khoản mới** ngay trong app.
 
 ---
 
-## 🌐 API Backend
+## API Backend
 
 Backend đã chạy live tại `https://waterqa-production.up.railway.app`.
 
@@ -109,7 +108,7 @@ Một số endpoint chính:
 
 ---
 
-## 🛠️ Chạy Backend Local (Không bắt buộc)
+## Chạy Backend Local (Không bắt buộc)
 
 Nếu bạn muốn chạy backend trên máy của mình:
 
@@ -145,7 +144,7 @@ EXPO_PUBLIC_API_BASE_URL=http://<IP_MÁY_BẠN>:3000
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Expo không quét được QR / không kết nối được
 
@@ -170,7 +169,7 @@ Nhấn `r` trong terminal để reload, hoặc lắc điện thoại → chọn 
 
 ---
 
-## 🧪 Kiến Trúc Hệ Thống
+## Kiến Trúc Hệ Thống
 
 ```
 [Điện thoại — Expo Go]
