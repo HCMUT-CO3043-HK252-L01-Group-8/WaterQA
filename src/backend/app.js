@@ -1,7 +1,8 @@
 const express = require('express');
 
-// const db = require('./database/db');          // ← our database connection
-// require('./database/initDb');
+const db = require('./database/db');          // ← our database connection
+const { initSchema } = require('./database/initSchema');
+initSchema(); // ← tạo tables nếu chưa có (an toàn, không xóa data)
 
 const app = express();
 const port = process.env.PORT || 3000;
