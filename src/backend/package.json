@@ -6,6 +6,9 @@
   "author": "tdung",
   "type": "commonjs",
   "main": "app.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "start": "node app.js",
     "app": "node app.js",
