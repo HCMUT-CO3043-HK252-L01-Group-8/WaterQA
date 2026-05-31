@@ -14,11 +14,9 @@
     "app": "node app.js",
     "dev": "npx nodemon app.js",
     "build": "npm rebuild better-sqlite3",
-    "test": "jest --forceExit"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": ["**/tests/**/*.test.js"]
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --runInBand"
   },
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
@@ -27,7 +25,7 @@
     "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.2",
     "ejs": "^5.0.1",
-    "expo": "^49.0.23",
+    "expo": "^56.0.8",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "json2csv": "^6.0.0-alpha.2",

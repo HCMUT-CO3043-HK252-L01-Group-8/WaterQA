@@ -56,6 +56,74 @@ describe('AuthService.login()', () => {
 });
 
 // ============================================================
+// TEST: forgotPassword()
+// ============================================================
+describe('AuthService.forgotPassword()', () => {
+    beforeEach(() => jest.clearAllMocks());
+
+    test('Trả về lỗi 404 nếu email không tồn tại', async () => {
+        accountsRepo.findByEmail.mockReturnValue([]);
+
+        const result = await authService.forgotPassword('notfound@gmail.com');
+
+        expect(result.err).toBe(404);
+        expect(result.message).toMatch(/không tồn tại/i);
+    });
+
+    test('Tạo OTP, gọi mail service, và trả về thành công', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+        accountsRepo.findByEmail.mockReturnValue([{
+            user_id: 1,
+            email: 'user@gmail.com'
+        }]);
+        otpRepo.upsert.mockReturnValue(undefined);
+        otpRepo.deleteExpired.mockReturnValue(undefined);
+        mailService.sendOTPEmail.mockResolvedValue(true);
+
+        const result = await authService.forgotPassword('user@gmail.com');
+
+        expect(result.err).toBe(0);
+        expect(otpRepo.upsert).toHaveBeenCalledWith(
+            'user@gmail.com',
+            expect.any(String),  // OTP ngẫu nhiên
+            expect.any(Number)   // expires_at
+        );
+        expect(mailService.sendOTPEmail).toHaveBeenCalledWith(
+            'user@gmail.com',
+            expect.any(String)
+        );
+
+        consoleLogSpy.mockRestore();
+    });
+
+    test('Vẫn trả về thành công khi mail service lỗi (fallback terminal)', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        accountsRepo.findByEmail.mockReturnValue([{
+            user_id: 1,
+            email: 'user@gmail.com'
+        }]);
+        otpRepo.upsert.mockReturnValue(undefined);
+        otpRepo.deleteExpired.mockReturnValue(undefined);
+        mailService.sendOTPEmail.mockRejectedValue(new Error('SMTP error'));
+
+        const result = await authService.forgotPassword('user@gmail.com');
+
+        // Service vẫn trả về thành công dù mail lỗi (dùng OTP từ terminal)
+        expect(result.err).toBe(0);
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+            '[OTP] Brevo failed:',
+            'SMTP error'
+        );
+
+        consoleLogSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+    });
+});
+
+// ============================================================
 // TEST: verifyOTP()
 // ============================================================
 describe('AuthService.verifyOTP()', () => {
@@ -80,6 +148,7 @@ describe('AuthService.verifyOTP()', () => {
 
         expect(result.err).toBe(400);
         expect(result.message).toMatch(/hết hạn/i);
+        expect(otpRepo.deleteByEmail).toHaveBeenCalledWith('user@gmail.com');
     });
 
     test('Trả về lỗi 400 nếu OTP sai', () => {
@@ -132,6 +201,22 @@ describe('AuthService.resetPassword()', () => {
 
         expect(result.err).toBe(0);
         expect(accountsRepo.updatePassword).toHaveBeenCalledWith('user@gmail.com', 'newpassword123');
+        expect(otpRepo.deleteByEmail).toHaveBeenCalledWith('user@gmail.com');
+    });
+
+    test('Trả về lỗi 500 nếu update database lỗi', () => {
+        otpRepo.findByEmail.mockReturnValue({
+            otp: '123456',
+            expires_at: Date.now() + 60000
+        });
+        accountsRepo.updatePassword.mockImplementation(() => {
+            throw new Error('Database write error');
+        });
+
+        const result = authService.resetPassword('user@gmail.com', '123456', 'newpass');
+
+        expect(result.err).toBe(500);
+        expect(result.message).toMatch(/lỗi/i);
     });
 });
 
@@ -153,6 +238,7 @@ describe('AuthService.loginWithGoogle()', () => {
 
         expect(result.err).toBe(0);
         expect(result.user).toEqual(existingUser);
+        expect(accountsRepo.addAccount).not.toHaveBeenCalled();
     });
 
     test('Tạo user mới nếu email chưa tồn tại', () => {
@@ -169,6 +255,67 @@ describe('AuthService.loginWithGoogle()', () => {
         });
 
         expect(result.err).toBe(0);
+        expect(result.user).toEqual(newUser);
         expect(accountsRepo.addAccount).toHaveBeenCalled();
+    });
+
+    test('Trả về lỗi 500 nếu tạo user nhưng không lấy lại được', () => {
+        accountsRepo.findByEmail
+            .mockReturnValueOnce([])   // lần 1: chưa có
+            .mockReturnValueOnce([]);  // lần 2: vẫn rỗng sau khi tạo
+        accountsRepo.addAccount.mockReturnValue({ lastInsertRowid: 10 });
+
+        const result = authService.loginWithGoogle({
+            name: 'Ghost User',
+            email: 'ghost@gmail.com',
+            picture: ''
+        });
+
+        expect(result.err).toBe(500);
+        expect(result.user).toBeNull();
+    });
+
+    test('Trả về lỗi 500 nếu addAccount throw exception', () => {
+        accountsRepo.findByEmail.mockReturnValue([]);
+        accountsRepo.addAccount.mockImplementation(() => {
+            throw new Error('DB insert failed');
+        });
+
+        const result = authService.loginWithGoogle({
+            name: 'Error User',
+            email: 'error@gmail.com',
+            picture: ''
+        });
+
+        expect(result.err).toBe(500);
+        expect(result.user).toBeNull();
+    });
+
+    test('Truyền null khi name là falsy (cover branch name || null)', () => {
+        const newUser = { user_id: 20, email: 'noname@gmail.com', name: null };
+        accountsRepo.findByEmail
+            .mockReturnValueOnce([])         // lần 1: chưa có
+            .mockReturnValueOnce([newUser]);  // lần 2: sau khi tạo
+        accountsRepo.addAccount.mockReturnValue({ lastInsertRowid: 20 });
+
+        const result = authService.loginWithGoogle({
+            name: '',    // falsy → name || null sẽ thành null
+            email: 'noname@gmail.com',
+            picture: ''
+        });
+
+        expect(result.err).toBe(0);
+        expect(result.user).toEqual(newUser);
+        // Kiểm tra addAccount được gọi với tham số cuối là null (name || null)
+        expect(accountsRepo.addAccount).toHaveBeenCalledWith(
+            null,
+            'noname@gmail.com',
+            null,
+            'GOOGLE_OAUTH',
+            'User',
+            1,
+            expect.any(String),
+            null  // name || null khi name = ''
+        );
     });
 });

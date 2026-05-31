@@ -142,6 +142,295 @@ EXPO_PUBLIC_API_BASE_URL=http://<IP_MÁY_BẠN>:3000
 ```
 > Lấy IP máy bằng lệnh `ipconfig` (Windows) — dùng địa chỉ IPv4.
 
+# Chạy Unit Test Backend
+
+Phần backend sử dụng **Jest** để kiểm thử đơn vị. Phạm vi kiểm thử hiện tại tập trung vào tầng service của backend, bao gồm:
+
+```text
+AuthService
+DataService
+DeviceService
+```
+
+Các thành phần phụ thuộc như database repository, email service và API Adafruit IO được mock để đảm bảo test chỉ tập trung vào logic xử lý của từng service.
+
+---
+
+## Di chuyển vào thư mục backend
+
+Từ thư mục gốc của project:
+
+```bash
+cd src/backend
+```
+
+---
+
+## Cài đặt dependencies
+
+Nếu chưa cài dependencies:
+
+```bash
+npm install
+```
+
+---
+
+## Chạy toàn bộ unit test
+
+```bash
+npm test
+```
+
+Kết quả mong đợi:
+
+```text
+Test Suites: 3 passed, 3 total
+Tests:       45 passed, 45 total
+```
+
+Điều này có nghĩa là tất cả test suites và test cases hiện tại đều chạy thành công.
+
+---
+
+## Chạy unit test kèm coverage
+
+```bash
+npm run test:coverage
+```
+
+Kết quả coverage hiện tại ở phạm vi service:
+
+```text
+All files
+% Stmts   : 99.18
+% Branch  : 100
+% Funcs   : 95.23
+% Lines   : 100
+```
+
+Ý nghĩa các cột coverage:
+
+```text
+% Stmts   : Tỷ lệ câu lệnh được test bao phủ
+% Branch  : Tỷ lệ các nhánh điều kiện được test bao phủ
+% Funcs   : Tỷ lệ hàm được test bao phủ
+% Lines   : Tỷ lệ dòng code được test bao phủ
+```
+
+---
+
+## Vị trí báo cáo coverage
+
+Sau khi chạy:
+
+```bash
+npm run test:coverage
+```
+
+Jest sẽ sinh thư mục coverage tại:
+
+```text
+src/backend/coverage/
+```
+
+Có thể mở báo cáo HTML tại:
+
+```text
+src/backend/coverage/lcov-report/index.html
+```
+
+Trên Windows, có thể mở file này trực tiếp bằng trình duyệt.
+
+---
+
+## Chạy riêng từng file test
+
+Chạy test cho AuthService:
+
+```bash
+npx jest tests/auth.service.test.js
+```
+
+Chạy test cho DataService:
+
+```bash
+npx jest tests/data.service.test.js
+```
+
+Chạy test cho DeviceService:
+
+```bash
+npx jest tests/device.service.test.js
+```
+
+---
+
+## Vị trí các file unit test
+
+Các file unit test backend nằm trong thư mục:
+
+```text
+src/backend/tests/
+```
+
+Danh sách file test hiện tại:
+
+```text
+src/backend/tests/auth.service.test.js
+src/backend/tests/data.service.test.js
+src/backend/tests/device.service.test.js
+```
+
+---
+
+## Phạm vi kiểm thử
+
+Bộ unit test hiện tại tập trung vào tầng service của backend.
+
+Các service được kiểm thử:
+
+```text
+src/backend/services/auth.service.js
+src/backend/services/data.service.js
+src/backend/services/device.service.js
+```
+
+Các thành phần được mock trong quá trình test:
+
+```text
+repositories
+database
+mail service
+Adafruit IO API
+```
+
+Lý do mock các thành phần này là để unit test chỉ kiểm tra logic xử lý nội bộ của service, không phụ thuộc vào database thật, API thật hoặc dịch vụ gửi email thật.
+
+---
+
+## Nội dung kiểm thử chính
+
+### AuthService
+
+Các test case chính:
+
+```text
+Đăng nhập với email không tồn tại
+Đăng nhập sai mật khẩu
+Đăng nhập thành công
+Quên mật khẩu với email không tồn tại
+Tạo OTP và gửi email
+Xử lý trường hợp gửi email lỗi
+Xác thực OTP không tồn tại
+Xác thực OTP hết hạn
+Xác thực OTP sai
+Xác thực OTP đúng
+Đặt lại mật khẩu thành công
+Đặt lại mật khẩu khi database lỗi
+Đăng nhập Google với user đã tồn tại
+Đăng nhập Google và tạo user mới
+Xử lý lỗi khi tạo user Google
+```
+
+### DataService
+
+Các test case chính:
+
+```text
+Lấy lịch sử dữ liệu quan trắc
+Lấy toàn bộ lịch sử dữ liệu không giới hạn
+Lấy danh sách ngưỡng cảnh báo
+Thêm ngưỡng cảnh báo thành công
+Xử lý lỗi khi thêm ngưỡng cảnh báo
+Chỉnh sửa ngưỡng cảnh báo
+Xóa ngưỡng cảnh báo thành công
+Xử lý lỗi khi xóa ngưỡng cảnh báo
+Lấy telemetry data từ Adafruit IO thành công
+Xử lý lỗi network khi gọi API ngoài
+Xử lý lỗi HTTP khi gọi API ngoài
+```
+
+### DeviceService
+
+Các test case chính:
+
+```text
+Lấy danh sách tất cả sensor
+Lấy sensor theo id
+Bật/tắt trạng thái sensor
+Xử lý lỗi khi sensor không tồn tại
+Thêm sensor với trạng thái mặc định
+Thêm sensor với trạng thái được truyền vào
+Xử lý lỗi khi thêm sensor thất bại
+Đổi tên sensor thành công
+Xử lý lỗi khi đổi tên sensor không tồn tại
+```
+
+---
+
+## Ghi chú về coverage
+
+Coverage hiện tại chỉ được thu thập trên các service chính:
+
+```text
+src/backend/services/auth.service.js
+src/backend/services/data.service.js
+src/backend/services/device.service.js
+```
+
+Không tính coverage cho các thư mục sau:
+
+```text
+repositories/
+database/
+services/mail.service.js
+app.js
+model/
+```
+
+Lý do là bộ test hiện tại được thiết kế theo hướng **kiểm thử đơn vị tầng service**. Các module repository, database, email service và API bên ngoài được xem là dependency và được mock.
+
+Nếu muốn đánh giá toàn bộ backend, cần bổ sung thêm các loại kiểm thử khác như:
+
+```text
+Controller test
+API integration test
+Database integration test
+End-to-end test
+```
+
+---
+
+## Một số lỗi thường gặp khi chạy test
+
+### Lỗi thiếu package
+
+Nếu gặp lỗi dạng:
+
+```text
+Cannot find module
+```
+
+Hãy chạy lại:
+
+```bash
+npm install
+```
+
+## Quy trình chạy nhanh
+
+Từ thư mục gốc project:
+
+```bash
+cd src/backend
+npm install
+npm test
+npm run test:coverage
+```
+
+Nếu tất cả test pass và coverage được sinh thành công, quá trình kiểm thử backend hoàn tất.
+
 ---
 
 ## Troubleshooting
