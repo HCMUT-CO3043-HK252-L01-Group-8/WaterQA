@@ -46,7 +46,7 @@ function switchSensor(req, res) {
 function addSensor(req, res) {
     const { station_id, sensor_name, sensor_type, unit, status } = req.body;
     try {
-        deviceService.add(station_id, sensor_name, sensor_type, unit, status);
+        deviceService.addSensor(station_id, sensor_name, sensor_type, unit, status);
         // res.redirect('/devices/all');
         res.status(201).json({ success: true, timestamp: new Date().toISOString() });
     } catch (err) {
