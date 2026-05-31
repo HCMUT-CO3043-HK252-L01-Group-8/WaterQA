@@ -26,6 +26,8 @@ app.use((req, res, next) => {
     'http://localhost:3000',
     'http://127.0.0.1:8081',
     'http://127.0.0.1:19006',
+    'https://waterqa-production.up.railway.app',
+    // Thêm domain Vercel sau khi deploy frontend (dạng: https://waterqa.vercel.app)
   ];
   
   if (allowedOrigins.includes(origin) || !origin) {
