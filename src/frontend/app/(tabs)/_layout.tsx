@@ -30,12 +30,6 @@ export default function TabLayout() {
                     title: "IoT",
                 }}
             />
-            <Tabs.Screen
-                name="iot-dashboard"
-                options={{
-                    tabBarIcon: ({ color }) => <Feather name="activity" size={22} color={color} />,
-                }}
-            />
 
             <Tabs.Screen
                 name="notification"
