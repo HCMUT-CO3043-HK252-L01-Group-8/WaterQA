@@ -36,12 +36,9 @@ export default function LoginScreen() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const { t } = useTranslation();
 
-    const redirectUri = Platform.select({
-        android: __DEV__ ? "host.exp.exponent://oauthredirect" : undefined,
-        ios: __DEV__ ? "host.exp.exponent://oauthredirect" : undefined,
-        default: AuthSession.makeRedirectUri({
-            scheme: "frontend",
-        }),
+    const redirectUri = AuthSession.makeRedirectUri({
+        native: "host.exp.exponent://oauthredirect",
+        scheme: "frontend",
     });
 
     const [request, response, promptAsync] = Google.useAuthRequest({
