@@ -8,7 +8,8 @@ import AppHeader from "@/components/ui/AppHeader";
 import Card from "@/components/ui/Card";
 import AlertBanner from "@/components/ui/AlertBanner";
 import { telemetryServices } from "@/services/telemetryServices";
-import { THRESHOLDS, REFRESH_INTERVALS } from "@/config/feeds";
+import { THRESHOLDS, REFRESH_INTERVALS } from "@/configs/feeds";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const REFRESH_INTERVAL_MS = REFRESH_INTERVALS.DASHBOARD_REFRESH_MS;
 const TEMP_WARNING_THRESHOLD = THRESHOLDS.TEMP_WARNING;
@@ -17,6 +18,7 @@ const LIGHT_WARNING = THRESHOLDS.LIGHT_WARNING;
 const LIGHT_NORMAL = THRESHOLDS.LIGHT_NORMAL;
 const LIGHT_CHECK_DURATION = THRESHOLDS.LIGHT_CHECK_DURATION_MS;
 const ALERT_THROTTLE_MS = REFRESH_INTERVALS.ALERT_THROTTLE_MS;
+const ALERTS_STORAGE_KEY = "local_alerts_database";
 
 type SensorData = {
     temp: string | number | null;
@@ -119,6 +121,24 @@ export default function IotDashboard() {
         return allReadingsHigh && readingDuration >= LIGHT_CHECK_DURATION;
     }, []);
 
+    const saveAlertToLocal = async (type: "warning" | "critical", title: string, desc: string) => {
+        try {
+            const savedAlerts = await AsyncStorage.getItem(ALERTS_STORAGE_KEY);
+            const alerts = savedAlerts ? JSON.parse(savedAlerts) : [];
+            const newAlert = {
+                id: Date.now().toString(),
+                type,
+                title,
+                desc,
+                time: "Vừa xong",
+            };
+            alerts.unshift(newAlert);
+            await AsyncStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts));
+        } catch (e) {
+            console.error("Lỗi lưu cảnh báo:", e);
+        }
+    };
+
     useEffect(() => {
         const now = Date.now();
         if (isTempHigh) setShowTempBanner(true);
@@ -126,18 +146,18 @@ export default function IotDashboard() {
 
         if (isTempHigh && now - lastTempAlertAt.current > ALERT_THROTTLE_MS) {
             lastTempAlertAt.current = now;
-            Alert.alert(
-                t("iot.tempWarningTitle", "Cảnh báo: Nhiệt độ cao"),
-                `${t("iot.temperature", "Nhiệt độ")} ${String(data.temp)}°C.`,
-            );
+            const title = t("iot.tempWarningTitle", "Cảnh báo: Nhiệt độ cao");
+            const desc = `${t("iot.temperature", "Nhiệt độ")} ${String(data.temp)}°C.`;
+            Alert.alert(title, desc);
+            saveAlertToLocal("warning", title, desc);
         }
 
         if (isLidOpened() && now - lastLightAlertAt.current > ALERT_THROTTLE_MS) {
             lastLightAlertAt.current = now;
-            Alert.alert(
-                t("iot.lidDangerTitle", "Nguy hiểm: Mở nắp bồn!"),
-                `${t("iot.lightLevel", "Ánh sáng")} ${lightValue}.`,
-            );
+            const title = t("iot.lidDangerTitle", "Nguy hiểm: Mở nắp bồn!");
+            const desc = `${t("iot.lightLevel", "Ánh sáng")} ${lightValue}.`;
+            Alert.alert(title, desc);
+            saveAlertToLocal("critical", title, desc);
         }
     }, [data.temp, isTempHigh, lightValue, isLidOpened, t]);
 
@@ -181,8 +201,8 @@ export default function IotDashboard() {
                             title={t("iot.tempWarningTitle", "Cảnh báo: Nhiệt độ cao")}
                             message={t(
                                 "iot.tempWarningDesc",
-                                `Nhiệt độ hiện tại cao hơn mức bình thường (${data.temp}°C).`,
-                            )}
+                                "Nhiệt độ hiện tại cao hơn mức bình thường ({{temp}}°C).",
+                            ).replace("{{temp}}", String(data.temp))}
                             onClose={() => setShowTempBanner(false)}
                         />
 
@@ -192,8 +212,8 @@ export default function IotDashboard() {
                             title={t("iot.lidDangerTitle", "Nguy hiểm: Mở nắp bồn!")}
                             message={t(
                                 "iot.lidDangerDesc",
-                                `Phát hiện mức ánh sáng cao (${lightValue}). Vui lòng kiểm tra ngay!`,
-                            )}
+                                "Phát hiện mức ánh sáng cao ({{light}}). Vui lòng kiểm tra ngay!",
+                            ).replace("{{light}}", String(lightValue))}
                             onClose={() => setShowLightBanner(false)}
                         />
 
@@ -248,7 +268,9 @@ export default function IotDashboard() {
                                 {isLidOpened()
                                     ? t("iot.lidOpenedAlert", "🚨 Mở nắp! (≥60 trong 5s)")
                                     : isLightHigh
-                                      ? t("iot.highLight", `Cao (${lightValue} ≥ ${LIGHT_WARNING})`)
+                                      ? t("iot.highLight", "Cao ({{light}} ≥ {{threshold}})")
+                                            .replace("{{light}}", String(lightValue))
+                                            .replace("{{threshold}}", String(LIGHT_WARNING))
                                       : isLightNormal
                                         ? t("iot.normalLight", "Bình thường (< 50)")
                                         : t("iot.lowLight", "Ánh sáng yếu")}

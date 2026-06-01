@@ -1,8 +1,14 @@
 import api from "./apiConfig";
 import { ADAFRUIT_FEEDS } from "@/configs/feeds";
+import { ApiResponse } from "./authServices";
 
 export type LatestTelemetryValue = { feedKey: string; value: string | null; createdAt?: string; raw?: unknown };
-export type TelemetrySnapshot = { temp: LatestTelemetryValue; humi: LatestTelemetryValue; leakage: LatestTelemetryValue; fetchedAt: string };
+export type TelemetrySnapshot = {
+    temp: LatestTelemetryValue;
+    humi: LatestTelemetryValue;
+    leakage: LatestTelemetryValue;
+    fetchedAt: string;
+};
 
 const extractLatestValue = (feedKey: string, items: any[]): LatestTelemetryValue => {
     const first = items?.[0];
@@ -20,7 +26,7 @@ export const telemetryServices = {
             params: { feedKey, rowLimit },
             signal,
         });
-        
+
         if (!response.success) throw new Error(response.error || "Lỗi tải telemetry");
         return { payload: response.payload, timestamp: response.timestamp };
     },
@@ -45,7 +51,7 @@ export const telemetryServices = {
         };
     },
 
-    sendTelemetryData: (data: { stationName: string; temperature: number; humidity: number }, signal?: AbortSignal) => {
-        return api.post("/data/telemetry", data, { signal });
+    sendTelemetry: (data: { stationName: string; temperature: number; humidity: number }, signal?: AbortSignal) => {
+        return api.post<any, ApiResponse>("/data/telemetry", data, { signal });
     },
 };

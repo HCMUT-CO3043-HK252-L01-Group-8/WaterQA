@@ -19,7 +19,7 @@ export const thresholdServices = {
     },
 
     createThreshold: (data: ThresholdData, signal?: AbortSignal) => {
-        return api.post<any, ApiResponse>("/data/thresholds/", data, { signal });
+        return api.post<any, ApiResponse>("/data/thresholds", data, { signal });
     },
 
     updateThreshold: (id: number | string, data: ThresholdData, signal?: AbortSignal) => {
