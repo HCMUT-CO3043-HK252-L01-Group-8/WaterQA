@@ -7,23 +7,13 @@ import AppHeader from "@/components/ui/AppHeader";
 import LocationSelector from "@/components/ui/LocationSelector";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View, Linking, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { BASE_URL } from "@/services/apiConfig"; 
+import { dataServices } from "@/services/dataServices";
 
 const LOCATIONS = ["268 Lý Thường Kiệt", "KTX Khu A - ĐHQG", "Khu Công Nghệ Cao", "Hồ Đá - Làng Đại Học"];
-
-const HISTORY_LIST = [
-    { id: "1", wqi: "92", date: "06-03-2026", time: "20:36", trend: "+3" },
-    { id: "2", wqi: "89", date: "05-03-2026", time: "14:20", trend: "+1" },
-    { id: "3", wqi: "88", date: "04-03-2026", time: "09:15", trend: "+2" },
-    { id: "4", wqi: "86", date: "03-03-2026", time: "18:45", trend: "+4" },
-    { id: "5", wqi: "82", date: "02-03-2026", time: "11:10", trend: "-3" },
-    { id: "6", wqi: "85", date: "01-03-2026", time: "08:30", trend: "+5" },
-];
-
-const CHART_DATA = [85, 82, 86, 88, 89, 92];
-const CHART_LABELS = ["01/03", "02/03", "03/03", "04/03", "05/03", "06/03"];
 
 export default function HistoryScreen() {
     const tabBarHeight = useTabBarHeight();
@@ -33,11 +23,69 @@ export default function HistoryScreen() {
     const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
     const [activeFilter, setActiveFilter] = useState("day");
 
+    const [historyList, setHistoryList] = useState<any[]>([]);
+    const [chartData, setChartData] = useState<number[]>([]);
+    const [chartLabels, setChartLabels] = useState<string[]>([]);
+    const [todayWqi, setTodayWqi] = useState<number | string>("--");
+    const [trendValue, setTrendValue] = useState<string>("--");
+
     const fetchHistoryData = async () => {
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            const rowLimit = activeFilter === "day" ? 10 : 30; 
+            const response = await dataServices.getHistory(rowLimit);
+
+            if (response && response.success && response.payload) {
+                const rawData = Array.isArray(response.payload) 
+                    ? response.payload 
+                    : (response.payload.rows || []);
+
+                if (rawData.length > 0) {
+                    const formattedList = rawData.map((item: any, index: number) => {
+                        const dateObj = new Date(item.timestamp);
+                        const wqiScore = Number(item.wqi || Math.round((item.temperature + item.humidity) / 2) || 0);
+
+                        let trendStr = "+0";
+                        if (index < rawData.length - 1) {
+                            const prevItem = rawData[index + 1];
+                            const prevWqi = Number(prevItem.wqi || Math.round((prevItem.temperature + prevItem.humidity) / 2) || 0);
+                            const diff = wqiScore - prevWqi;
+                            trendStr = diff > 0 ? `+${diff}` : `${diff}`;
+                        }
+
+                        return {
+                            id: String(item.observation_id || index),
+                            wqi: String(wqiScore),
+                            date: dateObj.toLocaleDateString("vi-VN"), 
+                            time: dateObj.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }), 
+                            trend: trendStr, 
+                        };
+                    });
+
+                    setTodayWqi(formattedList[0].wqi);
+                    setTrendValue(formattedList[0].trend);
+
+                    const chartRecords = rawData.slice(0, 6).reverse();
+                    const newChartData = chartRecords.map((item: any) => 
+                        Number(item.wqi || Math.round((item.temperature + item.humidity) / 2) || 0)
+                    );
+                    const newChartLabels = chartRecords.map((item: any) => {
+                        const d = new Date(item.timestamp);
+                        return `${d.getDate()}/${d.getMonth() + 1}`;
+                    });
+
+                    setHistoryList(formattedList);
+                    setChartData(newChartData);
+                    setChartLabels(newChartLabels);
+                } else {
+                    setHistoryList([]);
+                    setChartData([]);
+                    setChartLabels([]);
+                    setTodayWqi("--");
+                    setTrendValue("--");
+                }
+            }
         } catch (error) {
-            console.error("Lỗi tải lịch sử:", error);
+            console.error("Lỗi tải lịch sử quan trắc từ API:", error);
         } finally {
             setIsLoading(false);
             setRefreshing(false);
@@ -47,15 +95,27 @@ export default function HistoryScreen() {
     useEffect(() => {
         setIsLoading(true);
         fetchHistoryData();
-    }, [selectedLocation]);
+    }, [selectedLocation, activeFilter]);
 
     const onRefresh = async () => {
         setRefreshing(true);
         await fetchHistoryData();
     };
 
-    const handleExport = () => {
-        console.log("Xuất báo cáo cho:", selectedLocation, activeFilter);
+    const handleExport = async () => {
+        const rowLimit = activeFilter === "day" ? 10 : 100; 
+        const url = `${BASE_URL}/data/export?rowLimit=${rowLimit}`;
+
+        try {
+            const supported = await Linking.canOpenURL(url);
+            if (supported) {
+                await Linking.openURL(url); 
+            } else {
+                Alert.alert(t("common.error", "Lỗi"), "Thiết bị không hỗ trợ mở liên kết tải file.");
+            }
+        } catch (error) {
+            Alert.alert(t("common.error", "Lỗi"), "Đã xảy ra sự cố trong quá trình xuất tập dữ liệu.");
+        }
     };
 
     if (isLoading && !refreshing) return <HistorySkeleton />;
@@ -78,11 +138,12 @@ export default function HistoryScreen() {
                     selectedLocation={selectedLocation}
                     onSelect={setSelectedLocation}
                 />
-
-                <SummaryCards todayWqi={92} trendValue={"+3"} />
-                <DetailedChart data={CHART_DATA} labels={CHART_LABELS} />
+                
+                <SummaryCards todayWqi={Number(todayWqi) || 0} trendValue={trendValue} />
+                
+                <DetailedChart data={chartData} labels={chartLabels} />
                 <FilterAndExport activeFilter={activeFilter} onFilterChange={setActiveFilter} onExport={handleExport} />
-                <HistoryList data={HISTORY_LIST} />
+                <HistoryList data={historyList} />
             </ScrollView>
         </SafeAreaView>
     );

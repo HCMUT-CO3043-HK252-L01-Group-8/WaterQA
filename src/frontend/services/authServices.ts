@@ -42,4 +42,28 @@ export const authServices = {
     updateEmailNotifications: (email_notifications: boolean, signal?: AbortSignal) => {
         return api.put<any, ApiResponse>("/accounts/me/email-notifications", { email_notifications }, { signal });
     },
+
+    getAllAccounts: (signal?: AbortSignal) => {
+        return api.get<any, ApiResponse>("/accounts", { signal });
+    },
+
+    getAccountById: (id: number | string, signal?: AbortSignal) => {
+        return api.get<any, ApiResponse>(`/accounts/${id}`, { signal });
+    },
+
+    getSession: (signal?: AbortSignal) => {
+        return api.get<any, ApiResponse>("/accounts/session", { signal });
+    },
+
+    getProfile: (signal?: AbortSignal) => {
+        return api.get<any, ApiResponse>("/accounts/profile", { signal });
+    },
+
+    changePassword: (currentPassword: string, newPassword: string, confirmPassword: string, signal?: AbortSignal) => {
+        return api.put<any, ApiResponse>("/accounts/change-password", { currentPassword, newPassword, confirmPassword }, { signal });
+    },
+
+    deleteAccount: (id: number | string, signal?: AbortSignal) => {
+        return api.delete<any, ApiResponse>(`/accounts/${id}`, { signal });
+    },
 };

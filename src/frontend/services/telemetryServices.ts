@@ -44,4 +44,8 @@ export const telemetryServices = {
             fetchedAt: new Date().toISOString(),
         };
     },
+
+    sendTelemetryData: (data: { stationName: string; temperature: number; humidity: number }, signal?: AbortSignal) => {
+        return api.post("/data/telemetry", data, { signal });
+    },
 };
