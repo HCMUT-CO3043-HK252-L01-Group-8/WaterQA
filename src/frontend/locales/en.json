@@ -66,7 +66,11 @@
         "newPasswordPlaceholder": "Enter password (min 6 chars)",
         "confirmNewPassword": "Confirm Password",
         "confirmNewPasswordPlaceholder": "Re-enter new password",
-        "saveAndConfirm": "Confirm & Save"
+        "saveAndConfirm": "Confirm & Save",
+        "changePasswordTitle": "Change Password",
+        "changePasswordSubtitle": "Please enter your current and new password",
+        "currentPassword": "Current Password",
+        "currentPasswordPlaceholder": "Enter current password"
     },
     "home": {
         "greeting": "Hello, ",
@@ -130,7 +134,9 @@
         "thresholdDesc": "The app will send an alert when the WQI falls below your set threshold.",
         "systemDefault": "System Default:",
         "Vietnamese": "Vietnamese",
-        "English": "English"
+        "English": "English",
+        "changePassword": "Change Password",
+        "changePasswordSubtitle": "Update your account password"
     },
     "notifications": {
         "pageTitle": "Alerts",
@@ -170,5 +176,38 @@
         "highLight": "High ({{light}} ≥ {{threshold}})",
         "normalLight": "Normal (< 50)",
         "lowLight": "Low Light"
+    },
+    "admin": {
+        "manageUsers": "Manage Users",
+        "manageUsersSubtitle": "List of all accounts in the system",
+        "searchUser": "Search by name or email...",
+        "roleAdmin": "Admin",
+        "roleUser": "User",
+        "statusVerified": "Verified",
+        "statusUnverified": "Unverified",
+        "deleteUser": "Delete account",
+        "confirmDeleteUser": "Are you sure you want to delete account {{email}}? This action cannot be undone.",
+        "deleteSuccess": "Account deleted successfully",
+        "noUsersFound": "No users found."
+    },
+    "iotManagement": {
+        "title": "IoT System",
+        "subtitle": "Manage station devices and server thresholds",
+        "tabDevices": "Devices",
+        "tabThresholds": "Thresholds",
+        "addDevice": "Add Device",
+        "addThreshold": "Add Threshold",
+        "deviceType": "Sensor Type:",
+        "station": "Station:",
+        "range": "Safe Range:",
+        "severity": "Severity:",
+        "emptyDevices": "No devices found in the system.",
+        "emptyThresholds": "No server thresholds configured."
+    },
+    "sensorNames": {
+        "wqi": "WQI Index",
+        "ph": "pH Level",
+        "ntu": "Turbidity (NTU)",
+        "clo": "Chlorine (mg/l)"
     }
 }

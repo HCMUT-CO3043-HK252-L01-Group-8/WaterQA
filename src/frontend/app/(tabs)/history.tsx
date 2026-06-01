@@ -7,10 +7,9 @@ import AppHeader from "@/components/ui/AppHeader";
 import LocationSelector from "@/components/ui/LocationSelector";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View, Linking, Alert } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View, Alert, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { BASE_URL } from "@/services/apiConfig"; 
 import { dataServices } from "@/services/dataServices";
 
 const LOCATIONS = ["268 Lý Thường Kiệt", "KTX Khu A - ĐHQG", "Khu Công Nghệ Cao", "Hồ Đá - Làng Đại Học"];
@@ -26,66 +25,59 @@ export default function HistoryScreen() {
     const [historyList, setHistoryList] = useState<any[]>([]);
     const [chartData, setChartData] = useState<number[]>([]);
     const [chartLabels, setChartLabels] = useState<string[]>([]);
-    const [todayWqi, setTodayWqi] = useState<number | string>("--");
-    const [trendValue, setTrendValue] = useState<string>("--");
+    const [todayWqi, setTodayWqi] = useState<number>(0);
+    const [trendValue, setTrendValue] = useState<string>("+0");
 
     const fetchHistoryData = async () => {
         try {
-            const rowLimit = activeFilter === "day" ? 10 : 30; 
-            const response = await dataServices.getHistory(rowLimit);
+            const limit = activeFilter === "day" ? 24 : 30;
+            const response = await dataServices.getHistory(limit);
 
-            if (response && response.success && response.payload) {
-                const rawData = Array.isArray(response.payload) 
-                    ? response.payload 
-                    : (response.payload.rows || []);
+            if (response.success && response.payload?.data) {
+                const rawData = response.payload.data;
+                const sortedData = [...rawData].sort(
+                    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+                );
 
-                if (rawData.length > 0) {
-                    const formattedList = rawData.map((item: any, index: number) => {
-                        const dateObj = new Date(item.timestamp);
-                        const wqiScore = Number(item.wqi || Math.round((item.temperature + item.humidity) / 2) || 0);
+                const formattedList = [...sortedData].reverse().map((item: any, index: number, arr: any[]) => {
+                    const dateObj = new Date(item.timestamp);
+                    const dateStr = dateObj.toLocaleDateString("vi-VN");
+                    const timeStr = dateObj.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
 
-                        let trendStr = "+0";
-                        if (index < rawData.length - 1) {
-                            const prevItem = rawData[index + 1];
-                            const prevWqi = Number(prevItem.wqi || Math.round((prevItem.temperature + prevItem.humidity) / 2) || 0);
-                            const diff = wqiScore - prevWqi;
-                            trendStr = diff > 0 ? `+${diff}` : `${diff}`;
-                        }
+                    const wqi = Math.round(item.temperature || 0);
 
-                        return {
-                            id: String(item.observation_id || index),
-                            wqi: String(wqiScore),
-                            date: dateObj.toLocaleDateString("vi-VN"), 
-                            time: dateObj.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }), 
-                            trend: trendStr, 
-                        };
-                    });
+                    let trendStr = "+0";
+                    if (index < arr.length - 1) {
+                        const prevWqi = Math.round(arr[index + 1].temperature || 0);
+                        const diff = wqi - prevWqi;
+                        trendStr = diff > 0 ? `+${diff}` : `${diff}`;
+                    }
 
-                    setTodayWqi(formattedList[0].wqi);
+                    return {
+                        id: String(item.observation_id),
+                        wqi: String(wqi),
+                        date: dateStr,
+                        time: timeStr,
+                        trend: trendStr,
+                    };
+                });
+                setHistoryList(formattedList);
+
+                const cData = sortedData.map((item: any) => Math.round(item.temperature || 0));
+                const cLabels = sortedData.map((item: any) => {
+                    const d = new Date(item.timestamp);
+                    return activeFilter === "day" ? `${d.getHours()}:00` : `${d.getDate()}/${d.getMonth() + 1}`;
+                });
+                setChartData(cData);
+                setChartLabels(cLabels);
+
+                if (formattedList.length > 0) {
+                    setTodayWqi(Number(formattedList[0].wqi));
                     setTrendValue(formattedList[0].trend);
-
-                    const chartRecords = rawData.slice(0, 6).reverse();
-                    const newChartData = chartRecords.map((item: any) => 
-                        Number(item.wqi || Math.round((item.temperature + item.humidity) / 2) || 0)
-                    );
-                    const newChartLabels = chartRecords.map((item: any) => {
-                        const d = new Date(item.timestamp);
-                        return `${d.getDate()}/${d.getMonth() + 1}`;
-                    });
-
-                    setHistoryList(formattedList);
-                    setChartData(newChartData);
-                    setChartLabels(newChartLabels);
-                } else {
-                    setHistoryList([]);
-                    setChartData([]);
-                    setChartLabels([]);
-                    setTodayWqi("--");
-                    setTrendValue("--");
                 }
             }
         } catch (error) {
-            console.error("Lỗi tải lịch sử quan trắc từ API:", error);
+            console.error("Lỗi lấy lịch sử:", error);
         } finally {
             setIsLoading(false);
             setRefreshing(false);
@@ -95,6 +87,7 @@ export default function HistoryScreen() {
     useEffect(() => {
         setIsLoading(true);
         fetchHistoryData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedLocation, activeFilter]);
 
     const onRefresh = async () => {
@@ -103,18 +96,55 @@ export default function HistoryScreen() {
     };
 
     const handleExport = async () => {
-        const rowLimit = activeFilter === "day" ? 10 : 100; 
-        const url = `${BASE_URL}/data/export?rowLimit=${rowLimit}`;
-
         try {
-            const supported = await Linking.canOpenURL(url);
-            if (supported) {
-                await Linking.openURL(url); 
+            const limit = activeFilter === "day" ? 24 : 30;
+            const response = await dataServices.exportData(limit);
+            const fileName = `WaterQA_History_${new Date().getTime()}.csv`;
+
+            if (Platform.OS === "web") {
+                const url = window.URL.createObjectURL(new Blob([response]));
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", fileName);
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode?.removeChild(link);
+                window.URL.revokeObjectURL(url);
             } else {
-                Alert.alert(t("common.error", "Lỗi"), "Thiết bị không hỗ trợ mở liên kết tải file.");
+                // const FileSystem = await import("expo-file-system");
+                // const Sharing = await import("expo-sharing");
+
+                // const fileReader = new FileReader();
+                // fileReader.onload = async () => {
+                //     try {
+                //         const base64Data = (fileReader.result as string).split(",")[1];
+                //         const fileUri = `${FileSystem.documentDirectory}${fileName}`;
+
+                //         await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+                //             encoding: FileSystem.EncodingType.Base64,
+                //         });
+
+                //         const isAvailable = await Sharing.isAvailableAsync();
+                //         if (isAvailable) {
+                //             await Sharing.shareAsync(fileUri, {
+                //                 mimeType: "text/csv",
+                //                 dialogTitle: t("history.export", "Xuất báo cáo"),
+                //                 UTI: "public.comma-separated-values-text",
+                //             });
+                //         } else {
+                //             Alert.alert(t("common.error", "Lỗi"), "Thiết bị không hỗ trợ tính năng chia sẻ/lưu file.");
+                //         }
+                //     } catch (error) {
+                //         console.error("Lỗi export CSV:", error);
+                //         Alert.alert(t("common.error", "Lỗi"), "Lỗi khi lưu file vào hệ thống.");
+                //     }
+                // };
+                // fileReader.readAsDataURL(new Blob([response]));
+                Alert.alert(t("common.error", "Lỗi"), "Tính năng đang phát triển");
             }
         } catch (error) {
-            Alert.alert(t("common.error", "Lỗi"), "Đã xảy ra sự cố trong quá trình xuất tập dữ liệu.");
+            console.error("Lỗi export CSV:", error);
+            Alert.alert(t("common.error", "Lỗi"), "Không thể xuất dữ liệu lúc này. Vui lòng kiểm tra lại kết nối.");
         }
     };
 
@@ -138,9 +168,9 @@ export default function HistoryScreen() {
                     selectedLocation={selectedLocation}
                     onSelect={setSelectedLocation}
                 />
-                
+
                 <SummaryCards todayWqi={Number(todayWqi) || 0} trendValue={trendValue} />
-                
+
                 <DetailedChart data={chartData} labels={chartLabels} />
                 <FilterAndExport activeFilter={activeFilter} onFilterChange={setActiveFilter} onExport={handleExport} />
                 <HistoryList data={historyList} />

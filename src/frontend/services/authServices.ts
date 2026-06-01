@@ -1,9 +1,11 @@
 import api from "./apiConfig";
+
 export interface ApiResponse<T = any> {
     success: boolean;
     message?: string;
     error?: string;
     payload?: T;
+    timestamp?: string;
 }
 
 export const authServices = {
@@ -36,7 +38,18 @@ export const authServices = {
     },
 
     getMe: (signal?: AbortSignal) => {
-        return api.get<any, ApiResponse<{ user_id: number; name: string; email: string; phone_number: string; email_notifications: boolean }>>("/accounts/me", { signal });
+        return api.get<
+            any,
+            ApiResponse<{
+                user_id: number;
+                name: string;
+                email: string;
+                phone_number: string;
+                email_notifications: boolean;
+                role: string;
+                verification_status: number;
+            }>
+        >("/accounts/me", { signal });
     },
 
     updateEmailNotifications: (email_notifications: boolean, signal?: AbortSignal) => {
@@ -44,23 +57,19 @@ export const authServices = {
     },
 
     getAllAccounts: (signal?: AbortSignal) => {
-        return api.get<any, ApiResponse>("/accounts", { signal });
+        return api.get<any, ApiResponse>("/accounts/all", { signal });
     },
 
     getAccountById: (id: number | string, signal?: AbortSignal) => {
         return api.get<any, ApiResponse>(`/accounts/${id}`, { signal });
     },
 
-    getSession: (signal?: AbortSignal) => {
-        return api.get<any, ApiResponse>("/accounts/session", { signal });
-    },
-
-    getProfile: (signal?: AbortSignal) => {
-        return api.get<any, ApiResponse>("/accounts/profile", { signal });
-    },
-
     changePassword: (currentPassword: string, newPassword: string, confirmPassword: string, signal?: AbortSignal) => {
-        return api.put<any, ApiResponse>("/accounts/change-password", { currentPassword, newPassword, confirmPassword }, { signal });
+        return api.put<any, ApiResponse>(
+            "/accounts/change-password",
+            { currentPassword, newPassword, confirmPassword },
+            { signal },
+        );
     },
 
     deleteAccount: (id: number | string, signal?: AbortSignal) => {

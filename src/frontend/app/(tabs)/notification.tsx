@@ -6,9 +6,10 @@ import CustomFilterTab from "@/components/ui/CustomFilterTab";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const MOCK_ALERTS = [
     {
@@ -27,15 +28,16 @@ const MOCK_ALERTS = [
     },
 ];
 
+const ALERTS_STORAGE_KEY = "local_alerts_database";
 const DEFAULT_FILTER = "all";
 
 export default function NotificationScreen() {
     const tabBarHeight = useTabBarHeight();
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [activeFilter, setActiveFilter] = useState(DEFAULT_FILTER);
-    const [alerts, setAlerts] = useState(MOCK_ALERTS);
-    const { t } = useTranslation();
+    const [alerts, setAlerts] = useState<any[]>([]);
 
     const FILTER_OPTIONS = [
         { label: t("notifications.filterAll", "Tất cả"), value: "all" },
@@ -45,7 +47,13 @@ export default function NotificationScreen() {
 
     const fetchNotifications = async () => {
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1200));
+            const savedAlerts = await AsyncStorage.getItem(ALERTS_STORAGE_KEY);
+            if (savedAlerts && JSON.parse(savedAlerts).length > 0) {
+                setAlerts(JSON.parse(savedAlerts));
+            } else {
+                await AsyncStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(MOCK_ALERTS));
+                setAlerts(MOCK_ALERTS);
+            }
         } catch (error) {
             console.error("Lỗi tải cảnh báo:", error);
         } finally {
@@ -63,7 +71,25 @@ export default function NotificationScreen() {
         await fetchNotifications();
     };
 
-    if (isLoading || refreshing) return <NotificationSkeleton />;
+    const handleClearAll = () => {
+        Alert.alert(
+            t("common.confirm", "Xác nhận"),
+            t("notifications.confirmClearAll", "Bạn có chắc chắn muốn xóa tất cả cảnh báo?"),
+            [
+                { text: t("common.cancel", "Hủy"), style: "cancel" },
+                {
+                    text: t("common.delete", "Xóa"),
+                    style: "destructive",
+                    onPress: async () => {
+                        await AsyncStorage.removeItem(ALERTS_STORAGE_KEY);
+                        setAlerts([]);
+                    },
+                },
+            ],
+        );
+    };
+
+    if (isLoading && !refreshing) return <NotificationSkeleton />;
 
     const filteredAlerts = alerts.filter((alert) => alert.type === activeFilter || activeFilter === DEFAULT_FILTER);
 
@@ -82,9 +108,9 @@ export default function NotificationScreen() {
                         <View style={styles.unreadContainer}>
                             <AntDesign name="bell" size={14} color="#E7000B" />
                             <Text style={styles.unreadBadge}>
-                                {t("notifications.unreadCount", { count: filteredAlerts.length }).replace(
+                                {t("notifications.unreadCount", { count: alerts.length }).replace(
                                     "{{count}}",
-                                    filteredAlerts.length.toString(),
+                                    alerts.length.toString(),
                                 )}
                             </Text>
                         </View>
@@ -101,6 +127,12 @@ export default function NotificationScreen() {
                         onOptionChange={setActiveFilter}
                     />
                 </View>
+
+                {alerts.length > 0 && (
+                    <TouchableOpacity style={styles.clearBtn} onPress={handleClearAll}>
+                        <Text style={styles.clearBtnText}>{t("notifications.clearAll", "Xóa tất cả")}</Text>
+                    </TouchableOpacity>
+                )}
 
                 <View style={styles.alertList}>
                     {filteredAlerts.length ? (
@@ -134,6 +166,8 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     filterLabel: { fontSize: 14, color: "#45556C", fontFamily: "Inter-SemiBold" },
+    clearBtn: { alignSelf: "flex-end", paddingHorizontal: 16, marginBottom: 12 },
+    clearBtnText: { fontSize: 12, color: "#E7000B", fontFamily: "Inter-SemiBold", textDecorationLine: "underline" },
     alertList: { marginHorizontal: 16, gap: 12 },
     emptyState: { paddingVertical: 30, alignItems: "center", justifyContent: "center" },
     emptyStateText: { color: "#90A1B9", fontFamily: "Inter-Regular", fontSize: 13 },

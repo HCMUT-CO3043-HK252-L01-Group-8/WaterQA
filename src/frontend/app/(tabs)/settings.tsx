@@ -25,17 +25,20 @@ export default function SettingsScreen() {
     const [user, setUser] = useState({ name: "", email: "", role: "user" });
     const [emailNotification, setEmailNotification] = useState(true);
     const [language, setLanguage] = useState(i18n.language || "vi");
-    const [personalThreshold, setPersonalThreshold] = useState(80);
-    const [isModalVisible, setModalVisible] = useState(false);
-    const adminDefault = 75;
-
+    const [thresholds, setThresholds] = useState({
+        wqi: 80,
+        ph: 6.5,
+        ntu: 5.0,
+        clo: 0.5,
+    });
+    const [activeModal, setActiveModal] = useState<"wqi" | "ph" | "ntu" | "clo" | null>(null);
     const languageOptions = [
         { label: t("settings.Vietnamese", "Tiếng Việt"), value: "vi" },
         { label: t("settings.English", "English"), value: "en" },
     ];
 
     useEffect(() => {
-        const loadProfileData = async () => {
+        const loadSettingsData = async () => {
             try {
                 const storedUserStr = await AsyncStorage.getItem("currentUser");
                 if (storedUserStr) {
@@ -46,15 +49,21 @@ export default function SettingsScreen() {
                         role: storedUser.role || "user",
                     });
                 }
+
+                const storedLang = await AsyncStorage.getItem("appLanguage");
+                if (storedLang) setLanguage(storedLang);
+
+                const storedThresholds = await AsyncStorage.getItem("personalThresholds");
+                if (storedThresholds) setThresholds(JSON.parse(storedThresholds));
             } catch (e) {
-                console.error("Lỗi đọc bộ nhớ cục bộ:", e);
+                console.error("Lỗi đọc cài đặt cục bộ:", e);
             }
 
             try {
                 const response = await authServices.getMe();
                 if (response.success && response.payload) {
                     const payload = response.payload;
-                    setEmailNotification(payload.email_notifications);
+                    setEmailNotification(Boolean(payload.email_notifications));
 
                     const updatedUser = {
                         name: payload.name,
@@ -70,15 +79,15 @@ export default function SettingsScreen() {
             }
         };
 
-        loadProfileData();
+        loadSettingsData();
     }, []);
 
-    const handleToggleEmailNotif = async (value: boolean) => {
+    const handleToggleEmailNotification = async (value: boolean) => {
         setEmailNotification(value);
         try {
             const res = await authServices.updateEmailNotifications(value);
             if (!res.success) {
-                Alert.alert(t("common.error", "Lỗi"), "Không thể cập nhật thiết lập thông báo.");
+                Alert.alert(t("common.error", "Lỗi"), "Không thể cập nhật thiết lập thông báo trên máy chủ.");
                 setEmailNotification(!value);
             }
         } catch (error) {
@@ -88,47 +97,105 @@ export default function SettingsScreen() {
         }
     };
 
-    const handleLanguageChange = (val: string) => {
+    const handleLanguageChange = async (val: string) => {
         setLanguage(val);
         if (i18n && typeof i18n.changeLanguage === "function") {
             i18n.changeLanguage(val);
         }
+        try {
+            await AsyncStorage.setItem("appLanguage", val);
+        } catch (e) {
+            console.error("Lỗi lưu ngôn ngữ:", e);
+        }
     };
 
-    const handleLogout = () => {
-        const performLogout = async () => {
-            try {
-                await authServices.logout();
-            } catch (e) {
-                console.error("Lỗi gọi API logout:", e);
-            } finally {
-                dispatch(logoutClient()); // xóa auth state trong Redux
-                await AsyncStorage.removeItem("currentUser");
-                router.replace("/login");
-            }
-        };
-
-        if (Platform.OS === "web") {
-            const confirmed = window.confirm(
-                t("settings.confirmLogout", "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?")
-            );
-            if (confirmed) {
-                performLogout();
-            }
-        } else {
-            Alert.alert(
-                t("settings.logoutConfirmText", "Đăng xuất"),
-                t("settings.confirmLogout", "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?"),
-                [
-                    { text: t("settings.cancel", "Hủy"), style: "cancel" },
-                    {
-                        text: t("common.logout", "Đăng xuất"),
-                        style: "destructive",
-                        onPress: performLogout,
-                    },
-                ],
-            );
+    const handleSaveThreshold = async (value: number) => {
+        if (!activeModal) return;
+        const newThresholds = { ...thresholds, [activeModal]: value };
+        setThresholds(newThresholds);
+        try {
+            await AsyncStorage.setItem("personalThresholds", JSON.stringify(newThresholds));
+        } catch (e) {
+            console.error("Lỗi lưu ngưỡng cá nhân:", e);
         }
+    };
+
+    const getModalConfig = () => {
+        switch (activeModal) {
+            case "wqi":
+                return {
+                    title: t("sensorNames.wqi", "Chỉ số WQI"),
+                    unit: "WQI",
+                    min: 0,
+                    max: 100,
+                    step: 1,
+                    val: thresholds.wqi,
+                    default: 75,
+                };
+            case "ph":
+                return {
+                    title: t("sensorNames.ph", "Độ pH"),
+                    unit: "pH",
+                    min: 0,
+                    max: 14,
+                    step: 0.1,
+                    val: thresholds.ph,
+                    default: 6.5,
+                };
+            case "ntu":
+                return {
+                    title: t("sensorNames.ntu", "Độ đục"),
+                    unit: "NTU",
+                    min: 0,
+                    max: 20,
+                    step: 0.5,
+                    val: thresholds.ntu,
+                    default: 5.0,
+                };
+            case "clo":
+                return {
+                    title: t("sensorNames.clo", "Clo"),
+                    unit: "mg/l",
+                    min: 0,
+                    max: 5,
+                    step: 0.1,
+                    val: thresholds.clo,
+                    default: 0.5,
+                };
+            default:
+                return { title: "", unit: "", min: 0, max: 100, step: 1, val: 0, default: 0 };
+        }
+    };
+    const modalConfig = getModalConfig();
+
+    const handleLogout = () => {
+        Alert.alert(
+            t("settings.logoutConfirmText", "Xác nhận đăng xuất"),
+            t("settings.confirmLogout", "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?"),
+            [
+                { text: t("common.cancel", "Hủy"), style: "cancel" },
+                {
+                    text: t("common.logout", "Đăng xuất"),
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await authServices.logout();
+                        } catch (e) {
+                            console.error("Lỗi gọi API logout:", e);
+                        } finally {
+                            await AsyncStorage.removeItem("currentUser");
+                            dispatch(logoutClient());
+
+                            if (Platform.OS === "web") {
+                                window.location.href = "/login";
+                            } else {
+                                router.replace("/login");
+                            }
+                        }
+                    },
+                },
+            ],
+        );
     };
 
     const openFAQ = () => Linking.openURL("https://github.com/HCMUT-CO3043-HK252-L01-Group-8/WaterQA");
@@ -159,27 +226,63 @@ export default function SettingsScreen() {
                         <Text style={[styles.sectionTitle, { color: "#0891B2" }]}>Quản trị viên</Text>
                         <SettingRow
                             iconName="cpu"
-                            title="Quản lý thiết bị IoT"
-                            subtitle="Thêm, xóa, sửa các trạm quan trắc"
+                            title={t("iotManagement.title", "Quản lý hệ thống IoT")}
+                            subtitle={t("iotManagement.subtitle", "Quản lý thiết bị và ngưỡng cảnh báo máy chủ")}
+                            onPress={() => router.push("/manage-iot")}
                         />
                         <SettingRow
                             iconName="users"
-                            title="Quản lý người dùng"
-                            subtitle="Phê duyệt và phân quyền tài khoản"
+                            title={t("admin.manageUsers", "Quản lý người dùng")}
+                            subtitle={t("admin.manageUsersSubtitle", "Danh sách tất cả tài khoản trong hệ thống")}
+                            onPress={() => router.push("/manage-users")}
                             isLast
                         />
                     </Card>
                 )}
 
                 <Card>
-                    <Text style={styles.sectionTitle}>{t("settings.alerts", "Cài đặt cảnh báo")}</Text>
+                    <Text style={styles.sectionTitle}>{t("settings.alerts", "Cài đặt cảnh báo cá nhân")}</Text>
+
                     <SettingRow
-                        iconName="bell"
-                        title={t("settings.wqiThreshold", "Ngưỡng cảnh báo WQI")}
-                        subtitle={t("settings.thresholdSubtitle", "Mức an toàn cá nhân của bạn")}
+                        iconName="activity"
+                        title={t("sensorNames.wqi", "Chỉ số WQI")}
+                        subtitle={t("settings.thresholdDesc", "Cảnh báo khi dưới mức an toàn")}
                         rightElement={
-                            <TouchableOpacity style={styles.thresholdBtn} onPress={() => setModalVisible(true)}>
-                                <Text style={styles.thresholdValue}>{personalThreshold}</Text>
+                            <TouchableOpacity style={styles.thresholdBtn} onPress={() => setActiveModal("wqi")}>
+                                <Text style={styles.thresholdValue}>{thresholds.wqi}</Text>
+                                <Feather name="edit-2" size={14} color="#0891B2" />
+                            </TouchableOpacity>
+                        }
+                    />
+                    <SettingRow
+                        iconName="droplet"
+                        title={t("sensorNames.ph", "Độ pH")}
+                        subtitle={t("settings.thresholdDesc", "Cảnh báo khi vượt ngưỡng")}
+                        rightElement={
+                            <TouchableOpacity style={styles.thresholdBtn} onPress={() => setActiveModal("ph")}>
+                                <Text style={styles.thresholdValue}>{thresholds.ph}</Text>
+                                <Feather name="edit-2" size={14} color="#0891B2" />
+                            </TouchableOpacity>
+                        }
+                    />
+                    <SettingRow
+                        iconName="eye-off"
+                        title={t("sensorNames.ntu", "Độ đục (NTU)")}
+                        subtitle={t("settings.thresholdDesc", "Cảnh báo khi vượt ngưỡng")}
+                        rightElement={
+                            <TouchableOpacity style={styles.thresholdBtn} onPress={() => setActiveModal("ntu")}>
+                                <Text style={styles.thresholdValue}>{thresholds.ntu}</Text>
+                                <Feather name="edit-2" size={14} color="#0891B2" />
+                            </TouchableOpacity>
+                        }
+                    />
+                    <SettingRow
+                        iconName="wind"
+                        title={t("sensorNames.clo", "Dư lượng Clo")}
+                        subtitle={t("settings.thresholdDesc", "Cảnh báo khi vượt ngưỡng")}
+                        rightElement={
+                            <TouchableOpacity style={styles.thresholdBtn} onPress={() => setActiveModal("clo")}>
+                                <Text style={styles.thresholdValue}>{thresholds.clo}</Text>
                                 <Feather name="edit-2" size={14} color="#0891B2" />
                             </TouchableOpacity>
                         }
@@ -195,12 +298,18 @@ export default function SettingsScreen() {
                         subtitle={t("common.profile", "Quản lý thông tin tài khoản")}
                     />
                     <SettingRow
+                        iconName="lock"
+                        title={t("settings.changePassword", "Đổi mật khẩu")}
+                        subtitle={t("settings.changePasswordSubtitle", "Cập nhật mật khẩu bảo vệ tài khoản")}
+                        onPress={() => router.push("/change-password")}
+                    />
+                    <SettingRow
                         iconName="mail"
                         title={t("settings.notifications", "Nhận thông báo qua email")}
                         subtitle={t("settings.notificationsSubtitle", "Cho phép gửi thông báo qua email")}
                         isToggle={true}
                         toggleValue={emailNotification}
-                        onToggle={handleToggleEmailNotif}
+                        onToggle={handleToggleEmailNotification}
                         isLast
                     />
                 </Card>
@@ -247,15 +356,21 @@ export default function SettingsScreen() {
                         onPress={handleLogout}
                         isLast
                     />
-
-                    <ThresholdModal
-                        isVisible={isModalVisible}
-                        onClose={() => setModalVisible(false)}
-                        currentValue={personalThreshold}
-                        adminDefault={adminDefault}
-                        onSave={setPersonalThreshold}
-                    />
                 </Card>
+
+                <ThresholdModal
+                    isVisible={activeModal !== null}
+                    onClose={() => setActiveModal(null)}
+                    title={modalConfig.title}
+                    desc={t("settings.thresholdDesc", "Cảnh báo khi giá trị vượt ngoài khoảng an toàn thiết lập.")}
+                    unit={modalConfig.unit}
+                    min={modalConfig.min}
+                    max={modalConfig.max}
+                    step={modalConfig.step}
+                    currentValue={modalConfig.val}
+                    adminDefault={modalConfig.default}
+                    onSave={handleSaveThreshold}
+                />
             </ScrollView>
         </SafeAreaView>
     );

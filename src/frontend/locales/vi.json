@@ -66,7 +66,11 @@
         "newPasswordPlaceholder": "Nhập mật khẩu (ít nhất 6 ký tự)",
         "confirmNewPassword": "Xác nhận mật khẩu",
         "confirmNewPasswordPlaceholder": "Nhập lại mật khẩu mới",
-        "saveAndConfirm": "Xác nhận & Lưu"
+        "saveAndConfirm": "Xác nhận & Lưu",
+        "changePasswordTitle": "Đổi mật khẩu",
+        "changePasswordSubtitle": "Vui lòng nhập mật khẩu hiện tại và mật khẩu mới",
+        "currentPassword": "Mật khẩu hiện tại",
+        "currentPasswordPlaceholder": "Nhập mật khẩu hiện tại"
     },
     "home": {
         "greeting": "Xin chào, ",
@@ -130,7 +134,9 @@
         "thresholdDesc": "Ứng dụng sẽ gửi cảnh báo khi chỉ số WQI xuống dưới mức bạn thiết lập.",
         "systemDefault": "Mặc định HT:",
         "Vietnamese": "Tiếng Việt",
-        "English": "English"
+        "English": "English",
+        "changePassword": "Đổi mật khẩu",
+        "changePasswordSubtitle": "Cập nhật mật khẩu bảo vệ tài khoản"
     },
     "notifications": {
         "pageTitle": "Cảnh báo",
@@ -170,5 +176,38 @@
         "highLight": "Cao ({{light}} ≥ {{threshold}})",
         "normalLight": "Bình thường (< 50)",
         "lowLight": "Ánh sáng yếu"
+    },
+    "admin": {
+        "manageUsers": "Quản lý người dùng",
+        "manageUsersSubtitle": "Danh sách tất cả tài khoản trong hệ thống",
+        "searchUser": "Tìm kiếm theo tên hoặc email...",
+        "roleAdmin": "Quản trị viên",
+        "roleUser": "Người dùng",
+        "statusVerified": "Đã xác minh",
+        "statusUnverified": "Chưa xác minh",
+        "deleteUser": "Xóa tài khoản",
+        "confirmDeleteUser": "Bạn có chắc chắn muốn xóa tài khoản {{email}} không? Hành động này không thể hoàn tác.",
+        "deleteSuccess": "Đã xóa tài khoản thành công",
+        "noUsersFound": "Không tìm thấy người dùng nào phù hợp."
+    },
+    "iotManagement": {
+        "title": "Hệ thống IoT",
+        "subtitle": "Quản lý thiết bị trạm và ngưỡng cảnh báo máy chủ",
+        "tabDevices": "Thiết bị",
+        "tabThresholds": "Ngưỡng cảnh báo",
+        "addDevice": "Thêm thiết bị",
+        "addThreshold": "Thêm ngưỡng",
+        "deviceType": "Loại cảm biến:",
+        "station": "Trạm:",
+        "range": "Khoảng an toàn:",
+        "severity": "Mức độ:",
+        "emptyDevices": "Chưa có thiết bị nào trong hệ thống.",
+        "emptyThresholds": "Chưa có ngưỡng cảnh báo nào được thiết lập."
+    },
+    "sensorNames": {
+        "wqi": "Chỉ số WQI",
+        "ph": "Độ pH",
+        "ntu": "Độ đục (NTU)",
+        "clo": "Clo (mg/l)"
     }
 }

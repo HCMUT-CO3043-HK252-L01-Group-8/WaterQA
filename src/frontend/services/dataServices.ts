@@ -8,4 +8,12 @@ export const dataServices = {
             signal,
         });
     },
+
+    exportData: (rowLimit?: number, signal?: AbortSignal) => {
+        return api.get<any, any>("/data/export", {
+            params: rowLimit ? { rowLimit } : {},
+            responseType: "blob",
+            signal,
+        });
+    }
 };
