@@ -20,14 +20,108 @@ import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authServices } from "@/services/authServices";
 import { useDispatch } from "react-redux";
-import { setCredentials, logoutClient } from "@/store/slices/authSlice";
+import { setCredentials } from "@/store/slices/authSlice";
 import { useTranslation } from "react-i18next";
 import Constants from "expo-constants";
 
 // Google OAuth is NOT supported in Expo Go — only works in web or production builds
 const isExpoGo = Constants.appOwnership === "expo";
 
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || "";
+const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || "";
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || "";
+
+// Chỉ enable Google auth khi không phải web, HOẶC là web nhưng có webClientId
+const isGoogleAvailable = Platform.OS !== "web" || !!GOOGLE_WEB_CLIENT_ID;
+
 WebBrowser.maybeCompleteAuthSession();
+
+// ─── Component riêng chứa Google hook ────────────────────────────────────────
+// Tách ra để React chỉ mount (và chạy hook) khi isGoogleAvailable = true.
+// Không thể gọi hook có điều kiện trong cùng 1 component — đây là pattern đúng.
+type GoogleButtonProps = {
+    onLoading: (v: boolean) => void;
+    onSuccess: (response: AuthSession.AuthSessionResult) => void;
+    loading: boolean;
+    disabled: boolean;
+    t: (key: string, fallback: string) => string;
+};
+
+function GoogleLoginButton({ onLoading, onSuccess, loading, disabled, t }: GoogleButtonProps) {
+    const redirectUri = AuthSession.makeRedirectUri({
+        native: "host.exp.exponent://oauthredirect",
+        scheme: "frontend",
+    });
+
+    const [request, response, promptAsync] = Google.useAuthRequest({
+        androidClientId: GOOGLE_ANDROID_CLIENT_ID || undefined,
+        iosClientId: GOOGLE_IOS_CLIENT_ID || undefined,
+        webClientId: GOOGLE_WEB_CLIENT_ID || undefined,
+        scopes: ["openid", "profile", "email"],
+        redirectUri,
+    });
+
+    useEffect(() => {
+        if (response?.type === "success") {
+            onSuccess(response);
+        } else if (response?.type === "error") {
+            onLoading(false);
+            Alert.alert("Lỗi", "Đăng nhập Google thất bại: " + (response.error?.message || "Không xác định"));
+        } else if (response?.type === "dismiss") {
+            onLoading(false);
+        }
+    }, [response]);
+
+    const handlePress = async () => {
+        if (isExpoGo && Platform.OS !== "web") {
+            Alert.alert(
+                "Not supported in Expo Go",
+                "Google Sign-In does not work in the Expo Go app. Please use email/password login instead.\n\nFor Google login support, build the app as a standalone APK.",
+                [{ text: "OK" }]
+            );
+            return;
+        }
+        if (!request) return;
+        onLoading(true);
+        try {
+            await promptAsync();
+        } catch {
+            onLoading(false);
+            Alert.alert("Error", "Could not open Google sign-in page.");
+        }
+    };
+
+    return (
+        <TouchableOpacity
+            style={[styles.googleButton, (loading || disabled) && { opacity: 0.7, backgroundColor: "#F5F8F8" }]}
+            onPress={handlePress}
+            disabled={disabled || loading || !request}
+        >
+            {loading ? (
+                <ActivityIndicator size="small" color="#DB4437" />
+            ) : (
+                <FontAwesome5 name="google" size={18} color="#DB4437" />
+            )}
+            <Text style={styles.googleButtonText}>
+                {loading ? t("auth.openingGoogle", "Đang mở Google...") : t("auth.loginWithGoogle", "Đăng nhập với Google")}
+            </Text>
+        </TouchableOpacity>
+    );
+}
+
+// ─── Fallback khi web chưa cấu hình Google Client ID ─────────────────────────
+function GoogleButtonDisabled({ t }: { t: (key: string, fallback: string) => string }) {
+    return (
+        <TouchableOpacity
+            style={[styles.googleButton, { opacity: 0.4 }]}
+            onPress={() => Alert.alert("Chưa cấu hình", "Google Sign-In chưa được cấu hình cho nền tảng này.")}
+        >
+            <FontAwesome5 name="google" size={18} color="#DB4437" />
+            <Text style={styles.googleButtonText}>{t("auth.loginWithGoogle", "Đăng nhập với Google")}</Text>
+        </TouchableOpacity>
+    );
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function LoginScreen() {
     const router = useRouter();
@@ -39,31 +133,6 @@ export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const { t } = useTranslation();
-
-    const redirectUri = AuthSession.makeRedirectUri({
-        native: "host.exp.exponent://oauthredirect",
-        scheme: "frontend",
-    });
-
-    const [request, response, promptAsync] = Google.useAuthRequest({
-        androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-        iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-        webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-        scopes: ["openid", "profile", "email"],
-        redirectUri,
-    });
-
-    useEffect(() => {
-        if (response?.type === "success") {
-            handleGoogleSuccess(response);
-        } else if (response?.type === "error") {
-            setGoogleLoading(false);
-            Alert.alert("Lỗi", "Đăng nhập Google thất bại: " + (response.error?.message || "Không xác định"));
-        } else if (response?.type === "dismiss") {
-            setGoogleLoading(false);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [response]);
 
     const decodeIdToken = (idToken: string) => {
         try {
@@ -79,7 +148,6 @@ export default function LoginScreen() {
 
     const handleGoogleSuccess = async (successResponse: AuthSession.AuthSessionResult) => {
         if (successResponse.type !== "success") return;
-
         try {
             const tokenResponse = (successResponse as any).authentication;
             const accessToken = tokenResponse?.accessToken;
@@ -103,15 +171,12 @@ export default function LoginScreen() {
                     userInfo.email,
                     userInfo.picture || "",
                 );
-
                 if (backendResponse.success) {
-                    // Dùng user từ response login trực tiếp, không chờ getMe() (tránh lỗi cross-origin cookie)
                     const loginUser = (backendResponse as any).user || {};
                     dispatch(setCredentials({ user: loginUser }));
                     await AsyncStorage.setItem("currentUser", JSON.stringify(loginUser));
                     router.dismissAll();
                     router.replace("/(tabs)/home");
-                    // Fetch full profile in background
                     authServices.getMe().then(p => {
                         if (p.success && p.payload) {
                             AsyncStorage.setItem("currentUser", JSON.stringify(p.payload));
@@ -132,46 +197,15 @@ export default function LoginScreen() {
         }
     };
 
-    const handleGoogleLogin = async () => {
-        // Google OAuth does not work in Expo Go due to redirect URI restrictions.
-        // It only works in production builds or when running on web.
-        if (isExpoGo && Platform.OS !== "web") {
-            Alert.alert(
-                "Not supported in Expo Go",
-                "Google Sign-In does not work in the Expo Go app. Please use email/password login instead.\n\nFor Google login support, build the app as a standalone APK.",
-                [{ text: "OK" }]
-            );
-            return;
-        }
-
-        if (!process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID) {
-            Alert.alert("Configuration missing", "EXPO_PUBLIC_GOOGLE_CLIENT_ID is not set.");
-            return;
-        }
-        if (!request) return;
-
-        setGoogleLoading(true);
-        try {
-            await promptAsync();
-        } catch (error) {
-            setGoogleLoading(false);
-            console.error("Error in LOGIN:", error);
-            Alert.alert("Error", "Could not open Google sign-in page.");
-        }
-    };
-
     const handleLogin = async () => {
         if (!email.trim() || !password) {
             Alert.alert("Lỗi", "Vui lòng nhập đầy đủ email và mật khẩu");
             return;
         }
-
         setLoading(true);
         try {
             const res = await authServices.login(email.trim(), password);
-
             if (res.success) {
-                // Dùng user từ login response trực tiếp — không phụ thuộc vào getMe() cross-origin
                 const loginUser = (res as any).user || {};
                 if (rememberMe) await AsyncStorage.setItem("rememberedUser", JSON.stringify(loginUser));
                 else await AsyncStorage.removeItem("rememberedUser");
@@ -179,7 +213,6 @@ export default function LoginScreen() {
                 dispatch(setCredentials({ user: loginUser }));
                 router.dismissAll();
                 router.replace("/(tabs)/home");
-                // Fetch full profile in background (email_notifications, phone, etc.)
                 authServices.getMe().then(p => {
                     if (p.success && p.payload) {
                         AsyncStorage.setItem("currentUser", JSON.stringify(p.payload));
@@ -297,20 +330,17 @@ export default function LoginScreen() {
                             <View style={styles.line} />
                         </View>
 
-                        <TouchableOpacity
-                            style={[styles.googleButton, googleLoading && { opacity: 0.7, backgroundColor: "#F5F8F8" }]}
-                            onPress={handleGoogleLogin}
-                            disabled={loading || googleLoading || !request}
-                        >
-                            {googleLoading ? (
-                                <ActivityIndicator size="small" color="#DB4437" />
-                            ) : (
-                                <FontAwesome5 name="google" size={18} color="#DB4437" />
-                            )}
-                            <Text style={styles.googleButtonText}>
-                                {googleLoading ? t('auth.openingGoogle', 'Đang mở Google...') : t('auth.loginWithGoogle', 'Đăng nhập với Google')}
-                            </Text>
-                        </TouchableOpacity>
+                        {isGoogleAvailable ? (
+                            <GoogleLoginButton
+                                onLoading={setGoogleLoading}
+                                onSuccess={handleGoogleSuccess}
+                                loading={googleLoading}
+                                disabled={loading}
+                                t={t}
+                            />
+                        ) : (
+                            <GoogleButtonDisabled t={t} />
+                        )}
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
