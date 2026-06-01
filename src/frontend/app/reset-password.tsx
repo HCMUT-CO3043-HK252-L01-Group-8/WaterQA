@@ -49,11 +49,16 @@ export default function ResetPasswordScreen() {
         try {
             const response = await authServices.resetPassword(email, otp, newPassword);
             if (response.success) {
-                Alert.alert(
-                    t("common.success", "Thành công! 🎉"),
-                    "Mật khẩu của bạn đã được đặt lại. Vui lòng đăng nhập lại.",
-                    [{ text: t("auth.loginBtn", "Đăng nhập"), onPress: () => router.replace("/login") }],
-                );
+                if (Platform.OS === "web") {
+                    window.alert(t("common.success", "Thành công! 🎉") + "\n" + "Mật khẩu của bạn đã được đặt lại. Vui lòng đăng nhập lại.");
+                    router.replace("/login");
+                } else {
+                    Alert.alert(
+                        t("common.success", "Thành công! 🎉"),
+                        "Mật khẩu của bạn đã được đặt lại. Vui lòng đăng nhập lại.",
+                        [{ text: t("auth.loginBtn", "Đăng nhập"), onPress: () => router.replace("/login") }],
+                    );
+                }
             } else {
                 Alert.alert(
                     t("common.error", "Lỗi"),
