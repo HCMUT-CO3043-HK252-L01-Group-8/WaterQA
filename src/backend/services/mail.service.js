@@ -2,7 +2,7 @@
 // Sử dụng Brevo HTTP API thay vì SMTP để tránh Railway block port 587
 require('dotenv').config();
 
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_API_KEY = process.env.BREVO_API_KEY || process.env.BREVO_SMTP_KEY;
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL;
 const SENDER_NAME = 'WaterQA Alert System';
 
