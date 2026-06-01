@@ -2,7 +2,7 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["cd src/backend && npm install && npm rebuild better-sqlite3"]
+cmds = ["cd src/backend && npm install --omit=dev && npm rebuild better-sqlite3"]
 
 [phases.build]
 cmds = []
