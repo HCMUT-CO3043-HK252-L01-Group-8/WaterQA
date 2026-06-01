@@ -56,15 +56,21 @@ class AuthService {
     console.log(`[OTP] ========================================\n`);
 
     try {
-      // GỌI HÀM GỬI QUA BREVO TỪ MAIL SERVICE — timeout 5s để không treo API
+      // GỌI HÀM GỬI QUA BREVO TỪ MAIL SERVICE — timeout 10s để không treo API
       const mailTimeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Mail timeout')), 5000)
+        setTimeout(() => reject(new Error('Mail timeout after 10s')), 10000)
       );
       await Promise.race([mailService.sendOTPEmail(email, otp), mailTimeout]);
-      console.log(`[OTP] Email sent successfully via Brevo to ${email}`);
+      console.log(`[OTP] ✅ Email sent successfully via Brevo to ${email}`);
       return { err: 0 };
     } catch (emailErr) {
-      console.error('[OTP] Brevo failed:', emailErr.message);
+      console.error(`[OTP] ❌ Brevo FAILED to send to ${email}`);
+      console.error(`[OTP]    message : ${emailErr.message}`);
+      console.error(`[OTP]    code    : ${emailErr.code || 'N/A'}`);
+      console.error(`[OTP]    response: ${emailErr.response || 'N/A'}`);
+      console.error(`[OTP]    command : ${emailErr.command || 'N/A'}`);
+      console.error(`[OTP]    SMTP_USER being used: ${process.env.BREVO_SMTP_USER || 'NOT SET'}`);
+      console.error(`[OTP]    KEY set  : ${!!process.env.BREVO_SMTP_KEY}`);
       // Vẫn cho phép thành công — dùng OTP từ terminal nếu mail lỗi
       return { err: 0 };
     }

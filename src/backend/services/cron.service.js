@@ -10,7 +10,8 @@ const FEEDS_TO_MONITOR = ['temp', 'humi', 'light']; //cap nhat: dam quay chinh s
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL; //Co the doi mail de test
 const LIGHT_THRESHOLD = 60; // Mốc cảnh báo cường độ ánh sáng
 const LIGHT_DURATION_MS = 10000; // 10 giây
-let lightAlert = { isAlerting: false, startTime: null }; // Tracking alert state
+const LIGHT_ALERT_COOLDOWN_MS = 10 * 60 * 1000; // 10 phút cooldown giữa các lần gửi mail
+let lightAlert = { isAlerting: false, startTime: null, lastAlertSentTime: null }; // Tracking alert state
 
 /**
  * Gửi cảnh báo tới tất cả users (hoặc admin nếu không có users)
@@ -75,14 +76,23 @@ const startDeviceMonitor = () => {
                 //Kiem tra vuot nguong chi khi khong co loi phan cung, neu co loi phan cung roi thi khong can check vuot nguong nua
                     continue; 
                 }
-                // Xử lý Light - cảnh báo mở nắp (light > 70 trong 10s)
+                // Xử lý Light - cảnh báo mở nắp (light > LIGHT_THRESHOLD trong 10s)
                 if (feedKey === 'light') {
                     if (latestValue > LIGHT_THRESHOLD) {
                         if (!lightAlert.isAlerting) {
-                            // Bắt đầu tracking
-                            lightAlert.isAlerting = true;
-                            lightAlert.startTime = Date.now();
-                            console.log(`[LIGHT] Phát hiện ánh sáng cao (${latestValue}%) lúc ${recordTime}. Theo dõi trong 10s...`);
+                            // Bắt đầu tracking - chỉ bắt đầu đếm nếu chưa trong cooldown
+                            const now = Date.now();
+                            const inCooldown = lightAlert.lastAlertSentTime &&
+                                (now - lightAlert.lastAlertSentTime < LIGHT_ALERT_COOLDOWN_MS);
+
+                            if (inCooldown) {
+                                const remainMin = Math.ceil((LIGHT_ALERT_COOLDOWN_MS - (now - lightAlert.lastAlertSentTime)) / 60000);
+                                console.log(`[LIGHT] Phát hiện ánh sáng cao (${latestValue}%) nhưng đang trong cooldown. Còn ${remainMin} phút nữa mới gửi lại.`);
+                            } else {
+                                lightAlert.isAlerting = true;
+                                lightAlert.startTime = now;
+                                console.log(`[LIGHT] Phát hiện ánh sáng cao (${latestValue}%) lúc ${recordTime}. Theo dõi trong 10s...`);
+                            }
                         } else {
                             // Kiểm tra xem đã vượt quá 10s chưa
                             const elapsedTime = Date.now() - lightAlert.startTime;
@@ -94,18 +104,19 @@ const startDeviceMonitor = () => {
                                     message: `CẢNH BÁO KHẨN CẤP: Phát hiện ánh sáng cao (${latestValue}%) liên tục trong 10 giây! Có thể có người mở nắp bồn chứa hoặc có ánh sáng ngoài xâm nhập. Vui lòng kiểm tra ngay lập tức! (Ghi nhận lúc: ${recordTime})`
                                 };
                                 await sendAlertToAllUsers(alertData);
-                                console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo MỞ NẮP - Light: ${latestValue}%`);
-                                lightAlert = { isAlerting: false, startTime: null }; // Reset
+                                console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo MỞ NẮP - Light: ${latestValue}%. Cooldown ${LIGHT_ALERT_COOLDOWN_MS / 60000} phút.`);
+                                // Reset tracking, lưu lại thời điểm gửi để cooldown
+                                lightAlert = { isAlerting: false, startTime: null, lastAlertSentTime: Date.now() };
                             } else {
                                 console.log(`[LIGHT] Vẫn đang theo dõi... (${Math.round(elapsedTime / 1000)}s / 10s)`);
                             }
                         }
                     } else {
-                        // Light <= 70, reset alert
+                        // Light <= LIGHT_THRESHOLD, reset tracking (nhưng giữ lại lastAlertSentTime để cooldown)
                         if (lightAlert.isAlerting) {
-                            console.log(`[LIGHT] Ánh sáng trở về bình thường (${latestValue}%). Reset alert.`);
+                            console.log(`[LIGHT] Ánh sáng trở về bình thường (${latestValue}%). Reset tracking.`);
                         }
-                        lightAlert = { isAlerting: false, startTime: null };
+                        lightAlert = { isAlerting: false, startTime: null, lastAlertSentTime: lightAlert.lastAlertSentTime };
                     }
                     continue; // Skip threshold check for light
                 }

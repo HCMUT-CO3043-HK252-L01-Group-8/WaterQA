@@ -43,3 +43,8 @@ app-example
 # generated native folders
 /ios
 /android
+
+# SQLite database files (do not commit - use Railway volume for production DB)
+data/*.db
+data/*.db-shm
+data/*.db-wal
