@@ -10,13 +10,22 @@ const FEEDS_TO_MONITOR = ['temp', 'humi', 'light']; //cap nhat: dam quay chinh s
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL; //Co the doi mail de test
 const LIGHT_THRESHOLD = 60; // Mốc cảnh báo cường độ ánh sáng
 const LIGHT_DURATION_MS = 10000; // 10 giây
-const LIGHT_ALERT_COOLDOWN_MS = 10 * 60 * 1000; // 10 phút cooldown giữa các lần gửi mail
-let lightAlert = { isAlerting: false, startTime: null, lastAlertSentTime: null }; // Tracking alert state
+const ALERT_COOLDOWN_MS = 15 * 60 * 1000; // 15 phút cooldown chung cho các loại cảnh báo
+let lastAlertSentMap = { temp: 0, humi: 0, light: 0, hardware_error: 0 }; // Tracking cooldown cho từng feed
+
+let lightAlert = { isAlerting: false, startTime: null }; // Tracking alert state
+
 
 /**
  * Gửi cảnh báo tới tất cả users (hoặc admin nếu không có users)
  */
 const sendAlertToAllUsers = async (alertData) => {
+    // Kiem tra cong tac email. Neu bien nay = 'false' thi khong gui
+    if (process.env.ENABLE_EMAIL_ALERTS === 'false') {
+        console.log('[CẢNH BÁO] Đã bỏ qua gửi email vì ENABLE_EMAIL_ALERTS đang tắt.');
+        return;
+    }
+
     try {
         const allUsers = accountsRepo.findAll();
 
@@ -65,13 +74,19 @@ const startDeviceMonitor = () => {
                 if (feedKey === 'light' && (latestValue < 0 || latestValue > 100)) isHardwareError = true; //light: 0-100%
 
                 if (isHardwareError) {
-                    const errorData = {
-                        stationName: 'Trạm IoT',
-                        wqi: 'LỖI CẢM BIẾN / PHẦN CỨNG',
-                        message: `Phát hiện dữ liệu bất thường từ cảm biến [${feedKey.toUpperCase()}]. Giá trị đo được là ${latestValue}. Có thể thiết bị đã bị hỏng hoặc chập mạch, vui lòng kiểm tra ngay lập tức! (Đo lúc: ${recordTime})`
-                    };
-                    await sendAlertToAllUsers(errorData);
-                    console.log(`[CẢNH BÁO] Đã gửi mail lỗi phần cứng cho feed: ${feedKey}`);
+                    const now = Date.now();
+                    if (now - lastAlertSentMap['hardware_error'] >= ALERT_COOLDOWN_MS) {
+                        const errorData = {
+                            stationName: 'Trạm IoT',
+                            wqi: 'LỖI CẢM BIẾN / PHẦN CỨNG',
+                            message: `Phát hiện dữ liệu bất thường từ cảm biến [${feedKey.toUpperCase()}]. Giá trị đo được là ${latestValue}. Có thể thiết bị đã bị hỏng hoặc chập mạch, vui lòng kiểm tra ngay lập tức! (Đo lúc: ${recordTime})`
+                        };
+                        await sendAlertToAllUsers(errorData);
+                        console.log(`[CẢNH BÁO] Đã gửi mail lỗi phần cứng cho feed: ${feedKey}`);
+                        lastAlertSentMap['hardware_error'] = now;
+                    } else {
+                        console.log(`[LỖI PHẦN CỨNG] Đang trong thời gian cooldown, bỏ qua gửi mail.`);
+                    }
                     
                 //Kiem tra vuot nguong chi khi khong co loi phan cung, neu co loi phan cung roi thi khong can check vuot nguong nua
                     continue; 
@@ -82,11 +97,10 @@ const startDeviceMonitor = () => {
                         if (!lightAlert.isAlerting) {
                             // Bắt đầu tracking - chỉ bắt đầu đếm nếu chưa trong cooldown
                             const now = Date.now();
-                            const inCooldown = lightAlert.lastAlertSentTime &&
-                                (now - lightAlert.lastAlertSentTime < LIGHT_ALERT_COOLDOWN_MS);
+                            const inCooldown = (now - lastAlertSentMap.light < ALERT_COOLDOWN_MS);
 
                             if (inCooldown) {
-                                const remainMin = Math.ceil((LIGHT_ALERT_COOLDOWN_MS - (now - lightAlert.lastAlertSentTime)) / 60000);
+                                const remainMin = Math.ceil((ALERT_COOLDOWN_MS - (now - lastAlertSentMap.light)) / 60000);
                                 console.log(`[LIGHT] Phát hiện ánh sáng cao (${latestValue}%) nhưng đang trong cooldown. Còn ${remainMin} phút nữa mới gửi lại.`);
                             } else {
                                 lightAlert.isAlerting = true;
@@ -104,9 +118,10 @@ const startDeviceMonitor = () => {
                                     message: `CẢNH BÁO KHẨN CẤP: Phát hiện ánh sáng cao (${latestValue}%) liên tục trong 10 giây! Có thể có người mở nắp bồn chứa hoặc có ánh sáng ngoài xâm nhập. Vui lòng kiểm tra ngay lập tức! (Ghi nhận lúc: ${recordTime})`
                                 };
                                 await sendAlertToAllUsers(alertData);
-                                console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo MỞ NẮP - Light: ${latestValue}%. Cooldown ${LIGHT_ALERT_COOLDOWN_MS / 60000} phút.`);
+                                console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo MỞ NẮP - Light: ${latestValue}%. Cooldown ${ALERT_COOLDOWN_MS / 60000} phút.`);
                                 // Reset tracking, lưu lại thời điểm gửi để cooldown
-                                lightAlert = { isAlerting: false, startTime: null, lastAlertSentTime: Date.now() };
+                                lastAlertSentMap.light = Date.now();
+                                lightAlert = { isAlerting: false, startTime: null };
                             } else {
                                 console.log(`[LIGHT] Vẫn đang theo dõi... (${Math.round(elapsedTime / 1000)}s / 10s)`);
                             }
@@ -116,7 +131,7 @@ const startDeviceMonitor = () => {
                         if (lightAlert.isAlerting) {
                             console.log(`[LIGHT] Ánh sáng trở về bình thường (${latestValue}%). Reset tracking.`);
                         }
-                        lightAlert = { isAlerting: false, startTime: null, lastAlertSentTime: lightAlert.lastAlertSentTime };
+                        lightAlert = { isAlerting: false, startTime: null };
                     }
                     continue; // Skip threshold check for light
                 }
@@ -128,13 +143,19 @@ const startDeviceMonitor = () => {
                     const { lower_threshold, upper_threshold } = feedThreshold;
                     
                     if (latestValue < lower_threshold || latestValue > upper_threshold) {
-                        const alertData = {
-                            stationName: 'Trạm IoT (Hệ thống WaterQA)',
-                            wqi: `VƯỢT NGƯỠNG (${latestValue})`,
-                            message: `Cảnh báo: Chỉ số [${feedKey.toUpperCase()}] hiện tại là ${latestValue}, vượt ra khỏi giới hạn an toàn cho phép (từ ${lower_threshold} đến ${upper_threshold}). Vui lòng kiểm tra lại hệ thống! (Ghi nhận lúc: ${recordTime})`
-                        };
-                        await sendAlertToAllUsers(alertData);
-                        console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo cho feed: ${feedKey}`);
+                        const now = Date.now();
+                        if (now - lastAlertSentMap[feedKey] >= ALERT_COOLDOWN_MS) {
+                            const alertData = {
+                                stationName: 'Trạm IoT (Hệ thống WaterQA)',
+                                wqi: `VƯỢT NGƯỠNG (${latestValue})`,
+                                message: `Cảnh báo: Chỉ số [${feedKey.toUpperCase()}] hiện tại là ${latestValue}, vượt ra khỏi giới hạn an toàn cho phép (từ ${lower_threshold} đến ${upper_threshold}). Vui lòng kiểm tra lại hệ thống! (Ghi nhận lúc: ${recordTime})`
+                            };
+                            await sendAlertToAllUsers(alertData);
+                            console.log(`[CẢNH BÁO] Đã gửi mail cảnh báo cho feed: ${feedKey}`);
+                            lastAlertSentMap[feedKey] = now;
+                        } else {
+                            console.log(`[${feedKey.toUpperCase()}] Vượt ngưỡng nhưng đang cooldown, không gửi email.`);
+                        }
                     }
                 }
             }
