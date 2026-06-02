@@ -31,11 +31,16 @@ app.use((req, res, next) => {
   ];
   const isAllowed = allowedOrigins.includes(origin)
     || (origin && origin.endsWith('.trycloudflare.com'))
-    || (origin && origin.endsWith('.vercel.app'));
+    || (origin && origin.endsWith('.vercel.app'))
+    || (origin && origin.endsWith('.railway.app'));
 
-  if (isAllowed || !origin) {
-    res.header('Access-Control-Allow-Origin', origin || '*');
+  // ✅ FIX: Khi credentials = true, phải set origin cụ thể (không được dùng *)
+  if (isAllowed && origin) {
+    res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
+  } else if (!origin) {
+    // Nếu không có origin (e.g., direct server request), cho phép
+    res.header('Access-Control-Allow-Origin', '*');
   } else {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'false');
