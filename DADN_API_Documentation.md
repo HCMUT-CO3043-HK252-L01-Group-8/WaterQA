@@ -87,10 +87,31 @@ This document provides a detailed overview of the API endpoints available in the
 ### 2.3. Get My Profile Info
 **Method:** `GET`  
 **Endpoint:** `/accounts/me`
+**Response Body (JSON):**
+```json
+{
+    "success": true,
+    "payload": {
+        "user_id": 1,
+        "name": "User Name",
+        "email": "user@example.com",
+        "role": "User",
+        "phone_number": "0901234567",
+        "email_notifications": 1
+    },
+    "timestamp": "2026-06-02T10:00:00.000Z"
+}
+```
 
 ### 2.4. Update Email Notifications
 **Method:** `PUT`
 **Endpoint:** `/accounts/me/email-notifications`
+**Request Body (JSON):**
+```json
+{
+    "email_notifications": 1
+}
+```
 *(Requires active session)*
 
 ### 2.5. Sign Up (Create Account)
