@@ -169,33 +169,42 @@ export default function SettingsScreen() {
     const modalConfig = getModalConfig();
 
     const handleLogout = () => {
-        Alert.alert(
-            t("settings.logoutConfirmText", "Xác nhận đăng xuất"),
-            t("settings.confirmLogout", "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?"),
-            [
+        const title = t("settings.logoutConfirmText", "Xác nhận đăng xuất");
+        const message = t("settings.confirmLogout", "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?");
+
+        const performLogout = async () => {
+            try {
+                await authServices.logout();
+            } catch (e) {
+                console.error("Lỗi gọi API logout:", e);
+            } finally {
+                await AsyncStorage.removeItem("currentUser");
+                dispatch(logoutClient());
+
+                if (Platform.OS === "web") {
+                    window.location.href = "/login";
+                } else {
+                    router.dismissAll()
+                    router.replace("/login");
+                }
+            }
+        };
+
+        if (Platform.OS === "web") {
+            const isConfirmed = window.confirm(`${title}\n\n${message}`);
+            if (isConfirmed) {
+                performLogout();
+            }
+        } else {
+            Alert.alert(title, message, [
                 { text: t("common.cancel", "Hủy"), style: "cancel" },
                 {
                     text: t("common.logout", "Đăng xuất"),
                     style: "destructive",
-                    onPress: async () => {
-                        try {
-                            await authServices.logout();
-                        } catch (e) {
-                            console.error("Lỗi gọi API logout:", e);
-                        } finally {
-                            await AsyncStorage.removeItem("currentUser");
-                            dispatch(logoutClient());
-
-                            if (Platform.OS === "web") {
-                                window.location.href = "/login";
-                            } else {
-                                router.replace("/login");
-                            }
-                        }
-                    },
+                    onPress: performLogout,
                 },
-            ],
-        );
+            ]);
+        }
     };
 
     const openFAQ = () => Linking.openURL("https://github.com/HCMUT-CO3043-HK252-L01-Group-8/WaterQA");
@@ -221,7 +230,7 @@ export default function SettingsScreen() {
 
                 <StatsCard />
 
-                {user.role === "admin" && (
+                {user.role?.toLocaleLowerCase() === "admin" && (
                     <Card style={{ borderColor: "#0891B2" }}>
                         <Text style={[styles.sectionTitle, { color: "#0891B2" }]}>Quản trị viên</Text>
                         <SettingRow
