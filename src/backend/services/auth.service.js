@@ -100,6 +100,35 @@ class AuthService {
       return { err: 500, message: 'Lỗi cập nhật mật khẩu' };
     }
   }
+  async requestDeleteAccountOTP(email) {
+    const users = accountsRepo.findByEmail(email);
+    if (users.length <= 0) {
+      return { err: 404, message: 'Email không tồn tại trong hệ thống' };
+    }
+
+    const otp = generateOTP();
+    const expiresAt = Date.now() + OTP_EXPIRY_MS;
+    otpRepo.upsert(email, otp, expiresAt);
+    otpRepo.deleteExpired();
+
+    console.log(`\n[OTP DELETE] ========================================`);
+    console.log(`[OTP DELETE] Email: ${email}`);
+    console.log(`[OTP DELETE] Code:  ${otp}`);
+    console.log(`[OTP DELETE] ========================================\n`);
+
+    try {
+      const mailTimeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Mail timeout after 10s')), 10000)
+      );
+      await Promise.race([mailService.sendDeleteAccountOTPEmail(email, otp), mailTimeout]);
+      console.log(`[OTP DELETE] ✅ Email sent successfully to ${email}`);
+      return { err: 0 };
+    } catch (emailErr) {
+      console.error(`[OTP DELETE] ❌ FAILED to send to ${email}`);
+      console.error(`[OTP DELETE]    message : ${emailErr.message}`);
+      return { err: 0 };
+    }
+  }
 }
 
 module.exports = new AuthService();

@@ -109,7 +109,35 @@ const sendOTPEmail = async (toEmail, otp) => {
     }
 };
 
+const sendDeleteAccountOTPEmail = async (toEmail, otp) => {
+    try {
+        const subject = '[WaterQA] Mã OTP xác nhận xóa tài khoản';
+        const htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 24px; border: 1px solid #ff4d4f; border-radius: 8px;">
+            <h2 style="color: #ff4d4f;">WaterQA - Yêu cầu xóa tài khoản</h2>
+            <p>Chúng tôi nhận được yêu cầu xóa vĩnh viễn tài khoản của bạn. <strong>Hành động này không thể hoàn tác!</strong></p>
+            <p>Để tiếp tục, vui lòng sử dụng mã OTP bên dưới:</p>
+            <div style="font-size: 36px; font-weight: bold; letter-spacing: 12px; color: #ff4d4f; text-align: center; padding: 20px; background: #fff1f0; border-radius: 8px; margin: 20px 0;">
+              ${otp}
+            </div>
+            <p style="color: #666;">Mã này có hiệu lực trong <strong>10 phút</strong>.</p>
+            <p style="color: #666;">Nếu bạn không yêu cầu xóa tài khoản, hãy đổi mật khẩu ngay lập tức để bảo vệ tài khoản.</p>
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+            <p style="color: #aaa; font-size: 12px;">WaterQA - Hệ thống giám sát chất lượng nước</p>
+          </div>
+        `;
+
+        const messageId = await sendEmailViaBrevoAPI(toEmail, subject, htmlContent);
+        console.log(`Email OTP xóa tài khoản đã được gửi thành công tới ${toEmail}: ${messageId}`);
+        return true;
+    } catch (error) {
+        console.error('Lỗi khi gửi email OTP xóa tài khoản:', error.message);
+        throw error;
+    }
+};
+
 module.exports = {
     sendAlertEmail,
-    sendOTPEmail
+    sendOTPEmail,
+    sendDeleteAccountOTPEmail
 };

@@ -118,10 +118,26 @@ This document provides a detailed overview of the API endpoints available in the
 }
 ```
 
-### 2.7. Delete Account
+### 2.7. Request Delete Account OTP
+**Method:** `POST`  
+**Endpoint:** `/accounts/me/delete-otp`
+**Description:** Generates an OTP and sends it to the authenticated user's email to confirm account deletion.
+
+### 2.8. Delete Account (Self)
 **Method:** `DELETE`  
 **Endpoint:** `/accounts/me`
-**Description:** Deletes the currently authenticated user's account.
+**Request Body (JSON):**
+```json
+{
+    "otp": "123456"
+}
+```
+**Description:** Deletes the currently authenticated user's account after verifying the OTP.
+
+### 2.9. Delete Account (Admin)
+**Method:** `DELETE`  
+**Endpoint:** `/accounts/:id`
+**Description:** Allows an Admin to delete a user's account by ID. Requires an active session with Admin role.
 
 ---
 

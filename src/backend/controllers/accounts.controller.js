@@ -154,18 +154,55 @@ function changePassword(req, res) {
   
 }
 
+async function requestDeleteOTP(req, res) {
+  try {
+    const email = req.session.user.email;
+    const authService = require('../services/auth.service');
+    const result = await authService.requestDeleteAccountOTP(email);
+    if (result.err) {
+      return res.status(result.err).json({ success: false, error: result.message, timestamp: new Date().toISOString() });
+    }
+    return res.status(200).json({ success: true, message: 'OTP sent', timestamp: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, timestamp: new Date().toISOString() });
+  }
+}
+
 function deleteAccount(req, res) {
   try {
+    const email = req.session.user.email;
+    const otp = req.body.otp || req.query.otp;
+    if (!otp) {
+      return res.status(400).json({ success: false, error: 'Thiếu mã OTP', timestamp: new Date().toISOString() });
+    }
+    
+    const authService = require('../services/auth.service');
+    const verifyResult = authService.verifyOTP(email, otp);
+    if (verifyResult.err) {
+      return res.status(verifyResult.err).json({ success: false, error: verifyResult.message, timestamp: new Date().toISOString() });
+    }
+
     const id = req.session.user.user_id;
     accountsService.deleteAccount(id);
     req.session.destroy(() => {
       res.status(204).json({ success: true, timestamp: new Date().toISOString() });
-    }); // log out the user after deleting the account
-    // res.status(204).json({ success: true, timestamp: new Date().toISOString() });
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message, timestamp: new Date().toISOString() });
   }
-  
+}
+
+function deleteAccountById(req, res) {
+  try {
+    const id = req.params.id;
+    if (id == req.session.user.user_id) {
+      return res.status(400).json({ success: false, error: 'Cannot delete yourself this way', timestamp: new Date().toISOString() });
+    }
+    accountsService.deleteAccount(id);
+    res.status(200).json({ success: true, message: 'Account deleted successfully', timestamp: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, timestamp: new Date().toISOString() });
+  }
 }
 
 module.exports = {
@@ -177,5 +214,7 @@ module.exports = {
   signup,
   showChangePasswordPage,
   changePassword,
-  deleteAccount
+  deleteAccount,
+  deleteAccountById,
+  requestDeleteOTP
 };

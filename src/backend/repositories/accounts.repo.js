@@ -2,11 +2,14 @@
 const db = require("../database/db");
 
 class AccountsRepository {
-  findAll() {
+  constructor() {
     // Ensure column exists (safe migration)
     try {
       db.prepare("ALTER TABLE USER ADD COLUMN email_notifications INTEGER DEFAULT 1").run();
     } catch (_) { /* column already exists */ }
+  }
+
+  findAll() {
     return db
       .prepare("SELECT * FROM USER ORDER BY user_id")
       .all();

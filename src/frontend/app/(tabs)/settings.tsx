@@ -8,7 +8,7 @@ import SettingRow from "@/components/ui/SettingRow";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import { Feather } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
-import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Platform } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Platform, Modal, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,7 +22,7 @@ export default function SettingsScreen() {
     const dispatch = useDispatch();
     const tabBarHeight = useTabBarHeight();
     const { t, i18n } = useTranslation();
-    const [user, setUser] = useState({ name: "", email: "", role: "user" });
+    const [user, setUser] = useState({ name: "", email: "", role: "user", phone_number: "" });
     const [emailNotification, setEmailNotification] = useState(true);
     const [language, setLanguage] = useState(i18n.language || "vi");
     const [thresholds, setThresholds] = useState({
@@ -32,6 +32,10 @@ export default function SettingsScreen() {
         clo: 0.5,
     });
     const [activeModal, setActiveModal] = useState<"wqi" | "ph" | "ntu" | "clo" | null>(null);
+    const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false);
+    const [otpCode, setOtpCode] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false);
     const languageOptions = [
         { label: t("settings.Vietnamese", "Tiếng Việt"), value: "vi" },
         { label: t("settings.English", "English"), value: "en" },
@@ -47,6 +51,7 @@ export default function SettingsScreen() {
                         name: storedUser.name || "Người dùng",
                         email: storedUser.email || "",
                         role: storedUser.role || "user",
+                        phone_number: storedUser.phone_number || "",
                     });
                 }
 
@@ -69,6 +74,7 @@ export default function SettingsScreen() {
                         name: payload.name,
                         email: payload.email,
                         role: (payload as any).role || "user",
+                        phone_number: payload.phone_number || "",
                     };
 
                     setUser(updatedUser);
@@ -207,6 +213,58 @@ export default function SettingsScreen() {
         }
     };
 
+    const handleRequestDeleteAccount = () => {
+        Alert.alert(
+            "Xóa tài khoản",
+            "Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản của mình? Hành động này không thể hoàn tác.",
+            [
+                { text: "Hủy", style: "cancel" },
+                {
+                    text: "Xóa",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const res = await authServices.requestDeleteOTP();
+                            if (res.success || (res as any).message === 'OTP sent') {
+                                setIsProfileModalVisible(false);
+                                setIsOTPModalVisible(true);
+                                setOtpCode("");
+                            } else {
+                                Alert.alert("Lỗi", res.error || "Không thể gửi OTP.");
+                            }
+                        } catch (error: any) {
+                            Alert.alert("Lỗi", error?.message || "Lỗi kết nối máy chủ.");
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleConfirmDeleteAccount = async () => {
+        if (!otpCode || otpCode.length !== 6) {
+            Alert.alert("Lỗi", "Vui lòng nhập đủ 6 số OTP");
+            return;
+        }
+        setIsDeleting(true);
+        try {
+            const res = await authServices.deleteSelfAccount(otpCode);
+            if (res.success || !res) { 
+                Alert.alert("Thành công", "Tài khoản của bạn đã được xóa.");
+                setIsOTPModalVisible(false);
+                dispatch(logoutClient());
+                await AsyncStorage.removeItem("currentUser");
+                router.replace("/login");
+            } else {
+                Alert.alert("Lỗi", res.error || "Xóa tài khoản thất bại.");
+            }
+        } catch (error: any) {
+            Alert.alert("Lỗi", error?.message || "OTP không hợp lệ hoặc đã hết hạn.");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const openFAQ = () => Linking.openURL("https://github.com/HCMUT-CO3043-HK252-L01-Group-8/WaterQA");
 
     return (
@@ -305,6 +363,7 @@ export default function SettingsScreen() {
                         iconName="user"
                         title={t("settings.profileInfo", "Thông tin cá nhân")}
                         subtitle={t("common.profile", "Quản lý thông tin tài khoản")}
+                        onPress={() => setIsProfileModalVisible(true)}
                     />
                     <SettingRow
                         iconName="lock"
@@ -381,6 +440,73 @@ export default function SettingsScreen() {
                     onSave={handleSaveThreshold}
                 />
             </ScrollView>
+
+            <Modal visible={isProfileModalVisible} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Thông tin cá nhân</Text>
+                            <TouchableOpacity onPress={() => setIsProfileModalVisible(false)}>
+                                <Feather name="x" size={24} color="#64748B" />
+                            </TouchableOpacity>
+                        </View>
+                        
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Tên người dùng:</Text>
+                            <Text style={styles.infoValue}>{user.name}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Email:</Text>
+                            <Text style={styles.infoValue}>{user.email}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Số điện thoại:</Text>
+                            <Text style={styles.infoValue}>{user.phone_number || "Chưa cập nhật"}</Text>
+                        </View>
+
+                        <TouchableOpacity 
+                            style={styles.deleteButton}
+                            onPress={handleRequestDeleteAccount}
+                        >
+                            <Feather name="trash-2" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                            <Text style={styles.deleteButtonText}>Xóa tài khoản</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal visible={isOTPModalVisible} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Xác nhận xóa tài khoản</Text>
+                            <TouchableOpacity onPress={() => setIsOTPModalVisible(false)} disabled={isDeleting}>
+                                <Feather name="x" size={24} color="#64748B" />
+                            </TouchableOpacity>
+                        </View>
+                        <Text style={styles.modalDesc}>Mã OTP đã được gửi đến email của bạn. Vui lòng nhập mã để xác nhận xóa tài khoản vĩnh viễn.</Text>
+                        
+                        <TextInput
+                            style={styles.otpInput}
+                            placeholder="Nhập mã OTP (6 chữ số)"
+                            placeholderTextColor="#94A3B8"
+                            keyboardType="numeric"
+                            maxLength={6}
+                            value={otpCode}
+                            onChangeText={setOtpCode}
+                            editable={!isDeleting}
+                        />
+
+                        <TouchableOpacity 
+                            style={[styles.confirmDeleteButton, isDeleting && { opacity: 0.7 }]}
+                            onPress={handleConfirmDeleteAccount}
+                            disabled={isDeleting}
+                        >
+                            <Text style={styles.confirmDeleteButtonText}>{isDeleting ? "Đang xóa..." : "Xác nhận xóa"}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -395,4 +521,17 @@ const styles = StyleSheet.create({
     sectionTitle: { fontSize: 14, color: "#0F172B", marginBottom: 16, fontFamily: "Inter-SemiBold" },
     thresholdBtn: { flexDirection: "row", alignItems: "center" },
     thresholdValue: { fontSize: 14, color: "#0F172B", marginRight: 4, fontFamily: "Inter-SemiBold" },
+    modalOverlay: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)", justifyContent: "flex-end" },
+    modalContent: { backgroundColor: "#FFFFFF", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+    modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
+    modalTitle: { fontSize: 18, color: "#0F172B", fontFamily: "Inter-SemiBold" },
+    modalDesc: { fontSize: 14, color: "#45556C", fontFamily: "Inter-Regular", marginBottom: 20, lineHeight: 20 },
+    infoRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#F1F5F9" },
+    infoLabel: { fontSize: 14, color: "#64748B", fontFamily: "Inter-Regular" },
+    infoValue: { fontSize: 14, color: "#0F172B", fontFamily: "Inter-Medium" },
+    deleteButton: { backgroundColor: "#EF4444", flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 12, padding: 16, marginTop: 32 },
+    deleteButtonText: { color: "#FFFFFF", fontSize: 16, fontFamily: "Inter-SemiBold" },
+    otpInput: { backgroundColor: "#F8FAFC", borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 12, padding: 16, fontSize: 16, fontFamily: "Inter-Regular", color: "#0F172B", marginBottom: 24, textAlign: "center", letterSpacing: 4 },
+    confirmDeleteButton: { backgroundColor: "#EF4444", borderRadius: 12, padding: 16, alignItems: "center" },
+    confirmDeleteButtonText: { color: "#FFFFFF", fontSize: 16, fontFamily: "Inter-SemiBold" },
 });

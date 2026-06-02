@@ -1,7 +1,7 @@
 // routes/accounts.routes.js
 const express = require('express');
 const accountCtrl = require('../controllers/accounts.controller');
-const {requireLogin} = require('../middleware/auth.middleware');
+const { requireLogin, requireAdmin } = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
@@ -14,5 +14,7 @@ router.get('/:id', accountCtrl.findById);
 router.post('/', accountCtrl.signup);
 // router.get('/change-password', accountCtrl.showChangePasswordPage);
 router.put('/me/password', requireLogin, accountCtrl.changePassword);
+router.post('/me/delete-otp', requireLogin, accountCtrl.requestDeleteOTP);
 router.delete('/me', requireLogin, accountCtrl.deleteAccount);
+router.delete('/:id', requireLogin, requireAdmin, accountCtrl.deleteAccountById);
 module.exports = router;

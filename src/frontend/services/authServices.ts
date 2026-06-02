@@ -73,6 +73,14 @@ export const authServices = {
     },
 
     deleteAccount: (id: number | string, signal?: AbortSignal) => {
-        return api.delete<any, ApiResponse>(`/accounts/me`, { signal });
+        return api.delete<any, ApiResponse>(`/accounts/${id}`, { signal });
+    },
+
+    requestDeleteOTP: (signal?: AbortSignal) => {
+        return api.post<any, ApiResponse>("/accounts/me/delete-otp", {}, { signal });
+    },
+
+    deleteSelfAccount: (otp: string, signal?: AbortSignal) => {
+        return api.delete<any, ApiResponse>("/accounts/me", { data: { otp }, signal });
     },
 };
