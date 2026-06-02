@@ -5,12 +5,17 @@ require('dotenv').config();
 const BREVO_API_KEY = process.env.BREVO_API_KEY || process.env.BREVO_SMTP_KEY;
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL;
 const SENDER_NAME = 'WaterQA Alert System';
+const ENABLE_EMAIL = process.env.ENABLE_EMAIL; // 'true' hoặc 'false'
 
 /**
  * Gửi email qua Brevo Transactional Email API (HTTP)
- * Không dùng SMTP vì Railway block port 587/465
  */
 const sendEmailViaBrevoAPI = async (toEmail, subject, htmlContent) => {
+    if (ENABLE_EMAIL === 'false') {
+        console.log(`\n[Mail Service] ⚠️ Gửi mail đã bị TẮT (ENABLE_EMAIL=false). Bỏ qua gửi email tới: ${toEmail}\n`);
+        return 'MOCK_MESSAGE_ID_DISABLED';
+    }
+
     const payload = {
         sender: { name: SENDER_NAME, email: SENDER_EMAIL },
         to: [{ email: toEmail }],

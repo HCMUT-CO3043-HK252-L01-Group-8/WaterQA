@@ -43,7 +43,7 @@ npx expo start -c
 
 ---
 
-## 📁 Cấu Trúc Project
+## Cấu Trúc Project
 
 ```
 WaterQA/

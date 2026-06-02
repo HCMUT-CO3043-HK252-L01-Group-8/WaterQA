@@ -114,8 +114,10 @@ describe('AuthService.forgotPassword()', () => {
         // Service vẫn trả về thành công dù mail lỗi (dùng OTP từ terminal)
         expect(result.err).toBe(0);
         expect(consoleErrorSpy).toHaveBeenCalledWith(
-            '[OTP] Brevo failed:',
-            'SMTP error'
+            '[OTP] ❌ Brevo FAILED to send to user@gmail.com'
+        );
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+            '[OTP]    message : SMTP error'
         );
 
         consoleLogSpy.mockRestore();
