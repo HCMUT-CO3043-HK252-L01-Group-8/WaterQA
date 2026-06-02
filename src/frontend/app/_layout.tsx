@@ -89,6 +89,7 @@ export default function RootLayout() {
                         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                         <Stack.Screen name="change-password" options={{ headerShown: false }} />
                         <Stack.Screen name="manage-users" options={{ headerShown: false }} />
+                        <Stack.Screen name="manage-iot" options={{ headerShown: false }} />
                     </Stack>
                     <StatusBar style="auto" />
                 </ThemeProvider>

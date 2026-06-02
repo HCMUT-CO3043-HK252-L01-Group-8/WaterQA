@@ -3,11 +3,11 @@ import { ApiResponse } from "./authServices";
 
 export const deviceServices = {
     getAllDevices: (signal?: AbortSignal) => {
-        return api.get<any, ApiResponse>("/devices", { signal });
+        return api.get<any, ApiResponse>("/devices/all", { signal });
     },
 
     getDeviceById: (id: number | string, signal?: AbortSignal) => {
-        return api.get<any, ApiResponse>(`/devices/${id}`, { signal });
+        return api.get<any, ApiResponse>(`/devices/id/${id}`, { signal });
     },
 
     createDevice: (data: { station_id: number; sensor_name: string; sensor_type: string; unit: string; status: string }, signal?: AbortSignal) => {
