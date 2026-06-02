@@ -59,8 +59,8 @@ app.use(session({
   cookie: {
     httpOnly: true,
     // Railway HTTPS → cần secure+sameSite=none để cookie cross-origin hoạt động
-    secure: !!process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production',
-    sameSite: (!!process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production') ? 'none' : 'lax',
+    secure: !!process.env.RAILWAY_ENVIRONMENT_NAME || !!process.env.RAILWAY_PROJECT_ID || process.env.NODE_ENV === 'production',
+    sameSite: (!!process.env.RAILWAY_ENVIRONMENT_NAME || !!process.env.RAILWAY_PROJECT_ID || process.env.NODE_ENV === 'production') ? 'none' : 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   }
 }));
