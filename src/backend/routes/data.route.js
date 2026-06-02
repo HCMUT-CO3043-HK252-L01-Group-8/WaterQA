@@ -15,11 +15,11 @@ router.get('/export', dataCtrl.exportToFile);
 
 router.get('/telemetry', dataCtrl.getTelemetryData);
 
-router.get('/thresholds-api', dataCtrl.getThresholdsRaw);
-router.get('/thresholds', dataCtrl.showThresholdsPage);
-router.post('/add-threshold', dataCtrl.addThreshold);
-router.get('/edit-threshold/:id', dataCtrl.showEditThresholdPage);
-router.post('/edit-threshold/:id', dataCtrl.editThreshold);
-router.delete('/delete-threshold/:id', dataCtrl.deleteThreshold);
+router.get('/thresholds', dataCtrl.getThresholdsRaw);
+router.get('/thresholds/view', dataCtrl.showThresholdsPage);
+router.post('/thresholds', dataCtrl.addThreshold);
+router.get('/thresholds/:id/edit', dataCtrl.showEditThresholdPage);
+router.put('/thresholds/:id', dataCtrl.editThreshold);
+router.delete('/thresholds/:id', dataCtrl.deleteThreshold);
 
 module.exports = router;

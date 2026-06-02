@@ -3,11 +3,11 @@ import { ApiResponse } from "./authServices";
 
 export const deviceServices = {
     getAllDevices: (signal?: AbortSignal) => {
-        return api.get<any, ApiResponse>("/devices/all", { signal });
+        return api.get<any, ApiResponse>("/devices", { signal });
     },
 
     getDeviceById: (id: number | string, signal?: AbortSignal) => {
-        return api.get<any, ApiResponse>(`/devices/id/${id}`, { signal });
+        return api.get<any, ApiResponse>(`/devices/${id}`, { signal });
     },
 
     createDevice: (data: { station_id: number; sensor_name: string; sensor_type: string; unit: string; status: string }, signal?: AbortSignal) => {
@@ -19,7 +19,7 @@ export const deviceServices = {
     },
 
     renameDevice: (id: number | string, newName: string, signal?: AbortSignal) => {
-        return api.put<any, ApiResponse>(`/devices/rename/${id}`, { newName }, { signal });
+        return api.patch<any, ApiResponse>(`/devices/${id}/name`, { newName }, { signal });
     },
 
     deleteDevice: (id: number | string, signal?: AbortSignal) => {

@@ -11,7 +11,7 @@ export interface ThresholdData {
 
 export const thresholdServices = {
     getAllThresholds: (signal?: AbortSignal) => {
-        return api.get<any, ApiResponse>("/data/thresholds-api", { signal });
+        return api.get<any, ApiResponse>("/data/thresholds", { signal });
     },
 
     getThresholdById: (id: number | string, signal?: AbortSignal) => {

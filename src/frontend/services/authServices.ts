@@ -14,7 +14,7 @@ export const authServices = {
     },
 
     signup: (name: string, email: string, phone_number: string, password: string, signal?: AbortSignal) => {
-        return api.post<any, ApiResponse>("/accounts/signup", { name, email, phone_number, password }, { signal });
+        return api.post<any, ApiResponse>("/accounts", { name, email, phone_number, password }, { signal });
     },
 
     loginWithGoogle: (name: string, email: string, picture: string, signal?: AbortSignal) => {
@@ -57,7 +57,7 @@ export const authServices = {
     },
 
     getAllAccounts: (signal?: AbortSignal) => {
-        return api.get<any, ApiResponse>("/accounts/all", { signal });
+        return api.get<any, ApiResponse>("/accounts", { signal });
     },
 
     getAccountById: (id: number | string, signal?: AbortSignal) => {
@@ -66,13 +66,13 @@ export const authServices = {
 
     changePassword: (currentPassword: string, newPassword: string, confirmPassword: string, signal?: AbortSignal) => {
         return api.put<any, ApiResponse>(
-            "/accounts/change-password",
+            "/accounts/me/password",
             { currentPassword, newPassword, confirmPassword },
             { signal },
         );
     },
 
     deleteAccount: (id: number | string, signal?: AbortSignal) => {
-        return api.delete<any, ApiResponse>(`/accounts/${id}`, { signal });
+        return api.delete<any, ApiResponse>(`/accounts/me`, { signal });
     },
 };

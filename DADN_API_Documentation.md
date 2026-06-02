@@ -78,11 +78,11 @@ This document provides a detailed overview of the API endpoints available in the
 
 ### 2.1. Get All Users
 **Method:** `GET`  
-**Endpoint:** `/accounts/all`
+**Endpoint:** `/accounts`
 
 ### 2.2. Get User By ID
 **Method:** `GET`  
-**Endpoint:** `/accounts/id/:id`
+**Endpoint:** `/accounts/:id`
 
 ### 2.3. Get My Profile Info
 **Method:** `GET`  
@@ -95,7 +95,7 @@ This document provides a detailed overview of the API endpoints available in the
 
 ### 2.5. Sign Up (Create Account)
 **Method:** `POST`  
-**Endpoint:** `/accounts/signup`
+**Endpoint:** `/accounts`
 **Request Body (JSON):**
 ```json
 {
@@ -108,7 +108,7 @@ This document provides a detailed overview of the API endpoints available in the
 
 ### 2.6. Change Password
 **Method:** `PUT`  
-**Endpoint:** `/accounts/change-password`
+**Endpoint:** `/accounts/me/password`
 **Request Body (JSON):**
 ```json
 {
@@ -120,7 +120,7 @@ This document provides a detailed overview of the API endpoints available in the
 
 ### 2.7. Delete Account
 **Method:** `DELETE`  
-**Endpoint:** `/accounts/delete/`
+**Endpoint:** `/accounts/me`
 **Description:** Deletes the currently authenticated user's account.
 
 ---
@@ -142,21 +142,19 @@ This document provides a detailed overview of the API endpoints available in the
 
 ### 3.4. Get Thresholds (JSON Data)
 **Method:** `GET`  
-**Endpoint:** `/data/thresholds-api`
-**Description:** Retrieves raw JSON data of all thresholds. (Note: `/data/thresholds` returns an HTML page).
+**Endpoint:** `/data/thresholds`
 
 ### 3.5. Add Threshold
 **Method:** `POST`  
-**Endpoint:** `/data/add-threshold`
+**Endpoint:** `/data/thresholds`
 
 ### 3.6. Edit Threshold
-**Method:** `POST`  
-**Endpoint:** `/data/edit-threshold/:id`
-*(Note: Method is POST instead of PUT as implemented in backend)*
+**Method:** `PUT`  
+**Endpoint:** `/data/thresholds/:id`
 
 ### 3.7. Delete Threshold
 **Method:** `DELETE`  
-**Endpoint:** `/data/delete-threshold/:id`
+**Endpoint:** `/data/thresholds/:id`
 
 ---
 
@@ -164,15 +162,15 @@ This document provides a detailed overview of the API endpoints available in the
 
 ### 4.1. Get All Devices
 **Method:** `GET`  
-**Endpoint:** `/devices/all`
+**Endpoint:** `/devices`
 
 ### 4.2. Get Device By ID
 **Method:** `GET`  
-**Endpoint:** `/devices/id/:id`
+**Endpoint:** `/devices/:id`
 
 ### 4.3. Rename Sensor (User Only)
-**Method:** `PUT`  
-**Endpoint:** `/devices/rename/:id`
+**Method:** `PATCH`  
+**Endpoint:** `/devices/:id/name`
 **Request Body (JSON):**
 ```json
 {
@@ -180,7 +178,7 @@ This document provides a detailed overview of the API endpoints available in the
 }
 ```
 
-*(Note: Admin endpoints like `/add`, `/update/:id`, `/delete/:id` are currently disabled/commented out in the codebase.)*
+*(Note: Admin endpoints like `POST /devices`, `PUT /devices/:id`, `DELETE /devices/:id` are currently disabled/commented out in the codebase.)*
 
 ---
 
