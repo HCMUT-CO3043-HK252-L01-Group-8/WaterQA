@@ -18,7 +18,14 @@ function getAll(req, res) {
 
 function getMe(req, res) {
   try {
+    console.log('=== getMe Debug ===');
+    console.log('Session:', req.session);
+    console.log('Session User:', req.session?.user);
+    console.log('Cookies:', req.headers.cookie);
+    console.log('Origin:', req.headers.origin);
+    
     if (!req.session || !req.session.user) {
+      console.log('No session user found');
       return res.status(401).json({ success: false, error: 'Chưa đăng nhập', timestamp: new Date().toISOString() });
     }
     const userId = req.session.user.user_id;

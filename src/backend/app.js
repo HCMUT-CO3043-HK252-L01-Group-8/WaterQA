@@ -29,18 +29,15 @@ app.use((req, res, next) => {
     'http://127.0.0.1:19006',
     'https://waterqa-production.up.railway.app',
   ];
-  const isAllowed = allowedOrigins.includes(origin)
+  const isAllowed = !origin || allowedOrigins.includes(origin)
     || (origin && origin.endsWith('.trycloudflare.com'))
     || (origin && origin.endsWith('.vercel.app'))
     || (origin && origin.endsWith('.railway.app'));
 
-  // ✅ FIX: Khi credentials = true, phải set origin cụ thể (không được dùng *)
-  if (isAllowed && origin) {
-    res.header('Access-Control-Allow-Origin', origin);
+  // ✅ FIX: Luôn cho phép credentials nếu origin là allowed hoặc không có origin (same-origin)
+  if (isAllowed) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
     res.header('Access-Control-Allow-Credentials', 'true');
-  } else if (!origin) {
-    // Nếu không có origin (e.g., direct server request), cho phép
-    res.header('Access-Control-Allow-Origin', '*');
   } else {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'false');
