@@ -34,8 +34,11 @@ export default function SettingsScreen() {
     const [activeModal, setActiveModal] = useState<"wqi" | "ph" | "ntu" | "clo" | null>(null);
     const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false);
+    const [isStationModalVisible, setIsStationModalVisible] = useState(false);
     const [otpCode, setOtpCode] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
+    
+    const LOCATIONS = ["268 Lý Thường Kiệt", "KTX Khu A - ĐHQG", "Khu Công Nghệ Cao", "Hồ Đá - Làng Đại Học"];
     const languageOptions = [
         { label: t("settings.Vietnamese", "Tiếng Việt"), value: "vi" },
         { label: t("settings.English", "English"), value: "en" },
@@ -388,6 +391,7 @@ export default function SettingsScreen() {
                         iconName="map-pin"
                         title={t("settings.stations", "Danh sách trạm quan trắc")}
                         subtitle={t("settings.stationsSubtitle", "Hiển thị vị trí và thông tin các trạm")}
+                        onPress={() => setIsStationModalVisible(true)}
                     />
                     <SettingRow
                         iconName="settings"
@@ -440,6 +444,29 @@ export default function SettingsScreen() {
                     onSave={handleSaveThreshold}
                 />
             </ScrollView>
+
+            <Modal visible={isStationModalVisible} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Danh sách trạm quan trắc</Text>
+                            <TouchableOpacity onPress={() => setIsStationModalVisible(false)}>
+                                <Feather name="x" size={24} color="#64748B" />
+                            </TouchableOpacity>
+                        </View>
+                        
+                        {LOCATIONS.map((loc, index) => (
+                            <View key={index} style={styles.infoRow}>
+                                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                    <Feather name="map-pin" size={16} color="#0891B2" style={{ marginRight: 8 }} />
+                                    <Text style={styles.infoValue}>{loc}</Text>
+                                </View>
+                                <Text style={styles.infoLabel}>Đang hoạt động</Text>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+            </Modal>
 
             <Modal visible={isProfileModalVisible} animationType="slide" transparent>
                 <View style={styles.modalOverlay}>

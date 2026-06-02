@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
     ScrollView,
     RefreshControl,
+    Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -53,37 +54,43 @@ export default function ManageUsersScreen() {
     };
 
     const handleDeleteUser = (userId: number, email: string) => {
-        Alert.alert(
-            t("admin.deleteUser", "Xóa tài khoản"),
-            t("admin.confirmDeleteUser", "Bạn có chắc chắn muốn xóa tài khoản {{email}} không?").replace(
-                "{{email}}",
-                email,
-            ),
-            [
-                { text: t("common.cancel", "Hủy"), style: "cancel" },
-                {
-                    text: t("common.delete", "Xóa"),
-                    style: "destructive",
-                    onPress: async () => {
-                        try {
-                            const res = await authServices.deleteAccount(userId);
-                            if (res.success) {
-                                Alert.alert(
-                                    t("common.success", "Thành công"),
-                                    t("admin.deleteSuccess", "Đã xóa tài khoản thành công"),
-                                );
-                                setUsers((prev) => prev.filter((u) => u.user_id !== userId));
-                            } else {
-                                Alert.alert(t("common.error", "Lỗi"), res.error || "Không thể xóa người dùng này.");
-                            }
-                        } catch (error) {
-                            console.error("Error in MANAGE USERS:", error)
-                            Alert.alert(t("common.error", "Lỗi"), "Lỗi kết nối máy chủ.");
-                        }
-                    },
-                },
-            ],
-        );
+        const confirmMsg = t("admin.confirmDeleteUser", "Bạn có chắc chắn muốn xóa tài khoản {{email}} không?").replace("{{email}}", email);
+        
+        const performDelete = async () => {
+            try {
+                const res = await authServices.deleteAccount(userId);
+                if (res.success || !res) {
+                    if (Platform.OS !== "web") {
+                        Alert.alert(t("common.success", "Thành công"), t("admin.deleteSuccess", "Đã xóa tài khoản thành công"));
+                    } else {
+                        window.alert(t("admin.deleteSuccess", "Đã xóa tài khoản thành công"));
+                    }
+                    setUsers((prev) => prev.filter((u) => u.user_id !== userId));
+                } else {
+                    if (Platform.OS !== "web") Alert.alert(t("common.error", "Lỗi"), res.error || "Không thể xóa người dùng này.");
+                    else window.alert(res.error || "Không thể xóa người dùng này.");
+                }
+            } catch (error) {
+                console.error("Error in MANAGE USERS:", error)
+                if (Platform.OS !== "web") Alert.alert(t("common.error", "Lỗi"), "Lỗi kết nối máy chủ.");
+                else window.alert("Lỗi kết nối máy chủ.");
+            }
+        };
+
+        if (Platform.OS === "web") {
+            if (window.confirm(confirmMsg)) {
+                performDelete();
+            }
+        } else {
+            Alert.alert(
+                t("admin.deleteUser", "Xóa tài khoản"),
+                confirmMsg,
+                [
+                    { text: t("common.cancel", "Hủy"), style: "cancel" },
+                    { text: t("common.delete", "Xóa"), style: "destructive", onPress: performDelete },
+                ]
+            );
+        }
     };
 
     const filteredUsers = users.filter((u) => {
