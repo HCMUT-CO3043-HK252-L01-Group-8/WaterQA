@@ -40,6 +40,7 @@ function getMe(req, res) {
         user_id: user.user_id,
         name: user.name,
         email: user.email,
+        role: user.role,
         phone_number: user.phone_number,
         email_notifications: user.email_notifications !== undefined ? user.email_notifications : 1,
       },
