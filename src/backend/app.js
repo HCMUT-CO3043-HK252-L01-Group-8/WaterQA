@@ -54,6 +54,7 @@ app.use((req, res, next) => {
 
 // Setup express-session (for auth)
 const session = require('express-session');
+app.set('trust proxy', 1); // Bắt buộc khi dùng secure cookie phía sau load balancer (như Railway)
 app.use(session({
   secret: 'your-secret-key-change-this-2026',   // ← change this!
   resave: false,
