@@ -64,7 +64,7 @@ export default function SettingsScreen() {
                 const storedThresholds = await AsyncStorage.getItem("personalThresholds");
                 if (storedThresholds) setThresholds(JSON.parse(storedThresholds));
             } catch (e) {
-                console.error("Lỗi đọc cài đặt cục bộ:", e);
+                console.log("Lỗi khi truy xuất cài đặt:", e);
             }
 
             try {
@@ -84,7 +84,7 @@ export default function SettingsScreen() {
                     await AsyncStorage.setItem("currentUser", JSON.stringify(updatedUser));
                 }
             } catch (error) {
-                console.error("Lỗi đồng bộ dữ liệu tài khoản từ Server:", error);
+                console.log("Lỗi đồng bộ dữ liệu tài khoản từ Server:", error);
             }
         };
 
@@ -114,7 +114,7 @@ export default function SettingsScreen() {
         try {
             await AsyncStorage.setItem("appLanguage", val);
         } catch (e) {
-            console.error("Lỗi lưu ngôn ngữ:", e);
+            console.log("Lỗi lưu ngôn ngữ:", e);
         }
     };
 
@@ -125,7 +125,7 @@ export default function SettingsScreen() {
         try {
             await AsyncStorage.setItem("personalThresholds", JSON.stringify(newThresholds));
         } catch (e) {
-            console.error("Lỗi lưu ngưỡng cá nhân:", e);
+            console.log("Lỗi lưu ngưỡng cá nhân:", e);
         }
     };
 
@@ -185,7 +185,7 @@ export default function SettingsScreen() {
             try {
                 await authServices.logout();
             } catch (e) {
-                console.error("Lỗi gọi API logout:", e);
+                console.log("Lỗi gọi API logout:", e);
             } finally {
                 await AsyncStorage.removeItem("currentUser");
                 dispatch(logoutClient());

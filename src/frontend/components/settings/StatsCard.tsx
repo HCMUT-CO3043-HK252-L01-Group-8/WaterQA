@@ -15,7 +15,7 @@ export default function StatsCard() {
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                    <Text style={[styles.statValue, { color: "#00A63E" }]}>4</Text>
+                    <Text style={[styles.statValue, { color: "#00A63E" }]}>1</Text>
                     <Text style={styles.statLabel}>{t("settings.activeSessions", "Phiên hoạt động")}</Text>
                 </View>
                 <View style={styles.statDivider} />

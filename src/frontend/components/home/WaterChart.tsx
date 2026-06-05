@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 const MOCK_DATA = {
     day: {
-        data: [80, 82, 78, 85, 78, 88, 85],
+        data: [80, 82, 78, 85, 98, 83, 80],
         labels: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
     },
     month: {
@@ -34,7 +34,8 @@ export default function WaterChart() {
             data={MOCK_DATA[chartFilter].data}
             labels={MOCK_DATA[chartFilter].labels}
             smooth={true}
-            highlightMax={true}
+            //highlightMax={true}
+            highlightIndex={5}
             lineColor="#00A89D"
             chartHeight={120}
             footerText={t("home.wqiPredictionChart", "Biểu đồ dự đoán WQI")}

@@ -38,7 +38,7 @@ export default function HomeDashboard() {
                     if (storedUser.name) setUserName(storedUser.name);
                 }
             } catch (error) {
-                console.error("Lỗi load user:", error);
+                console.log("Lỗi load user:", error);
             }
         };
         loadUser();
@@ -73,7 +73,7 @@ export default function HomeDashboard() {
 
             setShowAlertBanner(tempVal < 80);
         } catch (error) {
-            console.error("Lỗi fetch data IoT:", error);
+            console.log("Lỗi fetch data IoT:", error);
         } finally {
             setIsLoading(false);
             setRefreshing(false);
@@ -129,7 +129,7 @@ export default function HomeDashboard() {
                     <AlertBanner
                         visible={showAlertBanner}
                         type="error"
-                        title={t("home.alertDetected", "Đã phát hiện bất thường với cảm biến pH")}
+                        title={t("home.alertDetected", "Đã phát hiện bất thường với chất lượng nước")}
                         message={t(
                             "home.alertDescription",
                             "Dữ liệu quan trắc cho thấy nguồn nước có dấu hiệu bất thường. Vui lòng kiểm tra.",

@@ -172,7 +172,7 @@
         "aboveNormal": "Above Normal",
         "normal": "Normal",
         "high": "High",
-        "lidOpenedAlert": "🚨 Lid Opened! (≥60 for 5s)",
+        "lidOpenedAlert": "Lid Opened! (≥60 for 5s)",
         "highLight": "High ({{light}} ≥ {{threshold}})",
         "normalLight": "Normal (< 50)",
         "lowLight": "Low Light"

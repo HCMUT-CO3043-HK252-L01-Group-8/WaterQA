@@ -174,7 +174,7 @@ export default function IotDashboard() {
                     <AppHeader />
                     <Text style={styles.pageTitle}>{t("iot.title", "IoT Dashboard")}</Text>
                     <Text style={styles.pageSubtitle}>
-                        {t("iot.subtitle", "Dữ liệu viễn trắc theo thời gian thực")}
+                        {t("iot.subtitle", "Dữ liệu quan trắc theo thời gian thực")}
                     </Text>
                 </View>
 

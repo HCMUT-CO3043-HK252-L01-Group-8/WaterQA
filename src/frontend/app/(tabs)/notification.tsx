@@ -55,7 +55,7 @@ export default function NotificationScreen() {
                 setAlerts(MOCK_ALERTS);
             }
         } catch (error) {
-            console.error("Lỗi tải cảnh báo:", error);
+            console.log("Lỗi khi tải cảnh báo:", error);
         } finally {
             setIsLoading(false);
             setRefreshing(false);

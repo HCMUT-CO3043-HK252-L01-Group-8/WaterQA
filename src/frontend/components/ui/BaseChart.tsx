@@ -10,6 +10,7 @@ export interface BaseChartProps {
     smooth?: boolean;
     showValues?: boolean;
     highlightMax?: boolean;
+    highlightIndex?: number;
     chartHeight?: number;
     headerRight?: React.ReactNode;
     footerText?: string;
@@ -26,6 +27,7 @@ export default function BaseChart({
     smooth = false,
     showValues = false,
     highlightMax = false,
+    highlightIndex,
     chartHeight = 140,
     headerRight,
     footerText,
@@ -109,16 +111,16 @@ export default function BaseChart({
                     <Path d={getPath()} fill="none" stroke={lineColor} strokeWidth={smooth ? "3" : "2.5"} />
 
                     {points.map((pt, i) => {
-                        const isMax = highlightMax && i === maxIndex;
+                        const isHighlighted = (highlightIndex !== undefined && i === highlightIndex) || (highlightMax && i === maxIndex);
                         return (
                             <Fragment key={`point-${i}`}>
                                 <Circle
                                     cx={pt.x}
                                     cy={pt.y}
-                                    r={isMax ? 7 : 4}
+                                    r={isHighlighted ? 7 : 4}
                                     fill={smooth ? lineColor : "#FFFFFF"}
-                                    stroke={isMax ? "#CCEEEB" : smooth ? "none" : lineColor}
-                                    strokeWidth={isMax ? 4 : smooth ? 0 : 2}
+                                    stroke={isHighlighted ? "#CCEEEB" : smooth ? "none" : lineColor}
+                                    strokeWidth={isHighlighted ? 4 : smooth ? 0 : 2}
                                 />
                                 {showValues && (
                                     <Text style={[styles.dataValueText, { left: pt.x - 10, top: pt.y - 20 }]}>
@@ -135,14 +137,14 @@ export default function BaseChart({
                         const isCrowded = labels.length > 7;
                         const labelWidth = isCrowded ? 24 : 35;
                         const labelFontSize = isCrowded ? 10 : 11;
-                        const isMaxHighlight = highlightMax && i === maxIndex;
+                        const isHighlighted = (highlightIndex !== undefined && i === highlightIndex) || (highlightMax && i === maxIndex);
 
                         return (
                             <Text
                                 key={`label-${i}`}
                                 style={[
                                     styles.axisText,
-                                    isMaxHighlight && { color: lineColor, fontFamily: "Inter-Bold" },
+                                    isHighlighted && { color: lineColor, fontFamily: "Inter-Bold" },
                                     { left: points[i].x - labelWidth / 2, width: labelWidth, fontSize: labelFontSize },
                                 ]}
                             >

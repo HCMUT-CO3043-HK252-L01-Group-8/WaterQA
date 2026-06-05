@@ -42,7 +42,7 @@ export default function LocationSelector({ locations, selectedLocation, onSelect
             <View style={styles.locationSection}>
                 <TouchableOpacity style={styles.pickerBox} onPress={openModal} activeOpacity={0.7}>
                     <View style={styles.leftContent}>
-                        <Ionicons name="location" size={20} color="#00A89D" style={styles.icon} />
+                        <Feather name="navigation" size={20} color="#00A89D" />
                         <Text style={styles.pickerText}>{selectedLocation}</Text>
                     </View>
                     <Feather name="chevron-down" size={20} color="#666666" />

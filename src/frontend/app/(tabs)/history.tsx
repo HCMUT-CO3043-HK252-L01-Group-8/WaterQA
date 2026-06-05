@@ -77,7 +77,7 @@ export default function HistoryScreen() {
                 }
             }
         } catch (error) {
-            console.error("Lỗi lấy lịch sử:", error);
+            console.log("Lỗi lấy lịch sử:", error);
         } finally {
             setIsLoading(false);
             setRefreshing(false);
@@ -140,11 +140,11 @@ export default function HistoryScreen() {
                 //     }
                 // };
                 // fileReader.readAsDataURL(new Blob([response]));
-                Alert.alert(t("common.error", "Lỗi"), "Tính năng đang phát triển");
+                Alert.alert(t("common.error", "Lỗi"), "Tính năng đang phát triển.");
             }
         } catch (error) {
-            console.error("Lỗi export CSV:", error);
-            Alert.alert(t("common.error", "Lỗi"), "Không thể xuất dữ liệu lúc này. Vui lòng kiểm tra lại kết nối.");
+            console.log("Lỗi export CSV:", error);
+            Alert.alert(t("common.error", "Lỗi"), "Không thể xuất dữ liệu lúc này. Xin vui lòng thử lại sau.");
         }
     };
 

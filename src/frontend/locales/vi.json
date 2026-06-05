@@ -75,7 +75,7 @@
     "home": {
         "greeting": "Xin chào, ",
         "greetingSubtitle": "Hãy kiểm tra chất lượng nước của bạn",
-        "alertDetected": "⚠️ Đã phát hiện bất thường với cảm biến pH",
+        "alertDetected": "Đã phát hiện bất thường với chất lượng nước",
         "alertDescription": "Dữ liệu quan trắc cho thấy nguồn nước có dấu hiệu bất thường. Vui lòng kiểm tra.",
         "sensorStatus": "Trạng thái cảm biến",
         "sensorGood": "Hoạt động tốt",
@@ -159,9 +159,9 @@
     },
     "iot": {
         "title": "IoT Dashboard",
-        "subtitle": "Dữ liệu viễn trắc theo thời gian thực",
+        "subtitle": "Dữ liệu quan trắc theo thời gian thực",
         "fetching": "Đang tải dữ liệu...",
-        "noData": "Không có dữ liệu viễn trắc.",
+        "noData": "Không có dữ liệu quan trắc.",
         "tempWarningTitle": "Cảnh báo: Nhiệt độ cao",
         "tempWarningDesc": "Nhiệt độ hiện tại cao hơn mức bình thường ({{temp}}°C).",
         "lidDangerTitle": "Nguy hiểm: Mở nắp bồn!",
@@ -172,7 +172,7 @@
         "aboveNormal": "Cao hơn bình thường",
         "normal": "Bình thường",
         "high": "Cao",
-        "lidOpenedAlert": "🚨 Mở nắp! (≥60 trong 5s)",
+        "lidOpenedAlert": "Mở nắp! (≥60 trong 5s)",
         "highLight": "Cao ({{light}} ≥ {{threshold}})",
         "normalLight": "Bình thường (< 50)",
         "lowLight": "Ánh sáng yếu"
@@ -192,7 +192,7 @@
     },
     "iotManagement": {
         "title": "Hệ thống IoT",
-        "subtitle": "Quản lý thiết bị trạm và ngưỡng cảnh báo máy chủ",
+        "subtitle": "Quản lý thiết bị quan trắc và ngưỡng cảnh báo của máy chủ",
         "tabDevices": "Thiết bị",
         "tabThresholds": "Ngưỡng cảnh báo",
         "addDevice": "Thêm thiết bị",
