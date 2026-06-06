@@ -18,7 +18,7 @@ export default function SummaryCards({ todayWqi, trendValue }: SummaryCardsProps
                 icon="droplet"
                 label={t("history.today", "Hôm nay")}
                 value={todayWqi}
-                desc={t("history.avgWqi", "WQI trung bình")}
+                desc={t("history.avgWqi", "Nhiệt độ trung bình")}
                 valueColor="#0092B8"
                 bgColor="#ECFEFF"
                 borderColor="#0092B8"
@@ -27,7 +27,7 @@ export default function SummaryCards({ todayWqi, trendValue }: SummaryCardsProps
                 icon={isPositive ? "trending-up" : "trending-down"}
                 label={t("history.comparedToYesterday", "so với Hôm qua")}
                 value={trendValue}
-                desc={t("home.wqiSubtitle", "Chỉ số WQI")}
+                desc={t("Chỉ số nhiệt độ")}
                 valueColor={trendColor}
                 bgColor={isPositive ? "#F0FDF4" : "#FEF2F2"}
                 borderColor={trendColor}

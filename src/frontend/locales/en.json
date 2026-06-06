@@ -75,7 +75,7 @@
     "home": {
         "greeting": "Hello, ",
         "greetingSubtitle": "Check your water quality",
-        "alertDetected": "⚠️ Unusual activity detected",
+        "alertDetected": "Unusual activity detected",
         "alertDescription": "Observation data shows unusual signs in water source. Please check.",
         "sensorStatus": "Sensor Status",
         "sensorGood": "Working well",
@@ -106,9 +106,9 @@
         "monthly": "Month",
         "yearly": "Year",
         "export": "Export Report",
-        "wqiFluctuation": "WQI Fluctuation",
+        "wqiFluctuation": "Temperature Fluctuation",
         "today": "Today",
-        "avgWqi": "Average WQI",
+        "avgWqi": "Average Temperature",
         "comparedToYesterday": "vs Yesterday"
     },
     "settings": {

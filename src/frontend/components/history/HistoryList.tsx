@@ -25,7 +25,7 @@ export default function HistoryList({ data }: { data: HistoryItem[] }) {
                                 <Feather name="activity" size={16} color="#0092B8" />
                             </View>
                             <View>
-                                <Text style={styles.wqiText}>{item.wqi} WQI</Text>
+                                <Text style={styles.wqiText}>{item.wqi} °C</Text>
                                 <Text style={styles.dateText}>{item.date}</Text>
                             </View>
                         </View>

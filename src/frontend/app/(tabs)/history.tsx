@@ -25,7 +25,8 @@ export default function HistoryScreen() {
     const [historyList, setHistoryList] = useState<any[]>([]);
     const [chartData, setChartData] = useState<number[]>([]);
     const [chartLabels, setChartLabels] = useState<string[]>([]);
-    const [todayWqi, setTodayWqi] = useState<number>(0);
+    // Biến todayWqi lúc này sẽ chứa thông số Nhiệt độ thay vì WQI
+    const [todayWqi, setTodayWqi] = useState<number>(0); 
     const [trendValue, setTrendValue] = useState<string>("+0");
 
     const fetchHistoryData = async () => {
@@ -33,41 +34,63 @@ export default function HistoryScreen() {
             const limit = activeFilter === "day" ? 24 : 30;
             const response = await dataServices.getHistory(limit);
 
-            if (response.success && response.payload?.data) {
-                const rawData = response.payload.data;
-                const sortedData = [...rawData].sort(
-                    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+            let rawData: any[] = [];
+            
+            if (response.payload && typeof response.payload === "object" && Array.isArray(response.payload.data)) {
+                rawData = response.payload.data;
+            } else if (Array.isArray(response.payload)) {
+                rawData = response.payload;
+            }
+
+            // BỘ LỌC QUAN TRỌNG: Loại bỏ những dòng dữ liệu bị lưu số 0 do mất kết nối
+            const validData = rawData.filter((item: any) => Number(item.temperature) > 0);
+
+            if (validData.length > 0) {
+                const parseSafeDate = (dateStr: string) => {
+                    if (!dateStr) return new Date();
+                    const safeStr = dateStr.includes("T") ? dateStr : dateStr.replace(" ", "T");
+                    return new Date(safeStr);
+                };
+
+                const sortedData = [...validData].sort(
+                    (a, b) => parseSafeDate(a.timestamp).getTime() - parseSafeDate(b.timestamp).getTime(),
                 );
 
                 const formattedList = [...sortedData].reverse().map((item: any, index: number, arr: any[]) => {
-                    const dateObj = new Date(item.timestamp);
+                    const dateObj = parseSafeDate(item.timestamp);
                     const dateStr = dateObj.toLocaleDateString("vi-VN");
                     const timeStr = dateObj.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
 
-                    const wqi = Math.round(item.temperature || 0);
+                    // LẤY CHÍNH XÁC NHIỆT ĐỘ TỪ API
+                    const currentValue = Number(item.temperature) || 0; 
 
                     let trendStr = "+0";
                     if (index < arr.length - 1) {
-                        const prevWqi = Math.round(arr[index + 1].temperature || 0);
-                        const diff = wqi - prevWqi;
+                        const prevItem = arr[index + 1];
+                        const prevValue = Number(prevItem.temperature) || 0;
+                        
+                        const diff = Number((currentValue - prevValue).toFixed(1)); 
                         trendStr = diff > 0 ? `+${diff}` : `${diff}`;
                     }
 
                     return {
-                        id: String(item.observation_id),
-                        wqi: String(wqi),
+                        id: String(item.observation_id || Math.random()),
+                        // Dù tên key là wqi nhưng dữ liệu truyền vào là Nhiệt độ
+                        wqi: String(currentValue), 
                         date: dateStr,
                         time: timeStr,
                         trend: trendStr,
                     };
                 });
+                
                 setHistoryList(formattedList);
 
-                const cData = sortedData.map((item: any) => Math.round(item.temperature || 0));
+                const cData = [...formattedList].reverse().map(item => Number(item.wqi));
                 const cLabels = sortedData.map((item: any) => {
-                    const d = new Date(item.timestamp);
+                    const d = parseSafeDate(item.timestamp);
                     return activeFilter === "day" ? `${d.getHours()}:00` : `${d.getDate()}/${d.getMonth() + 1}`;
                 });
+                
                 setChartData(cData);
                 setChartLabels(cLabels);
 
@@ -75,6 +98,11 @@ export default function HistoryScreen() {
                     setTodayWqi(Number(formattedList[0].wqi));
                     setTrendValue(formattedList[0].trend);
                 }
+            } else {
+                setTodayWqi(0);
+                setHistoryList([]);
+                setChartData([]);
+                setChartLabels([]);
             }
         } catch (error) {
             console.log("Lỗi lấy lịch sử:", error);
@@ -111,35 +139,6 @@ export default function HistoryScreen() {
                 link.parentNode?.removeChild(link);
                 window.URL.revokeObjectURL(url);
             } else {
-                // const FileSystem = await import("expo-file-system");
-                // const Sharing = await import("expo-sharing");
-
-                // const fileReader = new FileReader();
-                // fileReader.onload = async () => {
-                //     try {
-                //         const base64Data = (fileReader.result as string).split(",")[1];
-                //         const fileUri = `${FileSystem.documentDirectory}${fileName}`;
-
-                //         await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-                //             encoding: FileSystem.EncodingType.Base64,
-                //         });
-
-                //         const isAvailable = await Sharing.isAvailableAsync();
-                //         if (isAvailable) {
-                //             await Sharing.shareAsync(fileUri, {
-                //                 mimeType: "text/csv",
-                //                 dialogTitle: t("history.export", "Xuất báo cáo"),
-                //                 UTI: "public.comma-separated-values-text",
-                //             });
-                //         } else {
-                //             Alert.alert(t("common.error", "Lỗi"), "Thiết bị không hỗ trợ tính năng chia sẻ/lưu file.");
-                //         }
-                //     } catch (error) {
-                //         console.error("Lỗi export CSV:", error);
-                //         Alert.alert(t("common.error", "Lỗi"), "Lỗi khi lưu file vào hệ thống.");
-                //     }
-                // };
-                // fileReader.readAsDataURL(new Blob([response]));
                 Alert.alert(t("common.error", "Lỗi"), "Tính năng đang phát triển.");
             }
         } catch (error) {

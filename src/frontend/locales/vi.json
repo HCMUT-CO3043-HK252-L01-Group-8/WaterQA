@@ -106,9 +106,9 @@
         "monthly": "Tháng",
         "yearly": "Năm",
         "export": "Xuất báo cáo",
-        "wqiFluctuation": "Biến động WQI",
+        "wqiFluctuation": "Biến động nhiệt độ",
         "today": "Hôm nay",
-        "avgWqi": "WQI trung bình",
+        "avgWqi": "Nhiệt độ trung bình",
         "comparedToYesterday": "so với Hôm qua"
     },
     "settings": {
