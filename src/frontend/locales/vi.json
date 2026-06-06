@@ -92,7 +92,13 @@
         "hardness": "Hardness (mg/l)",
         "chlorine": "Clo (mg/l)",
         "turbidity": "NTU",
-        "lastUpdate": "Cập nhật lần cuối:"
+        "lastUpdate": "Cập nhật lần cuối:",
+        "selectSample": "Chọn mẫu thử ▾",
+        "selectSampleTitle": "Chọn bộ dữ liệu mẫu",
+        "close": "Đóng",
+        "sampleData": "Mẫu dữ liệu",
+        "wqiData": "WQI Data:",
+        "noSampleData": "Chưa có dữ liệu mẫu cho trạm này"
     },
     "history": {
         "title": "Lịch sử quan trắc",
@@ -209,5 +215,25 @@
         "ph": "Độ pH",
         "ntu": "Độ đục (NTU)",
         "clo": "Clo (mg/l)"
+    },
+    "aiPredict": {
+        "tabTitle": "Dự đoán",
+        "screenTitle": "Dự đoán thủ công (AI)",
+        "screenSubtitle": "Nhập các thông số nước để AI phân tích độ an toàn",
+        "phLabel": "Độ pH (pH)",
+        "hardnessLabel": "Độ cứng (Hardness mg/l)",
+        "solidsLabel": "Tổng chất rắn hoà tan (Solids ppm)",
+        "chloraminesLabel": "Chloramines (ppm)",
+        "sulfateLabel": "Sulfate (mg/l)",
+        "conductivityLabel": "Độ dẫn điện (Conductivity μS/cm)",
+        "organicCarbonLabel": "Carbon hữu cơ (Organic Carbon ppm)",
+        "trihalomethanesLabel": "Trihalomethanes (μg/l)",
+        "turbidityLabel": "Độ đục (Turbidity NTU)",
+        "predictBtn": "Dự đoán chất lượng",
+        "safe": "An toàn",
+        "danger": "Nguy hiểm",
+        "wqiScore": "WQI (Chỉ số chất lượng): ",
+        "predictError": "Lỗi dự đoán!",
+        "networkError": "Lỗi kết nối tới AI"
     }
 }

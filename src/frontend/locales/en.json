@@ -92,7 +92,13 @@
         "hardness": "Hardness (mg/l)",
         "chlorine": "Chlorine (mg/l)",
         "turbidity": "NTU",
-        "lastUpdate": "Last updated:"
+        "lastUpdate": "Last updated:",
+        "selectSample": "Select Sample ▾",
+        "selectSampleTitle": "Select Data Sample",
+        "close": "Close",
+        "sampleData": "Sample Data",
+        "wqiData": "WQI Data:",
+        "noSampleData": "No sample data for this station"
     },
     "history": {
         "title": "Monitoring History",
@@ -209,5 +215,25 @@
         "ph": "pH Level",
         "ntu": "Turbidity (NTU)",
         "clo": "Chlorine (mg/l)"
+    },
+    "aiPredict": {
+        "tabTitle": "Predict",
+        "screenTitle": "Manual AI Prediction",
+        "screenSubtitle": "Enter water parameters to let AI analyze safety",
+        "phLabel": "pH Level",
+        "hardnessLabel": "Hardness (mg/l)",
+        "solidsLabel": "Total Dissolved Solids (ppm)",
+        "chloraminesLabel": "Chloramines (ppm)",
+        "sulfateLabel": "Sulfate (mg/l)",
+        "conductivityLabel": "Conductivity (μS/cm)",
+        "organicCarbonLabel": "Organic Carbon (ppm)",
+        "trihalomethanesLabel": "Trihalomethanes (μg/l)",
+        "turbidityLabel": "Turbidity (NTU)",
+        "predictBtn": "Predict Quality",
+        "safe": "Safe",
+        "danger": "Dangerous",
+        "wqiScore": "WQI Score: ",
+        "predictError": "Prediction Error!",
+        "networkError": "Network Error connecting to AI"
     }
 }

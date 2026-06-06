@@ -234,9 +234,9 @@ export default function HomeDashboard() {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Chọn bộ dữ liệu mẫu</Text>
+                            <Text style={styles.modalTitle}>{t("home.selectSampleTitle", "Chọn bộ dữ liệu mẫu")}</Text>
                             <TouchableOpacity onPress={() => setSampleModalVisible(false)}>
-                                <Text style={styles.closeText}>Đóng</Text>
+                                <Text style={styles.closeText}>{t("home.close", "Đóng")}</Text>
                             </TouchableOpacity>
                         </View>
                         <ScrollView style={styles.sampleList}>
@@ -250,13 +250,13 @@ export default function HomeDashboard() {
                                     onPress={() => handleSelectSample(index)}
                                 >
                                     <View>
-                                        <Text style={styles.sampleName}>Mẫu dữ liệu {index + 1}</Text>
-                                        <Text style={styles.sampleDetail}>pH: {Number(item.ph).toFixed(2)} | WQI Data: {new Date(item.timestamp).toLocaleString("vi-VN")}</Text>
+                                        <Text style={styles.sampleName}>{t("home.sampleData", "Mẫu dữ liệu")} {index + 1}</Text>
+                                        <Text style={styles.sampleDetail}>pH: {Number(item.ph).toFixed(2)} | {t("home.wqiData", "WQI Data:")} {new Date(item.timestamp).toLocaleString("vi-VN")}</Text>
                                     </View>
                                 </TouchableOpacity>
                             ))}
                             {stationHistory.length === 0 && (
-                                <Text style={styles.emptyText}>Chưa có dữ liệu mẫu cho trạm này</Text>
+                                <Text style={styles.emptyText}>{t("home.noSampleData", "Chưa có dữ liệu mẫu cho trạm này")}</Text>
                             )}
                         </ScrollView>
                     </View>

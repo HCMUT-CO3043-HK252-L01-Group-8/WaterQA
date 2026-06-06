@@ -1,7 +1,9 @@
 import CustomNavBar from "@/components/ui/CustomNavBar";
 import { Tabs } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function TabLayout() {
+    const { t } = useTranslation();
     return (
         <Tabs
             screenOptions={{
@@ -46,7 +48,7 @@ export default function TabLayout() {
             <Tabs.Screen
                 name="ai-predict"
                 options={{
-                    title: "Predict",
+                    title: t("aiPredict.tabTitle", "Dự đoán"),
                 }}
             />
         </Tabs>

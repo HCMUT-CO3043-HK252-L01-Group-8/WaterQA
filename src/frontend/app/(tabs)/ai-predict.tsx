@@ -3,8 +3,10 @@ import { aiServices } from "@/services/aiServices";
 import { useState } from "react";
 import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 export default function AiPredictScreen() {
+    const { t } = useTranslation();
     const [params, setParams] = useState({
         ph: "7.2",
         hardness: "195.1",
@@ -42,11 +44,11 @@ export default function AiPredictScreen() {
                 });
             } else {
                 setResult(null);
-                alert("Lỗi dự đoán!");
+                alert(t("aiPredict.predictError", "Lỗi dự đoán!"));
             }
         } catch (error) {
             console.log(error);
-            alert("Lỗi kết nối tới AI");
+            alert(t("aiPredict.networkError", "Lỗi kết nối tới AI"));
         } finally {
             setIsLoading(false);
         }
@@ -73,39 +75,39 @@ export default function AiPredictScreen() {
             <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
                 <View style={styles.header}>
                     <AppHeader />
-                    <Text style={styles.screenTitle}>Dự đoán thủ công (AI)</Text>
-                    <Text style={styles.screenSubtitle}>Nhập các thông số nước để AI phân tích độ an toàn</Text>
+                    <Text style={styles.screenTitle}>{t("aiPredict.screenTitle", "Dự đoán thủ công (AI)")}</Text>
+                    <Text style={styles.screenSubtitle}>{t("aiPredict.screenSubtitle", "Nhập các thông số nước để AI phân tích độ an toàn")}</Text>
                 </View>
 
                 <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: 100 }}>
                     {result && (
                         <View style={[styles.resultCard, result.potable ? styles.safeBg : styles.dangerBg]}>
                             <Text style={[styles.resultTitle, result.potable ? styles.safeText : styles.dangerText]}>
-                                {result.potable ? "An toàn" : "Nguy hiểm"}
+                                {result.potable ? t("aiPredict.safe", "An toàn") : t("aiPredict.danger", "Nguy hiểm")}
                             </Text>
                             <Text style={styles.resultDesc}>
-                                WQI (Chỉ số chất lượng): <Text style={{ fontFamily: "Inter-Bold" }}>{Math.round(result.prob * 100)}</Text>
+                                {t("aiPredict.wqiScore", "WQI (Chỉ số chất lượng): ")}<Text style={{ fontFamily: "Inter-Bold" }}>{Math.round(result.prob * 100)}</Text>
                             </Text>
                         </View>
                     )}
 
                     <View style={styles.formContainer}>
-                        {renderInput("Độ pH (pH)", "ph")}
-                        {renderInput("Độ cứng (Hardness mg/l)", "hardness")}
-                        {renderInput("Tổng chất rắn hoà tan (Solids ppm)", "solids")}
-                        {renderInput("Chloramines (ppm)", "chloramines")}
-                        {renderInput("Sulfate (mg/l)", "sulfate")}
-                        {renderInput("Độ dẫn điện (Conductivity μS/cm)", "conductivity")}
-                        {renderInput("Carbon hữu cơ (Organic Carbon ppm)", "organic_carbon")}
-                        {renderInput("Trihalomethanes (μg/l)", "trihalomethanes")}
-                        {renderInput("Độ đục (Turbidity NTU)", "turbidity")}
+                        {renderInput(t("aiPredict.phLabel", "Độ pH (pH)"), "ph")}
+                        {renderInput(t("aiPredict.hardnessLabel", "Độ cứng (Hardness mg/l)"), "hardness")}
+                        {renderInput(t("aiPredict.solidsLabel", "Tổng chất rắn hoà tan (Solids ppm)"), "solids")}
+                        {renderInput(t("aiPredict.chloraminesLabel", "Chloramines (ppm)"), "chloramines")}
+                        {renderInput(t("aiPredict.sulfateLabel", "Sulfate (mg/l)"), "sulfate")}
+                        {renderInput(t("aiPredict.conductivityLabel", "Độ dẫn điện (Conductivity μS/cm)"), "conductivity")}
+                        {renderInput(t("aiPredict.organicCarbonLabel", "Carbon hữu cơ (Organic Carbon ppm)"), "organic_carbon")}
+                        {renderInput(t("aiPredict.trihalomethanesLabel", "Trihalomethanes (μg/l)"), "trihalomethanes")}
+                        {renderInput(t("aiPredict.turbidityLabel", "Độ đục (Turbidity NTU)"), "turbidity")}
                     </View>
 
                     <TouchableOpacity style={styles.predictBtn} onPress={handlePredict} disabled={isLoading}>
                         {isLoading ? (
                             <ActivityIndicator color="#FFF" />
                         ) : (
-                            <Text style={styles.predictBtnText}>Dự đoán chất lượng</Text>
+                            <Text style={styles.predictBtnText}>{t("aiPredict.predictBtn", "Dự đoán chất lượng")}</Text>
                         )}
                     </TouchableOpacity>
                 </ScrollView>

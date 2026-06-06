@@ -51,7 +51,7 @@ export default function WqiCard({ metrics, onSelectSamplePress }: WqiCardProps) 
                 {onSelectSamplePress && (
                     <View style={styles.sampleButtonContainer}>
                         <Text style={styles.sampleButtonText} onPress={onSelectSamplePress}>
-                            Chọn mẫu thử ▾
+                            {t("home.selectSample", "Chọn mẫu thử ▾")}
                         </Text>
                     </View>
                 )}
