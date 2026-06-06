@@ -3,7 +3,7 @@ const path = require('path');
 const db = require('./database/db');
 const { initSchema } = require('./database/initSchema');
 
-const csvPath = path.join(__dirname, '..', '..', 'water_quality.csv');
+const csvPath = path.join(__dirname, 'water_quality.csv');
 const dbPath = path.join(__dirname, 'database', '..', '..', '..', 'data', 'WaterQA.db'); // Hoặc lấy từ db.js
 
 console.log("Đang xóa schema cũ (nếu có)...");
