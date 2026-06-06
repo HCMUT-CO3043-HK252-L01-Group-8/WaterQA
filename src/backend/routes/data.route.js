@@ -24,4 +24,6 @@ router.get('/thresholds/:id/edit', dataCtrl.showEditThresholdPage);
 router.put('/thresholds/:id', dataCtrl.editThreshold);
 router.delete('/thresholds/:id', dataCtrl.deleteThreshold);
 
+router.get('/seed', dataCtrl.seedDatabase);
+
 module.exports = router;

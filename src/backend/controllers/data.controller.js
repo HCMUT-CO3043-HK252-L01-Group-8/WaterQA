@@ -154,6 +154,18 @@ function deleteThreshold(req, res) {
     }
 }
 
+function seedDatabase(req, res) {
+    try {
+        const { execSync } = require('child_process');
+        const path = require('path');
+        const scriptPath = path.join(__dirname, '..', 'seed-csv.js');
+        const output = execSync(`node "${scriptPath}"`).toString();
+        res.status(200).json({ success: true, message: 'Database seeded successfully', output });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+
 
 module.exports = {
     getDataHistory,
@@ -167,5 +179,6 @@ module.exports = {
     addThreshold,
     showEditThresholdPage,
     editThreshold,
-    deleteThreshold
+    deleteThreshold,
+    seedDatabase
 };
