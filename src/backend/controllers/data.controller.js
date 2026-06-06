@@ -64,6 +64,20 @@ function exportToFile(req, res) {
 
 }
 
+function getLatestObservation(req, res) {
+    try {
+        const stationId = req.query.station_id ? parseInt(req.query.station_id) : 1;
+        const observation = dataService.getLatestObservation(stationId);
+        res.status(200).json({
+            success: true,
+            payload: observation,
+            timestamp: new Date().toISOString(),
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+
 async function getTelemetryData(req, res) {
     const feedKey = req.query.feedKey;
     const rowLimit = req.query.rowLimit ? parseInt(req.query.rowLimit) : null; // if no limit then fetch all
@@ -146,6 +160,7 @@ module.exports = {
     showDataHistory,
     getDataHistoryNoLimit,
     exportToFile,
+    getLatestObservation,
     getTelemetryData,
     getThresholdsRaw,
     showThresholdsPage,

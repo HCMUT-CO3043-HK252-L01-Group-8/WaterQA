@@ -13,6 +13,8 @@ router.get('/history', dataCtrl.getDataHistoryNoLimit);
 // router.get('/history', dataCtrl.showDataHistory);
 router.get('/export', dataCtrl.exportToFile);
 
+router.get('/latest', dataCtrl.getLatestObservation);
+
 router.get('/telemetry', dataCtrl.getTelemetryData);
 
 router.get('/thresholds', dataCtrl.getThresholdsRaw);

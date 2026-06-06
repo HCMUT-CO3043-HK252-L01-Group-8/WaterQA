@@ -164,8 +164,8 @@ const startDeviceMonitor = () => {
         }
     }, 5000); // 5000ms = 5 giây/lần → đủ để phát hiện chuỗi liên tục 10s (LIGHT_DURATION_MS)
 
-    // Cron job lưu dữ liệu lịch sử mỗi 1 giờ
-    cron.schedule('0 * * * *', async () => {
+    // Cron job lưu dữ liệu lịch sử mỗi 5 phút
+    cron.schedule('*/5 * * * *', async () => {
         try {
             console.log("Đang lấy dữ liệu từ Adafruit để lưu vào lịch sử...");
             let currentData = { temp: null, humi: null, light: null };
@@ -187,7 +187,16 @@ const startDeviceMonitor = () => {
                 0,                  // tank_surface_moisture
                 0,                  // lid_status
                 0,                  // leakage_signal
-                0                   // intrusion_signal
+                0,                  // intrusion_signal
+                null,               // ph
+                null,               // hardness
+                null,               // solids
+                null,               // chloramines
+                null,               // sulfate
+                null,               // conductivity
+                null,               // organic_carbon
+                null,               // trihalomethanes
+                null                // turbidity
             );
             console.log("Đã lưu lịch sử quan trắc thành công.");
         } catch (error) {

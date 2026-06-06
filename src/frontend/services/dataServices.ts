@@ -15,5 +15,12 @@ export const dataServices = {
             responseType: "blob",
             signal,
         });
+    },
+
+    getLatestObservation: (station_id?: number, signal?: AbortSignal) => {
+        return api.get<any, ApiResponse>("/data/latest", {
+            params: station_id ? { station_id } : {},
+            signal,
+        });
     }
 };

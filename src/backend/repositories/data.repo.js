@@ -7,12 +7,15 @@ class DataRepository {
     getDataHistoryNoLimit() {
         return db.prepare('SELECT * FROM OBSERVATION ORDER BY observation_id DESC').all();
     }
-    insertObservation(station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal) {
+    getLatestObservation(station_id) {
+        return db.prepare('SELECT * FROM OBSERVATION WHERE station_id = ? ORDER BY observation_id DESC LIMIT 1').get([station_id]);
+    }
+    insertObservation(station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal, ph, hardness, solids, chloramines, sulfate, conductivity, organic_carbon, trihalomethanes, turbidity) {
         return db.prepare(`
             INSERT INTO OBSERVATION (
-                station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run([station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal]);
+                station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal, ph, hardness, solids, chloramines, sulfate, conductivity, organic_carbon, trihalomethanes, turbidity
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run([station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal, ph, hardness, solids, chloramines, sulfate, conductivity, organic_carbon, trihalomethanes, turbidity]);
     }
     /**
  * Hàm lấy danh sách các trạm mất kết nối (Offline)

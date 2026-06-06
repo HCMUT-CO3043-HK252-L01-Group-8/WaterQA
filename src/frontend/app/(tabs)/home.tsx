@@ -12,6 +12,8 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { telemetryServices } from "@/services/telemetryServices";
+import { dataServices } from "@/services/dataServices";
+import { aiServices } from "@/services/aiServices";
 import { useTranslation } from "react-i18next";
 
 const LOCATIONS = ["268 Lý Thường Kiệt", "KTX Khu A - ĐHQG", "Khu Công Nghệ Cao", "Hồ Đá - Làng Đại Học"];
@@ -51,27 +53,82 @@ export default function HomeDashboard() {
             const tempVal = Number(snapshot.temp.value) || 0;
             const humiVal = Number(snapshot.humi.value) || 0;
             const lightVal = Number(snapshot.leakage.value) || 0;
+            
+            const stationId = LOCATIONS.indexOf(selectedLocation) + 1;
+            const obsRes = await dataServices.getLatestObservation(stationId);
+            
+            let wqiResult = tempVal; // Mặc định
+            let isSafeWater = tempVal >= 80;
+            let aiParams = {
+                ph: 7.2,
+                hardness: humiVal,
+                solids: 20000,
+                chloramines: 0.5,
+                sulfate: 300,
+                conductivity: 400,
+                organic_carbon: 10,
+                trihalomethanes: 60,
+                turbidity: lightVal
+            };
+
+            if (obsRes.success && obsRes.payload) {
+                const p = obsRes.payload;
+                aiParams = {
+                    ph: p.ph || 7.2,
+                    hardness: p.hardness || humiVal,
+                    solids: p.solids || 20000,
+                    chloramines: p.chloramines || 0.5,
+                    sulfate: p.sulfate || 300,
+                    conductivity: p.conductivity || 400,
+                    organic_carbon: p.organic_carbon || 10,
+                    trihalomethanes: p.trihalomethanes || 60,
+                    turbidity: p.turbidity || lightVal
+                };
+                
+                try {
+                    const aiRes = await aiServices.predictPotability({
+                        ph: aiParams.ph,
+                        Hardness: aiParams.hardness,
+                        Solids: aiParams.solids,
+                        Chloramines: aiParams.chloramines,
+                        Sulfate: aiParams.sulfate,
+                        Conductivity: aiParams.conductivity,
+                        Organic_carbon: aiParams.organic_carbon,
+                        Trihalomethanes: aiParams.trihalomethanes,
+                        Turbidity: aiParams.turbidity
+                    });
+                    
+                    if (aiRes.success) {
+                        const prob = aiRes.result.probability;
+                        const potable = aiRes.result.potable;
+                        wqiResult = Math.round(prob * 100);
+                        isSafeWater = potable;
+                    }
+                } catch (e) {
+                    console.log("Lỗi AI predict:", e);
+                }
+            }
 
             setWaterMetrics({
-                wqi: tempVal,
-                pH: 7.2,
-                hardness: humiVal,
-                clo: 0.5,
-                ntu: lightVal,
+                wqi: wqiResult,
+                pH: Number(aiParams.ph.toFixed(2)),
+                hardness: Number(aiParams.hardness.toFixed(1)),
+                clo: Number(aiParams.chloramines.toFixed(2)),
+                ntu: Number(aiParams.turbidity.toFixed(2)),
                 lastUpdated: new Date(snapshot.fetchedAt).toLocaleString("vi-VN"),
             });
 
             setStatusData({
-                wqiChange: tempVal >= 80 ? "+2" : "-15",
+                wqiChange: isSafeWater ? "+2" : "-15",
                 sensorStatus: snapshot.temp.value
                     ? t("home.sensorGood", "Hoạt động tốt")
                     : t("home.sensorDisconnect", "Mất kết nối"),
-                sensorIssue: snapshot.temp.value
+                sensorIssue: isSafeWater
                     ? t("home.sensorStable", "Tất cả cảm biến ổn định")
-                    : t("home.sensorCheck", "Kiểm tra kết nối trạm"),
+                    : t("home.sensorCheck", "Cảnh báo chất lượng nước từ AI"),
             });
 
-            setShowAlertBanner(tempVal < 80);
+            setShowAlertBanner(!isSafeWater);
         } catch (error) {
             console.log("Lỗi fetch data IoT:", error);
         } finally {

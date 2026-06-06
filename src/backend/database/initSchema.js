@@ -54,6 +54,15 @@ function initSchema() {
             lid_status INTEGER,
             leakage_signal INTEGER,
             intrusion_signal INTEGER,
+            ph REAL,
+            hardness REAL,
+            solids REAL,
+            chloramines REAL,
+            sulfate REAL,
+            conductivity REAL,
+            organic_carbon REAL,
+            trihalomethanes REAL,
+            turbidity REAL,
             timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (station_id) REFERENCES IOT_STATION(station_id)
         );
@@ -129,6 +138,19 @@ function initSchema() {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `).run('Admin', 'admin@waterqa.com', null, 'admin123', 'Admin', 1, now, now);
         console.log('[DB] Seeded default admin: admin@waterqa.com / admin123');
+    }
+
+    // Seed 4 default IoT stations
+    const countStations = db.prepare('SELECT COUNT(*) as cnt FROM IOT_STATION').get();
+    if (countStations.cnt < 4) {
+        const now = new Date().toISOString();
+        const stmt = db.prepare(`INSERT INTO IOT_STATION (station_name, location, status, installed_at) VALUES (?, ?, ?, ?)`);
+        db.exec('DELETE FROM IOT_STATION'); // Xóa cũ nếu có < 4 trạm để insert lại ID 1-4
+        stmt.run('Trạm 1', '268 Lý Thường Kiệt', 'Active', now);
+        stmt.run('Trạm 2', 'KTX Khu A - ĐHQG', 'Active', now);
+        stmt.run('Trạm 3', 'Khu Công Nghệ Cao', 'Active', now);
+        stmt.run('Trạm 4', 'Hồ Đá - Làng Đại Học', 'Active', now);
+        console.log('[DB] Seeded 4 default IoT Stations');
     }
 
     console.log('[DB] Schema initialized successfully');
