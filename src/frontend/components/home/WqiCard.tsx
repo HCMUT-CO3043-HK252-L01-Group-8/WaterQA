@@ -4,9 +4,10 @@ import { useTranslation } from "react-i18next";
 
 interface WqiCardProps {
     metrics: { wqi: number; pH: number; hardness: number; clo: number; ntu: number; lastUpdated: string };
+    onSelectSamplePress?: () => void;
 }
 
-export default function WqiCard({ metrics }: WqiCardProps) {
+export default function WqiCard({ metrics, onSelectSamplePress }: WqiCardProps) {
     const { t } = useTranslation();
 
     const getWqiConfig = (wqi: number) => {
@@ -47,6 +48,13 @@ export default function WqiCard({ metrics }: WqiCardProps) {
                     <Text style={[styles.title, { color: config.textColor }]}>{metrics.wqi}</Text>
                     <Text style={styles.subtitle}>{t("home.wqiSubtitle", "Chỉ số chất lượng nước (WQI)")}</Text>
                 </View>
+                {onSelectSamplePress && (
+                    <View style={styles.sampleButtonContainer}>
+                        <Text style={styles.sampleButtonText} onPress={onSelectSamplePress}>
+                            Chọn mẫu thử ▾
+                        </Text>
+                    </View>
+                )}
             </View>
 
             <View style={styles.metricsRow}>
@@ -85,4 +93,15 @@ const styles = StyleSheet.create({
     value: { fontSize: 18, color: "#0F172B", marginBottom: 2, fontFamily: "Inter-Bold" },
     label: { fontSize: 11, color: "#62748E", fontFamily: "Inter-Medium" },
     updateTime: { fontSize: 11, color: "#62748E", fontFamily: "Inter-Regular", textAlign: "center" },
+    sampleButtonContainer: {
+        backgroundColor: "#E2E8F0",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    sampleButtonText: {
+        fontSize: 12,
+        color: "#475569",
+        fontFamily: "Inter-Medium",
+    }
 });

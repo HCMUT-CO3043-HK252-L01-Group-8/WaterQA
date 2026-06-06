@@ -23,6 +23,8 @@ function getIconByRouteName(routeName: string, color: string) {
             return <Feather name="bell" size={18} color={color} />;
         case "settings":
             return <Feather name="settings" size={18} color={color} />;
+        case "ai-predict":
+            return <Feather name="sliders" size={18} color={color} />;
         default:
             return <Feather name="home" size={18} color={color} />;
     }

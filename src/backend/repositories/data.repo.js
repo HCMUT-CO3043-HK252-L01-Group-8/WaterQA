@@ -10,6 +10,9 @@ class DataRepository {
     getLatestObservation(station_id) {
         return db.prepare('SELECT * FROM OBSERVATION WHERE station_id = ? ORDER BY observation_id DESC LIMIT 1').get([station_id]);
     }
+    getStationHistory(station_id, limit) {
+        return db.prepare('SELECT * FROM OBSERVATION WHERE station_id = ? ORDER BY observation_id DESC LIMIT ?').all([station_id, limit]);
+    }
     insertObservation(station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal, ph, hardness, solids, chloramines, sulfate, conductivity, organic_carbon, trihalomethanes, turbidity) {
         return db.prepare(`
             INSERT INTO OBSERVATION (

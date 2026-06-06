@@ -43,6 +43,12 @@ export default function TabLayout() {
                     title: "Settings",
                 }}
             />
+            <Tabs.Screen
+                name="ai-predict"
+                options={{
+                    title: "Predict",
+                }}
+            />
         </Tabs>
     );
 }

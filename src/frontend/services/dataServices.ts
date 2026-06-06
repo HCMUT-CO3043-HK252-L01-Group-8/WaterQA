@@ -22,5 +22,12 @@ export const dataServices = {
             params: station_id ? { station_id } : {},
             signal,
         });
+    },
+
+    getStationHistory: (station_id: number, limit: number = 8, signal?: AbortSignal) => {
+        return api.get<any, ApiResponse>("/data/station-history", {
+            params: { station_id, limit },
+            signal,
+        });
     }
 };

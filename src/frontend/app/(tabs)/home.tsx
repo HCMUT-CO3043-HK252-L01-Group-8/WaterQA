@@ -8,7 +8,7 @@ import CustomToast from "@/components/ui/CustomToast";
 import LocationSelector from "@/components/ui/LocationSelector";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View, Modal, TouchableOpacity } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { telemetryServices } from "@/services/telemetryServices";
@@ -29,6 +29,13 @@ export default function HomeDashboard() {
     const [waterMetrics, setWaterMetrics] = useState({ wqi: 0, pH: 0, hardness: 0, clo: 0, ntu: 0, lastUpdated: "" });
     const [statusData, setStatusData] = useState({ wqiChange: "", sensorStatus: "", sensorIssue: "" });
     const [showAlertBanner, setShowAlertBanner] = useState(false);
+    
+    // States for sample selection
+    const [stationHistory, setStationHistory] = useState<any[]>([]);
+    const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
+    const [isSampleModalVisible, setSampleModalVisible] = useState(false);
+    const [latestSnapshot, setLatestSnapshot] = useState<any>(null);
+    
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -46,89 +53,87 @@ export default function HomeDashboard() {
         loadUser();
     }, []);
 
+    const processPrediction = async (sampleData: any, snapshot: any) => {
+        const tempVal = snapshot ? Number(snapshot.temp.value) || 0 : 34.3;
+        const humiVal = snapshot ? Number(snapshot.humi.value) || 0 : 60;
+        const lightVal = snapshot ? Number(snapshot.leakage.value) || 0 : 62;
+        
+        let wqiResult = tempVal; // Mặc định
+        let isSafeWater = tempVal >= 80;
+        
+        let aiParams = {
+            ph: sampleData?.ph || 7.2,
+            hardness: sampleData?.hardness || humiVal,
+            solids: sampleData?.solids || 20000,
+            chloramines: sampleData?.chloramines || 0.5,
+            sulfate: sampleData?.sulfate || 300,
+            conductivity: sampleData?.conductivity || 400,
+            organic_carbon: sampleData?.organic_carbon || 10,
+            trihalomethanes: sampleData?.trihalomethanes || 60,
+            turbidity: sampleData?.turbidity || lightVal
+        };
+
+        try {
+            const aiRes = await aiServices.predictPotability({
+                ph: aiParams.ph,
+                Hardness: aiParams.hardness,
+                Solids: aiParams.solids,
+                Chloramines: aiParams.chloramines,
+                Sulfate: aiParams.sulfate,
+                Conductivity: aiParams.conductivity,
+                Organic_carbon: aiParams.organic_carbon,
+                Trihalomethanes: aiParams.trihalomethanes,
+                Turbidity: aiParams.turbidity
+            });
+            
+            if (aiRes.success) {
+                const prob = aiRes.result.probability;
+                const potable = aiRes.result.potable;
+                wqiResult = Math.round(prob * 100);
+                isSafeWater = potable;
+            }
+        } catch (e) {
+            console.log("Lỗi AI predict:", e);
+        }
+
+        setWaterMetrics({
+            wqi: wqiResult,
+            pH: Number(aiParams.ph.toFixed(2)),
+            hardness: Number(aiParams.hardness.toFixed(1)),
+            clo: Number(aiParams.chloramines.toFixed(2)),
+            ntu: Number(aiParams.turbidity.toFixed(2)),
+            lastUpdated: sampleData?.timestamp ? new Date(sampleData.timestamp).toLocaleString("vi-VN") : new Date().toLocaleString("vi-VN"),
+        });
+
+        setStatusData({
+            wqiChange: isSafeWater ? "+2" : "-15",
+            sensorStatus: snapshot?.temp?.value
+                ? t("home.sensorGood", "Hoạt động tốt")
+                : t("home.sensorDisconnect", "Mất kết nối"),
+            sensorIssue: isSafeWater
+                ? t("home.sensorStable", "Tất cả cảm biến ổn định")
+                : t("home.sensorCheck", "Cảnh báo chất lượng nước từ AI"),
+        });
+
+        setShowAlertBanner(!isSafeWater);
+    };
+
     const fetchDashboardData = async () => {
         try {
             const snapshot = await telemetryServices.getLatestTelemetrySnapshot();
-
-            const tempVal = Number(snapshot.temp.value) || 0;
-            const humiVal = Number(snapshot.humi.value) || 0;
-            const lightVal = Number(snapshot.leakage.value) || 0;
+            setLatestSnapshot(snapshot);
             
             const stationId = LOCATIONS.indexOf(selectedLocation) + 1;
-            const obsRes = await dataServices.getLatestObservation(stationId);
+            const historyRes = await dataServices.getStationHistory(stationId, 8);
             
-            let wqiResult = tempVal; // Mặc định
-            let isSafeWater = tempVal >= 80;
-            let aiParams = {
-                ph: 7.2,
-                hardness: humiVal,
-                solids: 20000,
-                chloramines: 0.5,
-                sulfate: 300,
-                conductivity: 400,
-                organic_carbon: 10,
-                trihalomethanes: 60,
-                turbidity: lightVal
-            };
-
-            if (obsRes.success && obsRes.payload) {
-                const p = obsRes.payload;
-                aiParams = {
-                    ph: p.ph || 7.2,
-                    hardness: p.hardness || humiVal,
-                    solids: p.solids || 20000,
-                    chloramines: p.chloramines || 0.5,
-                    sulfate: p.sulfate || 300,
-                    conductivity: p.conductivity || 400,
-                    organic_carbon: p.organic_carbon || 10,
-                    trihalomethanes: p.trihalomethanes || 60,
-                    turbidity: p.turbidity || lightVal
-                };
-                
-                try {
-                    const aiRes = await aiServices.predictPotability({
-                        ph: aiParams.ph,
-                        Hardness: aiParams.hardness,
-                        Solids: aiParams.solids,
-                        Chloramines: aiParams.chloramines,
-                        Sulfate: aiParams.sulfate,
-                        Conductivity: aiParams.conductivity,
-                        Organic_carbon: aiParams.organic_carbon,
-                        Trihalomethanes: aiParams.trihalomethanes,
-                        Turbidity: aiParams.turbidity
-                    });
-                    
-                    if (aiRes.success) {
-                        const prob = aiRes.result.probability;
-                        const potable = aiRes.result.potable;
-                        wqiResult = Math.round(prob * 100);
-                        isSafeWater = potable;
-                    }
-                } catch (e) {
-                    console.log("Lỗi AI predict:", e);
-                }
+            if (historyRes.success && historyRes.payload && historyRes.payload.length > 0) {
+                setStationHistory(historyRes.payload);
+                setSelectedSampleIndex(0);
+                await processPrediction(historyRes.payload[0], snapshot);
+            } else {
+                setStationHistory([]);
+                await processPrediction(null, snapshot);
             }
-
-            setWaterMetrics({
-                wqi: wqiResult,
-                pH: Number(aiParams.ph.toFixed(2)),
-                hardness: Number(aiParams.hardness.toFixed(1)),
-                clo: Number(aiParams.chloramines.toFixed(2)),
-                ntu: Number(aiParams.turbidity.toFixed(2)),
-                lastUpdated: new Date(snapshot.fetchedAt).toLocaleString("vi-VN"),
-            });
-
-            setStatusData({
-                wqiChange: isSafeWater ? "+2" : "-15",
-                sensorStatus: snapshot.temp.value
-                    ? t("home.sensorGood", "Hoạt động tốt")
-                    : t("home.sensorDisconnect", "Mất kết nối"),
-                sensorIssue: isSafeWater
-                    ? t("home.sensorStable", "Tất cả cảm biến ổn định")
-                    : t("home.sensorCheck", "Cảnh báo chất lượng nước từ AI"),
-            });
-
-            setShowAlertBanner(!isSafeWater);
         } catch (error) {
             console.log("Lỗi fetch data IoT:", error);
         } finally {
@@ -148,6 +153,14 @@ export default function HomeDashboard() {
         await fetchDashboardData();
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
+    };
+    
+    const handleSelectSample = (index: number) => {
+        setSelectedSampleIndex(index);
+        setSampleModalVisible(false);
+        if (stationHistory[index]) {
+            processPrediction(stationHistory[index], latestSnapshot);
+        }
     };
 
     if (isLoading && !refreshing) return <HomeSkeleton userName={userName} />;
@@ -202,7 +215,10 @@ export default function HomeDashboard() {
                         onSelect={setSelectedLocation}
                     />
 
-                    <WqiCard metrics={waterMetrics} />
+                    <WqiCard 
+                        metrics={waterMetrics} 
+                        onSelectSamplePress={() => setSampleModalVisible(true)} 
+                    />
 
                     <StatusSummary
                         wqiChange={statusData.wqiChange}
@@ -214,6 +230,39 @@ export default function HomeDashboard() {
                     <WaterChart />
                 </ScrollView>
             </SafeAreaView>
+            
+            <Modal visible={isSampleModalVisible} transparent animationType="slide">
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Chọn bộ dữ liệu mẫu</Text>
+                            <TouchableOpacity onPress={() => setSampleModalVisible(false)}>
+                                <Text style={styles.closeText}>Đóng</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={styles.sampleList}>
+                            {stationHistory.map((item, index) => (
+                                <TouchableOpacity 
+                                    key={index} 
+                                    style={[
+                                        styles.sampleItem, 
+                                        selectedSampleIndex === index && styles.sampleItemSelected
+                                    ]}
+                                    onPress={() => handleSelectSample(index)}
+                                >
+                                    <View>
+                                        <Text style={styles.sampleName}>Mẫu dữ liệu {index + 1}</Text>
+                                        <Text style={styles.sampleDetail}>pH: {Number(item.ph).toFixed(2)} | WQI Data: {new Date(item.timestamp).toLocaleString("vi-VN")}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                            {stationHistory.length === 0 && (
+                                <Text style={styles.emptyText}>Chưa có dữ liệu mẫu cho trạm này</Text>
+                            )}
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -227,4 +276,15 @@ const styles = StyleSheet.create({
     greetingTitle: { fontSize: 20, color: "#0F172B", marginBottom: 4, fontFamily: "Inter-Regular" },
     userName: { fontFamily: "Inter-Bold" },
     greetingSubtitle: { fontSize: 13, color: "#45556C", fontFamily: "Inter-Regular" },
+    modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
+    modalContent: { backgroundColor: "#FFF", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: "70%" },
+    modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
+    modalTitle: { fontSize: 18, fontFamily: "Inter-Bold", color: "#0F172B" },
+    closeText: { fontSize: 16, color: "#00A89D", fontFamily: "Inter-Medium" },
+    sampleList: { marginBottom: 20 },
+    sampleItem: { padding: 16, borderRadius: 12, backgroundColor: "#F8FAFC", marginBottom: 12, borderWidth: 1, borderColor: "#E2E8F0" },
+    sampleItemSelected: { borderColor: "#00A89D", backgroundColor: "#E6F6F5" },
+    sampleName: { fontSize: 16, fontFamily: "Inter-Bold", color: "#0F172B", marginBottom: 4 },
+    sampleDetail: { fontSize: 12, fontFamily: "Inter-Regular", color: "#64748B" },
+    emptyText: { textAlign: "center", color: "#64748B", marginTop: 20 }
 });
