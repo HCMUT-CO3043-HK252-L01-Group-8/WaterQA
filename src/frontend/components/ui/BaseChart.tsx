@@ -135,7 +135,7 @@ export default function BaseChart({
                 <View style={styles.xAxisContainer}>
                     {labels.map((label, i) => {
                         const isCrowded = labels.length > 7;
-                        const labelWidth = isCrowded ? 24 : 35;
+                        const labelWidth = isCrowded ? 30 : 35;
                         const labelFontSize = isCrowded ? 10 : 11;
                         const isHighlighted = (highlightIndex !== undefined && i === highlightIndex) || (highlightMax && i === maxIndex);
 

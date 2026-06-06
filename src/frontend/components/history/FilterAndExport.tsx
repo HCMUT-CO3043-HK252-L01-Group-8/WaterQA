@@ -20,7 +20,10 @@ export default function FilterAndExport({ activeFilter, onFilterChange, onExport
 
     return (
         <View style={styles.filterActionSection}>
-            <CustomFilterTab options={filterOptions} activeOption={activeFilter} onOptionChange={onFilterChange} />
+            <View style={styles.leftFilterGroup}>
+                <Text style={styles.filterLabel}>{t("Xem theo:")}</Text>
+                <CustomFilterTab options={filterOptions} activeOption={activeFilter} onOptionChange={onFilterChange} />
+            </View>
 
             {Platform.OS === "web" && (
                 <TouchableOpacity style={styles.exportBtn} onPress={onExport}>
@@ -39,6 +42,17 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginHorizontal: 16,
         marginBottom: 16,
+    },
+    leftFilterGroup: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+    },
+
+    filterLabel: {
+        fontSize: 13,
+        color: "#64748B",
+        fontFamily: "Inter-Medium",
     },
     exportBtn: {
         flexDirection: "row",

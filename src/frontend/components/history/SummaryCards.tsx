@@ -3,11 +3,13 @@ import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 interface SummaryCardsProps {
-    todayWqi: number;
+    todayWqi: number | string;
     trendValue: string;
+    avgDesc: string;
+    trendDesc: string;
 }
 
-export default function SummaryCards({ todayWqi, trendValue }: SummaryCardsProps) {
+export default function SummaryCards({ todayWqi, trendValue, avgDesc, trendDesc }: SummaryCardsProps) {
     const { t } = useTranslation();
     const isPositive = trendValue.includes("+");
     const trendColor = isPositive ? "#00A63E" : "#E7000B";
@@ -18,7 +20,7 @@ export default function SummaryCards({ todayWqi, trendValue }: SummaryCardsProps
                 icon="droplet"
                 label={t("history.today", "Hôm nay")}
                 value={todayWqi}
-                desc={t("history.avgWqi", "Nhiệt độ trung bình")}
+                desc={avgDesc}
                 valueColor="#0092B8"
                 bgColor="#ECFEFF"
                 borderColor="#0092B8"
@@ -27,7 +29,7 @@ export default function SummaryCards({ todayWqi, trendValue }: SummaryCardsProps
                 icon={isPositive ? "trending-up" : "trending-down"}
                 label={t("history.comparedToYesterday", "so với Hôm qua")}
                 value={trendValue}
-                desc={t("Chỉ số nhiệt độ")}
+                desc={trendDesc}
                 valueColor={trendColor}
                 bgColor={isPositive ? "#F0FDF4" : "#FEF2F2"}
                 borderColor={trendColor}
