@@ -3,13 +3,23 @@ const path = require('path');
 const db = require('./database/db');
 const { initSchema } = require('./database/initSchema');
 
-console.log("Đang khởi tạo lại schema (nếu cần)...");
+const csvPath = path.join(__dirname, '..', '..', 'water_quality.csv');
+const dbPath = path.join(__dirname, 'database', '..', '..', '..', 'data', 'WaterQA.db'); // Hoặc lấy từ db.js
+
+console.log("Đang xóa schema cũ (nếu có)...");
+db.exec("DROP TABLE IF EXISTS AI_PREDICTION");
+db.exec("DROP TABLE IF EXISTS ALERT");
+db.exec("DROP TABLE IF EXISTS NOTIFICATION");
+db.exec("DROP TABLE IF EXISTS OBSERVATION");
+db.exec("DROP TABLE IF EXISTS SENSOR");
+db.exec("DROP TABLE IF EXISTS ALERT_THRESHOLD");
+db.exec("DROP TABLE IF EXISTS IOT_STATION");
+
+console.log("Đang khởi tạo lại schema...");
 initSchema();
 
-const csvPath = path.join(__dirname, '..', '..', 'water_potability.csv');
-
 if (!fs.existsSync(csvPath)) {
-    console.error("Không tìm thấy file water_potability.csv tại:", csvPath);
+    console.error("Không tìm thấy file water_quality.csv tại:", csvPath);
     process.exit(1);
 }
 
