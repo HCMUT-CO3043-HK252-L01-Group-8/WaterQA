@@ -88,9 +88,8 @@ export default function HomeDashboard() {
             
             if (aiRes.success) {
                 const prob = aiRes.result.probability;
-                const potable = aiRes.result.potable;
                 wqiResult = Math.round(prob * 100);
-                isSafeWater = potable;
+                isSafeWater = prob >= 0.5;
             }
         } catch (e) {
             console.log("Lỗi AI predict:", e);

@@ -38,7 +38,7 @@ export default function AiPredictScreen() {
             if (aiRes.success) {
                 setResult({
                     prob: aiRes.result.probability,
-                    potable: aiRes.result.potable
+                    potable: aiRes.result.probability >= 0.5
                 });
             } else {
                 setResult(null);
