@@ -1,6 +1,6 @@
 import CustomFilterTab from "@/components/ui/CustomFilterTab";
 import { Feather } from "@expo/vector-icons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 
 interface FilterAndExportProps {
@@ -22,10 +22,12 @@ export default function FilterAndExport({ activeFilter, onFilterChange, onExport
         <View style={styles.filterActionSection}>
             <CustomFilterTab options={filterOptions} activeOption={activeFilter} onOptionChange={onFilterChange} />
 
-            <TouchableOpacity style={styles.exportBtn} onPress={onExport}>
-                <Feather name="download" size={14} color="#209FC1" style={styles.exportIcon} />
-                <Text style={styles.exportText}>{t("history.export", "Xuất báo cáo")}</Text>
-            </TouchableOpacity>
+            {Platform.OS === "web" && (
+                <TouchableOpacity style={styles.exportBtn} onPress={onExport}>
+                    <Feather name="download" size={14} color="#209FC1" style={styles.exportIcon} />
+                    <Text style={styles.exportText}>{t("history.export", "Xuất báo cáo")}</Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 }

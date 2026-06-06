@@ -163,5 +163,36 @@ const startDeviceMonitor = () => {
             console.error("Lỗi trong quá trình chạy hệ thống giám sát tự động:", error.message);
         }
     }, 5000); // 5000ms = 5 giây/lần → đủ để phát hiện chuỗi liên tục 10s (LIGHT_DURATION_MS)
+
+    // Cron job lưu dữ liệu lịch sử mỗi 1 giờ
+    cron.schedule('0 * * * *', async () => {
+        try {
+            console.log("Đang lấy dữ liệu từ Adafruit để lưu vào lịch sử...");
+            let currentData = { temp: null, humi: null, light: null };
+
+            for (let feedKey of FEEDS_TO_MONITOR) {
+                const response = await dataService.getTelemetryData(feedKey, 1);
+                if (response && response.data && response.data.length > 0) {
+                    currentData[feedKey] = parseFloat(response.data[0].value);
+                }
+            }
+
+            const stationId = 1; // Mặc định trạm 1
+            dataService.insertObservation(
+                stationId,
+                currentData.light,  // light_intensity
+                0,                  // water_level
+                currentData.temp,   // temperature
+                currentData.humi,   // humidity
+                0,                  // tank_surface_moisture
+                0,                  // lid_status
+                0,                  // leakage_signal
+                0                   // intrusion_signal
+            );
+            console.log("Đã lưu lịch sử quan trắc thành công.");
+        } catch (error) {
+            console.error("Lỗi khi lưu lịch sử quan trắc:", error.message);
+        }
+    });
 };
 module.exports = { startDeviceMonitor };

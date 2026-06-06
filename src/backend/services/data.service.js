@@ -8,6 +8,9 @@ class DataService {
     getDataHistoryNoLimit() {
         return dataRepo.getDataHistoryNoLimit();
     }
+    insertObservation(station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal) {
+        return dataRepo.insertObservation(station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal);
+    }
 
     async getTelemetryData(feedKey, rowLimit) {
         try {

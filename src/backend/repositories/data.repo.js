@@ -7,6 +7,13 @@ class DataRepository {
     getDataHistoryNoLimit() {
         return db.prepare('SELECT * FROM OBSERVATION ORDER BY observation_id DESC').all();
     }
+    insertObservation(station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal) {
+        return db.prepare(`
+            INSERT INTO OBSERVATION (
+                station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run([station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal]);
+    }
     /**
  * Hàm lấy danh sách các trạm mất kết nối (Offline)
  * @param {number} minutesLimit - Số phút tối đa cho phép không có dữ liệu
