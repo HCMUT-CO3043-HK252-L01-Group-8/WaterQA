@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import { Feather } from "@expo/vector-icons";
 import AppHeader from "@/components/ui/AppHeader";
-import Card from "@/components/ui/Card";
 import AlertBanner from "@/components/ui/AlertBanner";
+import GaugeChart from "@/components/ui/GaugeChart";
 import { telemetryServices } from "@/services/telemetryServices";
 import { THRESHOLDS, REFRESH_INTERVALS } from "@/configs/feeds";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -76,7 +76,7 @@ export default function IotDashboard() {
                 }
             } catch (err) {
                 if ((err as any)?.name === "AbortError") return;
-                console.error(err);
+                console.log(err);
                 setError(t("common.error", "Không thể tải dữ liệu từ máy chủ. Vui lòng kiểm tra mạng."));
             } finally {
                 if (thisReq === requestSeq.current) {
@@ -135,7 +135,7 @@ export default function IotDashboard() {
             alerts.unshift(newAlert);
             await AsyncStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts));
         } catch (e) {
-            console.error("Lỗi lưu cảnh báo:", e);
+            console.log("Lỗi lưu cảnh báo:", e);
         }
     };
 
@@ -163,6 +163,15 @@ export default function IotDashboard() {
 
     const isEmpty = data.temp === null && data.humi === null && data.light === null;
 
+    if (loading && !refreshing) return (
+        <SafeAreaView style={styles.safeArea}>
+            <View style={styles.centerBox}>
+                <ActivityIndicator size="large" color="#00A89D" />
+                <Text style={styles.loadingText}>{t("Đang tải dữ liệu...")}</Text>
+            </View>
+        </SafeAreaView>
+    );
+
     return (
         <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
             <ScrollView
@@ -178,12 +187,7 @@ export default function IotDashboard() {
                     </Text>
                 </View>
 
-                {loading && !refreshing ? (
-                    <View style={styles.centerBox}>
-                        <ActivityIndicator size="large" color="#00A89D" />
-                        <Text style={styles.loadingText}>{t("iot.fetching", "Đang tải dữ liệu...")}</Text>
-                    </View>
-                ) : error ? (
+                {error ? (
                     <View style={styles.errorBox}>
                         <Feather name="alert-circle" size={16} color="#991B1B" />
                         <Text style={styles.errorText}>{error}</Text>
@@ -191,7 +195,7 @@ export default function IotDashboard() {
                 ) : isEmpty ? (
                     <View style={styles.emptyBox}>
                         <Feather name="inbox" size={24} color="#94A3B8" style={{ marginBottom: 12 }} />
-                        <Text style={styles.emptyText}>{t("iot.noData", "Không có dữ liệu viễn trắc.")}</Text>
+                        <Text style={styles.emptyText}>{t("iot.noData", "Không có dữ liệu quan trắc.")}</Text>
                     </View>
                 ) : (
                     <View>
@@ -217,56 +221,47 @@ export default function IotDashboard() {
                             onClose={() => setShowLightBanner(false)}
                         />
 
-                        <View style={styles.cardsGrid}>
-                            <Card style={[styles.halfCard, isTempHigh && styles.cardWarning, { marginRight: 8 }]}>
-                                <Feather
-                                    name="thermometer"
-                                    size={28}
-                                    color={isTempHigh ? "#EA580C" : "#0891B2"}
-                                    style={styles.cardIcon}
+                        <View style={styles.gaugeGrid}>
+                            <View style={styles.gaugeColumnLeft}>
+                                <GaugeChart
+                                    title={t("iot.temperature", "Nhiệt độ")}
+                                    value={data.temp !== null ? Number(data.temp) : 0}
+                                    min={0}
+                                    max={100}
+                                    unit="°C"
+                                    activeColor={isTempHigh ? "#991B1B" : "#0891B2"}
                                 />
-                                <Text style={styles.cardLabel}>{t("iot.temperature", "Nhiệt độ")}</Text>
-                                <Text style={[styles.cardValue, isTempHigh && styles.textWarning]}>
-                                    {data.temp !== null ? `${data.temp}°C` : "--"}
+                                <Text style={styles.gridStatusText}>
+                                    {isTempHigh ? t("iot.aboveNormal", "Cao") : t("iot.normal", "Bình thường")}
                                 </Text>
-                                <Text style={styles.cardStatus}>
-                                    {isTempHigh
-                                        ? t("iot.aboveNormal", "Cao hơn bình thường")
-                                        : t("iot.normal", "Bình thường")}
-                                </Text>
-                            </Card>
-
-                            <Card style={[styles.halfCard, isHumiHigh && styles.cardWarning, { marginLeft: 8 }]}>
-                                <Feather
-                                    name="droplet"
-                                    size={28}
-                                    color={isHumiHigh ? "#EA580C" : "#0891B2"}
-                                    style={styles.cardIcon}
+                            </View>
+                            <View style={styles.gaugeColumnRight}>
+                                <GaugeChart
+                                    title={t("iot.humidity", "Độ ẩm")}
+                                    value={data.humi !== null ? Number(data.humi) : 0}
+                                    min={0}
+                                    max={100}
+                                    unit="%"
+                                    activeColor={isHumiHigh ? "#991B1B" : "#00A63E"}
                                 />
-                                <Text style={styles.cardLabel}>{t("iot.humidity", "Độ ẩm")}</Text>
-                                <Text style={[styles.cardValue, isHumiHigh && styles.textWarning]}>
-                                    {data.humi !== null ? `${data.humi}%` : "--"}
-                                </Text>
-                                <Text style={styles.cardStatus}>
+                                <Text style={styles.gridStatusText}>
                                     {isHumiHigh ? t("iot.high", "Cao") : t("iot.normal", "Bình thường")}
                                 </Text>
-                            </Card>
+                            </View>
                         </View>
 
-                        <Card style={[isLidOpened() && styles.cardDanger]}>
-                            <Feather
-                                name="sun"
-                                size={28}
-                                color={isLidOpened() ? "#DC2626" : "#0891B2"}
-                                style={styles.cardIcon}
+                        <View style={styles.lightSectionContainer}>
+                            <GaugeChart
+                                title={t("iot.lightLevel", "Ánh sáng")} 
+                                value={lightValue !== null ? lightValue : 0}
+                                min={0}
+                                max={100}
+                                unit="Lux"
+                                activeColor={isLidOpened() ? "#991B1B" : isLightHigh ? "#EAB308" : "#0891B2"}
                             />
-                            <Text style={styles.cardLabel}>{t("iot.lightLevel", "Ánh sáng")}</Text>
-                            <Text style={[styles.cardValue, isLidOpened() && styles.textDanger]}>
-                                {lightValue !== null ? `${lightValue}` : "--"}
-                            </Text>
-                            <Text style={styles.cardStatus}>
+                            <Text style={styles.lightStatusText}>
                                 {isLidOpened()
-                                    ? t("iot.lidOpenedAlert", "🚨 Mở nắp! (≥60 trong 5s)")
+                                    ? t("iot.lidOpenedAlert", "Mở nắp! (≥60 trong 5s)")
                                     : isLightHigh
                                       ? t("iot.highLight", "Cao ({{light}} ≥ {{threshold}})")
                                             .replace("{{light}}", String(lightValue))
@@ -275,7 +270,7 @@ export default function IotDashboard() {
                                         ? t("iot.normalLight", "Bình thường (< 50)")
                                         : t("iot.lowLight", "Ánh sáng yếu")}
                             </Text>
-                        </Card>
+                        </View>
                     </View>
                 )}
             </ScrollView>
@@ -288,7 +283,7 @@ const styles = StyleSheet.create({
     header: { padding: 16, marginBottom: 8 },
     pageTitle: { fontSize: 24, color: "#0F172B", fontFamily: "Inter-SemiBold", marginTop: 5, marginBottom: 4 },
     pageSubtitle: { fontSize: 13, color: "#45556C", fontFamily: "Inter-Regular" },
-    centerBox: { padding: 40, alignItems: "center", justifyContent: "center" },
+    centerBox: { flex: 1, padding: 40, alignItems: "center", justifyContent: "center" },
     loadingText: { marginTop: 12, color: "#64748B", fontSize: 14, fontFamily: "Inter-Regular" },
     errorBox: {
         flexDirection: "row",
@@ -313,14 +308,33 @@ const styles = StyleSheet.create({
         borderColor: "#E2E8F0",
     },
     emptyText: { color: "#94A3B8", fontSize: 14, fontFamily: "Inter-Regular" },
-    cardsGrid: { flexDirection: "row", paddingHorizontal: 16 },
-    halfCard: { flex: 1, marginHorizontal: 0 },
+
+    gaugeGrid: { flexDirection: "row", paddingHorizontal: 16, width: "100%", marginTop: 8 },
+    gaugeColumnLeft: { flex: 1, marginRight: 8, alignItems: "center" },
+    gaugeColumnRight: { flex: 1, marginLeft: 8, alignItems: "center" },
+    
+    gridStatusText: {
+        fontSize: 12,
+        color: "#64748B",
+        fontFamily: "Inter-Medium",
+        marginTop: 10,
+        textAlign: "center"
+    },
+
+    lightSectionContainer: { 
+        paddingHorizontal: 16, 
+        marginTop: 20, 
+        alignItems: "center" 
+    },
+    lightStatusText: { 
+        fontSize: 12, 
+        color: "#64748B", 
+        fontFamily: "Inter-Medium",
+        textAlign: "center", 
+        marginTop: 10,
+        marginBottom: 10,
+    },
+
     cardWarning: { borderColor: "#FDBA74", backgroundColor: "#FFF7ED" },
     cardDanger: { borderColor: "#FCA5A5", backgroundColor: "#FEF2F2" },
-    cardIcon: { marginBottom: 12 },
-    cardLabel: { fontSize: 14, color: "#64748B", marginBottom: 8, fontFamily: "Inter-Medium" },
-    cardValue: { fontSize: 32, color: "#0F172B", marginBottom: 4, fontFamily: "Inter-Bold" },
-    cardStatus: { fontSize: 12, color: "#94A3B8", fontFamily: "Inter-Regular" },
-    textWarning: { color: "#EA580C" },
-    textDanger: { color: "#DC2626" },
 });
