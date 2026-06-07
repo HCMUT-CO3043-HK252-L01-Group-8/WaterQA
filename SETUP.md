@@ -477,3 +477,19 @@ Nhấn `r` trong terminal để reload, hoặc lắc điện thoại → chọn 
 - **ML**: TensorFlow.js (dự đoán chất lượng nước)
 - **Email**: Brevo SMTP (OTP quên mật khẩu)
 - **Deploy**: Railway (backend auto-deploy từ GitHub `main`)
+
+# Huấn luyện model
+
+## Yêu cầu dependency:
+
+tfjs-node yêu cầu nodejs phiên bản 22 (lts) thể thực thi.
+
+## Hướng dẫn
+
+Bước 1: Di chuyển vào thư mục src/backend/model
+
+Bước 2: Chạy lệnh `node trainer.js`
+
+Sau khi hoàn tất, model sẽ được lưu vào thư mục data/
+
+Để hệ thống deploy thấy được thay đổi mới, hãy commit và push.
