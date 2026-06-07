@@ -19,8 +19,9 @@
     "test:coverage": "jest --coverage --runInBand"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "@tensorflow/tfjs-vis": "^1.5.1",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.9.0",
     "dayjs": "^1.11.20",
@@ -35,5 +36,13 @@
   },
   "devDependencies": {
     "jest": "^30.4.2"
+  },
+  "allowScripts": {
+    "@tensorflow/tfjs-node@4.22.0": true,
+    "bcrypt@6.0.0": true,
+    "better-sqlite3@12.10.0": true,
+    "core-js@3.29.1": true,
+    "preact@8.2.9": true,
+    "unrs-resolver@1.12.2": true
   }
 }
