@@ -116,7 +116,7 @@ async function run() {
       epochs: 75,
       batchSize: 32,
       shuffle: true,
-      validationSplit: 0.1,
+      validationSplit: 0.2,
     });
 
     updateStatus("Training complete!");
@@ -164,7 +164,7 @@ async function run() {
 }
 
 function updateStatus(message) {
-  console.log(`Status + ${message}`);
+  console.log(message);
 }
 
 run();
