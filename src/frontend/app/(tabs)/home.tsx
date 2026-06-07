@@ -53,24 +53,24 @@ export default function HomeDashboard() {
         loadUser();
     }, []);
 
-    const processPrediction = async (sampleData: any, snapshot: any) => {
-        const tempVal = snapshot ? Number(snapshot.temp.value) || 0 : 34.3;
-        const humiVal = snapshot ? Number(snapshot.humi.value) || 0 : 60;
-        const lightVal = snapshot ? Number(snapshot.leakage.value) || 0 : 62;
+    const processPrediction = async (snapshot: any) => {
+        const tempVal = snapshot ? Number(snapshot.temp?.value) || 0 : 34.3;
+        const humiVal = snapshot ? Number(snapshot.humi?.value) || 0 : 60;
+        const lightVal = snapshot ? Number(snapshot.leakage?.value) || 0 : 62;
         
         let wqiResult = tempVal; // Mặc định
         let isSafeWater = tempVal >= 80;
         
         let aiParams = {
-            ph: sampleData?.ph || 7.2,
-            hardness: sampleData?.hardness || humiVal,
-            solids: sampleData?.solids || 20000,
-            chloramines: sampleData?.chloramines || 0.5,
-            sulfate: sampleData?.sulfate || 300,
-            conductivity: sampleData?.conductivity || 400,
-            organic_carbon: sampleData?.organic_carbon || 10,
-            trihalomethanes: sampleData?.trihalomethanes || 60,
-            turbidity: sampleData?.turbidity || lightVal
+            ph: snapshot?.ph?.value ? Number(snapshot.ph.value) : 7.2,
+            hardness: snapshot?.hardness?.value ? Number(snapshot.hardness.value) : humiVal,
+            solids: snapshot?.solids?.value ? Number(snapshot.solids.value) : 20000,
+            chloramines: snapshot?.chloramines?.value ? Number(snapshot.chloramines.value) : 0.5,
+            sulfate: snapshot?.sulfate?.value ? Number(snapshot.sulfate.value) : 300,
+            conductivity: snapshot?.conductivity?.value ? Number(snapshot.conductivity.value) : 400,
+            organic_carbon: snapshot?.organic_carbon?.value ? Number(snapshot.organic_carbon.value) : 10,
+            trihalomethanes: snapshot?.trihalomethanes?.value ? Number(snapshot.trihalomethanes.value) : 60,
+            turbidity: snapshot?.turbidity?.value ? Number(snapshot.turbidity.value) : lightVal
         };
 
         try {
@@ -101,7 +101,7 @@ export default function HomeDashboard() {
             hardness: Number(aiParams.hardness.toFixed(1)),
             clo: Number(aiParams.chloramines.toFixed(2)),
             ntu: Number(aiParams.turbidity.toFixed(2)),
-            lastUpdated: sampleData?.timestamp ? new Date(sampleData.timestamp).toLocaleString("vi-VN") : new Date().toLocaleString("vi-VN"),
+            lastUpdated: snapshot?.fetchedAt ? new Date(snapshot.fetchedAt).toLocaleString("vi-VN") : new Date().toLocaleString("vi-VN"),
         });
 
         setStatusData({
@@ -128,11 +128,11 @@ export default function HomeDashboard() {
             if (historyRes.success && historyRes.payload && historyRes.payload.length > 0) {
                 setStationHistory(historyRes.payload);
                 setSelectedSampleIndex(0);
-                await processPrediction(historyRes.payload[0], snapshot);
             } else {
                 setStationHistory([]);
-                await processPrediction(null, snapshot);
             }
+
+            await processPrediction(snapshot);
         } catch (error) {
             console.log("Lỗi fetch data IoT:", error);
         } finally {
@@ -157,8 +157,8 @@ export default function HomeDashboard() {
     const handleSelectSample = (index: number) => {
         setSelectedSampleIndex(index);
         setSampleModalVisible(false);
-        if (stationHistory[index]) {
-            processPrediction(stationHistory[index], latestSnapshot);
+        if (latestSnapshot) {
+            processPrediction(latestSnapshot);
         }
     };
 

@@ -7,6 +7,15 @@ export type TelemetrySnapshot = {
     temp: LatestTelemetryValue;
     humi: LatestTelemetryValue;
     leakage: LatestTelemetryValue;
+    ph: LatestTelemetryValue;
+    hardness: LatestTelemetryValue;
+    solids: LatestTelemetryValue;
+    chloramines: LatestTelemetryValue;
+    sulfate: LatestTelemetryValue;
+    conductivity: LatestTelemetryValue;
+    organic_carbon: LatestTelemetryValue;
+    trihalomethanes: LatestTelemetryValue;
+    turbidity: LatestTelemetryValue;
     fetchedAt: string;
 };
 
@@ -37,16 +46,38 @@ export const telemetryServices = {
     },
 
     getLatestTelemetrySnapshot: async (signal?: AbortSignal): Promise<TelemetrySnapshot> => {
-        const [temp, humi, light] = await Promise.all([
+        const [
+            temp, humi, light, ph, hardness, solids, 
+            chloramines, sulfate, conductivity, organic_carbon, 
+            trihalomethanes, turbidity
+        ] = await Promise.all([
             telemetryServices.getLatestValue(ADAFRUIT_FEEDS.TEMP_FEED, signal),
             telemetryServices.getLatestValue(ADAFRUIT_FEEDS.HUMIDITY_FEED, signal),
             telemetryServices.getLatestValue(ADAFRUIT_FEEDS.LIGHT_FEED, signal),
+            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.PH_FEED, signal),
+            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.HARDNESS_FEED, signal),
+            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.SOLIDS_FEED, signal),
+            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.CHLORAMINES_FEED, signal),
+            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.SULFATE_FEED, signal),
+            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.CONDUCTIVITY_FEED, signal),
+            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.ORGANIC_CARBON_FEED, signal),
+            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.TRIHALOMETHANES_FEED, signal),
+            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.TURBIDITY_FEED, signal),
         ]);
 
         return {
             temp,
             humi,
             leakage: light,
+            ph,
+            hardness,
+            solids,
+            chloramines,
+            sulfate,
+            conductivity,
+            organic_carbon,
+            trihalomethanes,
+            turbidity,
             fetchedAt: new Date().toISOString(),
         };
     },

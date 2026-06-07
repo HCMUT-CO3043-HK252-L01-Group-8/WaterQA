@@ -493,3 +493,6 @@ Bước 2: Chạy lệnh `node trainer.js`
 Sau khi hoàn tất, model sẽ được lưu vào thư mục data/
 
 Để hệ thống deploy thấy được thay đổi mới, hãy commit và push.
+
+## C?u h�nh Adafruit IO
+�? h? th?ng nh?n d? d? li?u, b?n c?n t?o c�c feeds sau tr�n Adafruit IO: 	emp, humi, light, ph, hardness, solids, chloramines, sulfate, conductivity, organic-carbon, 	rihalomethanes, 	urbidity.

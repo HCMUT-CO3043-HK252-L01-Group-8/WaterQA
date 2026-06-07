@@ -1,9 +1,16 @@
 export const ADAFRUIT_FEEDS = {
     TEMP_FEED: "temp",
-
     HUMIDITY_FEED: "humi",
-
     LIGHT_FEED: "light",
+    PH_FEED: "ph",
+    HARDNESS_FEED: "hardness",
+    SOLIDS_FEED: "solids",
+    CHLORAMINES_FEED: "chloramines",
+    SULFATE_FEED: "sulfate",
+    CONDUCTIVITY_FEED: "conductivity",
+    ORGANIC_CARBON_FEED: "organic-carbon",
+    TRIHALOMETHANES_FEED: "trihalomethanes",
+    TURBIDITY_FEED: "turbidity"
 } as const;
 
 

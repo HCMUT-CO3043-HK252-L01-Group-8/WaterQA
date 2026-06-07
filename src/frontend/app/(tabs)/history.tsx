@@ -4,6 +4,7 @@ import FilterAndExport from "@/components/history/FilterAndExport";
 import HistoryList from "@/components/history/HistoryList";
 import HistorySkeleton from "@/components/history/HistorySkeleton";
 import SummaryCards from "@/components/history/SummaryCards";
+import OverviewChart from "@/components/history/OverviewChart";
 import AppHeader from "@/components/ui/AppHeader";
 import LocationSelector from "@/components/ui/LocationSelector";
 import ParamSelector from "@/components/ui/ParamSelector";
@@ -30,7 +31,8 @@ const PARAMETERS = [
     { label: "Độ pH", value: "ph" },
     { label: "Ánh sáng (Lux)", value: "light_intensity" },
     { label: "Mực nước (cm)", value: "water_level" },
-    { label: "Độ đục (NTU)", value: "turbidity" }
+    { label: "Độ đục (NTU)", value: "turbidity" },
+    { label: "Tổng quan", value: "overview" }
 ];
 
 const PARAM_UI_CONFIG: Record<string, { name: string; unit: string }> = {
@@ -73,7 +75,10 @@ export default function HistoryScreen() {
                 rawData = response.payload;
             }
 
-            const validData = rawData.filter((item: any) => item[selectedParam] !== null && item[selectedParam] !== undefined);
+            const validData = rawData.filter((item: any) => {
+                if (selectedParam === "overview") return true;
+                return item[selectedParam] !== null && item[selectedParam] !== undefined;
+            });
 
             if (validData.length > 0) {
                 const parseSafeDate = (dateStr: string) => {
@@ -254,12 +259,16 @@ export default function HistoryScreen() {
                     trendDesc={`Biến động ${currentUi.name}`}
                 />
 
-                {filteredChartValues.length > 0 && (
-                    <DetailedChart 
-                        data={filteredChartValues} 
-                        labels={filteredChartLabels} 
-                        paramName={currentUi.name}
-                    />
+                {selectedParam === "overview" ? (
+                    displayList.length > 0 && <OverviewChart data={displayList} labels={filteredChartLabels} />
+                ) : (
+                    filteredChartValues.length > 0 && (
+                        <DetailedChart 
+                            data={filteredChartValues} 
+                            labels={filteredChartLabels} 
+                            paramName={currentUi.name}
+                        />
+                    )
                 )}
                 
                 <FilterAndExport activeFilter={activeFilter} onFilterChange={setActiveFilter} onExport={handleExport} />
@@ -299,7 +308,7 @@ export default function HistoryScreen() {
                     <DateTimePicker
                         value={showDatePicker === "start" ? (startDate || new Date()) : (endDate || new Date())}
                         mode="date"
-                        display="default"
+                        display={Platform.OS === 'ios' ? 'inline' : 'calendar'}
                         onChange={onDateChange}
                         maximumDate={new Date()}
                     />

@@ -24,6 +24,8 @@ type SensorData = {
     temp: string | number | null;
     humi: string | number | null;
     light: string | number | null;
+    ph: string | number | null;
+    hardness: string | number | null;
 };
 
 type LightHistory = {
@@ -34,7 +36,7 @@ type LightHistory = {
 export default function IotDashboard() {
     const { t } = useTranslation();
     const tabBarHeight = useTabBarHeight();
-    const [data, setData] = useState<SensorData>({ temp: null, humi: null, light: null });
+    const [data, setData] = useState<SensorData>({ temp: null, humi: null, light: null, ph: null, hardness: null });
     const [loading, setLoading] = useState<boolean>(true);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -65,6 +67,8 @@ export default function IotDashboard() {
                     temp: snap.temp.value,
                     humi: snap.humi.value,
                     light: newLightValue,
+                    ph: snap.ph?.value || null,
+                    hardness: snap.hardness?.value || null,
                 });
 
                 if (newLightValue !== null) {
@@ -161,7 +165,7 @@ export default function IotDashboard() {
         }
     }, [data.temp, isTempHigh, lightValue, isLidOpened, t]);
 
-    const isEmpty = data.temp === null && data.humi === null && data.light === null;
+    const isEmpty = data.temp === null && data.humi === null && data.light === null && data.ph === null && data.hardness === null;
 
     if (loading && !refreshing) return (
         <SafeAreaView style={styles.safeArea}>
@@ -246,6 +250,35 @@ export default function IotDashboard() {
                                 />
                                 <Text style={styles.gridStatusText}>
                                     {isHumiHigh ? t("iot.high", "Cao") : t("iot.normal", "Bình thường")}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.gaugeGrid}>
+                            <View style={styles.gaugeColumnLeft}>
+                                <GaugeChart
+                                    title={t("iot.ph", "Độ pH")}
+                                    value={data.ph !== null ? Number(data.ph) : 0}
+                                    min={0}
+                                    max={14}
+                                    unit=""
+                                    activeColor={(data.ph !== null && (Number(data.ph) < 6.5 || Number(data.ph) > 8.5)) ? "#991B1B" : "#10B981"}
+                                />
+                                <Text style={styles.gridStatusText}>
+                                    {(data.ph !== null && (Number(data.ph) < 6.5 || Number(data.ph) > 8.5)) ? t("iot.abnormal", "Bất thường") : t("iot.normal", "Bình thường")}
+                                </Text>
+                            </View>
+                            <View style={styles.gaugeColumnRight}>
+                                <GaugeChart
+                                    title={t("iot.hardness", "Độ cứng nước")}
+                                    value={data.hardness !== null ? Number(data.hardness) : 0}
+                                    min={0}
+                                    max={500}
+                                    unit="mg/L"
+                                    activeColor={(data.hardness !== null && Number(data.hardness) > 300) ? "#991B1B" : "#6366F1"}
+                                />
+                                <Text style={styles.gridStatusText}>
+                                    {(data.hardness !== null && Number(data.hardness) > 300) ? t("iot.high", "Cao") : t("iot.normal", "Bình thường")}
                                 </Text>
                             </View>
                         </View>
