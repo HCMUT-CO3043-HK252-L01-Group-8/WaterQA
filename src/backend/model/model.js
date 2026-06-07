@@ -3,9 +3,9 @@ const tf = require("@tensorflow/tfjs-node");
 const { readFile } = require("node:fs/promises");
 
 const modelUrl =
-  "https://raw.githubusercontent.com/HCMUT-CO3043-HK252-L01-Group-8/WaterQA/refs/heads/Feature/AI/src/backend/model/data/model.json";
+  "https://raw.githubusercontent.com/HCMUT-CO3043-HK252-L01-Group-8/WaterQA/refs/heads/main/src/backend/model/data/model.json";
 const statsUrl =
-  "https://raw.githubusercontent.com/HCMUT-CO3043-HK252-L01-Group-8/WaterQA/refs/heads/Feature/AI/src/backend/model/ai-prediction-data-mean-std.json";
+  "https://raw.githubusercontent.com/HCMUT-CO3043-HK252-L01-Group-8/WaterQA/refs/heads/main/src/backend/model/ai-prediction-data-mean-std.json";
 
 const featureCols = [
   "ph",
