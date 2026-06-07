@@ -495,12 +495,13 @@ Sau khi hoàn tất, model sẽ được lưu vào thư mục data/
 Để hệ thống deploy thấy được thay đổi mới, hãy commit và push.
 
 ## Cấu hình Adafruit IO
-Để hệ thống nhận đủ dữ liệu, bạn cần tạo các feeds sau trên Adafruit IO: temp, humi, light, ph, hardness, solids, chloramines, sulfate, conductivity, organic-carbon, trihalomethanes, turbidity.
+Để hệ thống nhận đủ dữ liệu, bạn cần tạo các feeds sau trên Adafruit IO: ph, hardness, solids, chloramines, sulfate, conductivity, organic-carbon, trihalomethanes, turbidity.
 
 ---
 
 ## Luồng dữ liệu (Data Flow)
 
+```text
 Adafruit IO (IoT feeds)
         |
         |  Cron mỗi 5 phút (cron.service.js)
@@ -514,6 +515,7 @@ Frontend (history.tsx) -> parse timestamp + "Z" -> UTC -> giờ địa phương
         |  Nhóm theo giờ (24 slot) / 5 phút (12 slot)
         v
 BaseChart -> vẽ trục X đủ 24h, chỉ vẽ dot & line tại giờ có dữ liệu thực
+```
 
 ## Lưu ý quan trọng về timezone
 
