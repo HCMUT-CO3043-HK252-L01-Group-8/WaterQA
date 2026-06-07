@@ -1,99 +1,90 @@
 # WaterQA
 
-A water quality monitoring app, created for personal use on mobile platform.
+Ứng dụng giám sát chất lượng nước theo thời gian thực, hỗ trợ đa nền tảng (iOS, Android, Web).
 
-## Developing conventions
+## Tính năng chính
 
-### Directory structure
+- **Giám sát thời gian thực** — Lấy dữ liệu từ cảm biến IoT qua Adafruit IO mỗi 5 phút, lưu vào SQLite
+- **Dashboard tổng quan** — Hiển thị 9 chỉ số chất lượng nước, dự đoán WQI bằng AI
+- **Lịch sử quan trắc** — Biểu đồ đường 24h, drill-down 5 phút, xem theo ngày/tháng/năm
+- **Cảnh báo** — Email tự động khi vượt ngưỡng, phát hiện mở nắp bồn chứa
+- **Quản lý tài khoản** — Đăng ký, đăng nhập, quên mật khẩu OTP, Google OAuth
+
+## Kiến trúc hệ thống
+
+```
+[Mobile — Expo Go / Web]
+        │  HTTPS
+        ▼
+[Railway — Node.js/Express API]  ←→  [SQLite Database]
+        │  REST API (mỗi 5 phút)
+        ▼
+[Adafruit IO — IoT Telemetry Data]
+```
+
+- **Frontend**: React Native + Expo Router + Redux Toolkit
+- **Backend**: Node.js + Express + express-session
+- **Database**: SQLite3 (better-sqlite3), timestamps lưu theo UTC
+- **IoT Data**: Adafruit IO REST API (feeds: ph, hardness, solids, chloramines, sulfate, conductivity, organic-carbon, trihalomethanes, turbidity)
+- **ML**: TensorFlow.js (dự đoán chất lượng nước WQI)
+- **Email**: Brevo SMTP (OTP, cảnh báo ngưỡng)
+- **Deploy**: Railway (backend auto-deploy từ GitHub `main`)
+
+## Cấu trúc thư mục
 
 ```
 /
 ├── src/
-|   ├── frontend
-|   ├── backend
-|   ├── embedded
-├── tests/
+|   ├── frontend/     # React Native + Expo
+|   ├── backend/      # Node.js + Express API
+|   └── embedded/     # (IoT firmware placeholder)
+├── data/             # SQLite database file
 ├── config/
 ├── build/
 ├── docs/
-├── assets/
+└── assets/
 ```
 
-Explanation:
-- `/src`: source code
-- `/test`: modular & system tests
-- `/config`: configuration files
-- `/build`: files used in or generated in build phase
-- `/docs`: documents (not including README)
-- `/assets`: image, sound, etc.
+## Hướng dẫn chạy nhanh
 
-## Branch name
-- `release/[version name]`: usable, releasable product with complete README file
-- `main`: executable snapshot
-- `feature/[task number]-[feature name]`: a specific feature
-- `bugfix/[task number]-[feature name]`: to fix bug for "feature" branches
-- `hotfix/[task number]-[error name]`: to fix bug from "main"
-- `docs`: document
+Xem [SETUP.md](./SETUP.md) để biết chi tiết.
 
-Example names:
-- `feature/T-456-user-authentication`
-- `bugfix/T-789-fix-header-styling`
-- `hotfix/T-321-security-patch`
-- `release/v2.0.1`
-- `docs/T-654-update-readme`
+```bash
+# Frontend
+cd src/frontend
+npm install
+npx expo start -c
+```
 
-Task number looks like: `T-xxx`. One task number is aligned with a specific task, declared on Telegram group. If there's no task number, just ignore it, e.g. `feature/user-authentication`.
-Names shall be written in English. Names with many word shall be separated by hyphens (-).
+## Tài liệu API
 
-### Commit message
+Xem [docs/api.md](./docs/api.md) hoặc file `openapi-specification.json` (OpenAPI 3.0).
 
-- Written in English and present simple tense, with subject "I" omitted.
-- Describe briefly what you did in the commit.
-- Can include many sentences, but the final sentence's period (.) should be omitted.
-- In feature and fix branches, a commit message should looks like: "[Add/Edit/Remove] [feature/error]: [next sentences]"
+## Tiến độ tính năng
 
-Example:
-- "Add login form"
-- "Edit history view: add "summary" button"
+- [x] Auth (Login, Sign up, Đổi mật khẩu, Đăng xuất, Google OAuth)
+- [x] Dashboard (Dữ liệu thời gian thực từ Adafruit IO)
+- [x] Lịch sử quan trắc
+  - [x] Fetch & lưu dữ liệu từ Adafruit IO vào DB (mỗi 5 phút)
+  - [x] Biểu đồ 24h với trục X đầy đủ (giờ nào không có dữ liệu thì trống)
+  - [x] Drill-down 5 phút khi click vào điểm trên biểu đồ
+  - [x] Xem theo Ngày / Tháng / Năm
+  - [x] Fix timezone UTC → local khi parse timestamp từ SQLite
+- [x] Dự đoán WQI bằng AI (TensorFlow.js)
+- [x] Xuất file CSV
+- [x] Cảnh báo email (vượt ngưỡng, phát hiện mở nắp)
+  - [x] CRUD ngưỡng cảnh báo
+  - [x] Gửi email cảnh báo tự động
+- [x] Quản lý sensor (danh sách, đổi tên)
+- [x] Quản lý người dùng (Admin: xem danh sách; User: xem thông tin cá nhân)
 
-## Frontend - backend API
+## Lưu ý kỹ thuật
 
-Read [here](./docs/api.md).
+### Dữ liệu & múi giờ
+- SQLite lưu `CURRENT_TIMESTAMP` theo **UTC**
+- Frontend phải append `"Z"` khi parse chuỗi timestamp để đảm bảo JavaScript hiểu đúng múi giờ UTC (tránh lệch +7 giờ)
+- Tất cả 4 trạm quan trắc hiển thị chung 1 bộ dữ liệu từ `station_id = 1` (dữ liệu thật từ Adafruit IO)
 
-## Unsolved errors
-
-Read [here](./docs/errors.md).
-
-## Feature developing progress
-- [x] Auth
-	- [x] Login
-	- [x] Sign up
-	- [x] Change password
-	- [x] Log out
-- [x] Dashboard
-- [ ] Monitor data
-	- [x] Fetch data from source (Adafruit IO)
-	- [x] Show history
-	- [ ] Integrate live data to history
-- [ ] Forecast data (require AI)
-- [x] Export file
-- [ ] Manual input
-- [ ] Manage IoT devices
-	- [x] List devices (sensors)
-	- [x] Rename device
-	- [ ] Add, edit, remove device (admin only)
-- [ ] Manage users
-	- [x] List users (admin only)
-	- [x] Get "my" info (me = current session's user)
-	- [ ] Edit "my" info 
-- [ ] Alert when IoT device has errors
-	- [ ] Detect error
-	- [x] Give alert
-- [ ] Alert when threshold crossed
-	- [x] CRUD threshold
-<<<<<<< HEAD
-	- [x] Give alert
-=======
-	- [ ] Give alert
->>>>>>> dev
-
+### Cron job backend
+- Mỗi 5 giây: Kiểm tra ngưỡng cảnh báo (pH, độ cứng, ... )
+- Mỗi 5 phút: Lấy toàn bộ 9 feeds từ Adafruit IO → lưu vào bảng `OBSERVATION` (station_id=1)

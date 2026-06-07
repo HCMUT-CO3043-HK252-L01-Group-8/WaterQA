@@ -6,7 +6,6 @@ import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import { Feather } from "@expo/vector-icons";
 import AppHeader from "@/components/ui/AppHeader";
 import AlertBanner from "@/components/ui/AlertBanner";
-import GaugeChart from "@/components/ui/GaugeChart";
 import { telemetryServices } from "@/services/telemetryServices";
 import { THRESHOLDS, REFRESH_INTERVALS } from "@/configs/feeds";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,12 +19,20 @@ type SensorData = {
     hardness: string | number | null;
     turbidity: string | number | null;
     solids: string | number | null;
+    chloramines: string | number | null;
+    sulfate: string | number | null;
+    conductivity: string | number | null;
+    organic_carbon: string | number | null;
+    trihalomethanes: string | number | null;
 };
 
 export default function IotDashboard() {
     const { t } = useTranslation();
     const tabBarHeight = useTabBarHeight();
-    const [data, setData] = useState<SensorData>({ ph: null, hardness: null, turbidity: null, solids: null });
+    const [data, setData] = useState<SensorData>({
+        ph: null, hardness: null, turbidity: null, solids: null,
+        chloramines: null, sulfate: null, conductivity: null, organic_carbon: null, trihalomethanes: null
+    });
     const [loading, setLoading] = useState<boolean>(true);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -52,6 +59,11 @@ export default function IotDashboard() {
                     hardness: snap.hardness?.value || null,
                     turbidity: snap.turbidity?.value || null,
                     solids: snap.solids?.value || null,
+                    chloramines: snap.chloramines?.value || null,
+                    sulfate: snap.sulfate?.value || null,
+                    conductivity: snap.conductivity?.value || null,
+                    organic_carbon: snap.organic_carbon?.value || null,
+                    trihalomethanes: snap.trihalomethanes?.value || null,
                 });
             } catch (err) {
                 if ((err as any)?.name === "AbortError") return;
@@ -115,7 +127,22 @@ export default function IotDashboard() {
         }
     }, [isPhWarning, phValue, t]);
 
-    const isEmpty = data.ph === null && data.hardness === null && data.turbidity === null && data.solids === null;
+    const isEmpty = Object.values(data).every(val => val === null);
+
+    const renderMetricCard = (title: string, value: any, unit: string, color: string, isWarning: boolean = false) => (
+        <View style={[styles.metricCard, isWarning && styles.metricCardWarning]}>
+            <View style={[styles.metricColorBar, { backgroundColor: isWarning ? "#EF4444" : color }]} />
+            <View style={styles.metricContent}>
+                <Text style={styles.metricTitle}>{title}</Text>
+                <View style={styles.metricValueContainer}>
+                    <Text style={[styles.metricValue, isWarning && styles.metricValueWarning]}>
+                        {value !== null ? Number(value).toFixed(2) : "--"}
+                    </Text>
+                    <Text style={styles.metricUnit}>{unit}</Text>
+                </View>
+            </View>
+        </View>
+    );
 
     if (loading && !refreshing) return (
         <SafeAreaView style={styles.safeArea}>
@@ -152,7 +179,7 @@ export default function IotDashboard() {
                         <Text style={styles.emptyText}>{t("iot.noData", "Không có dữ liệu quan trắc.")}</Text>
                     </View>
                 ) : (
-                    <View>
+                    <View style={styles.dashboardContainer}>
                         <AlertBanner
                             visible={showPhBanner}
                             type="warning"
@@ -164,62 +191,16 @@ export default function IotDashboard() {
                             onClose={() => setShowPhBanner(false)}
                         />
 
-                        <View style={styles.gaugeGrid}>
-                            <View style={styles.gaugeColumnLeft}>
-                                <GaugeChart
-                                    title={t("iot.ph", "Độ pH")}
-                                    value={data.ph !== null ? Number(data.ph) : 0}
-                                    min={0}
-                                    max={14}
-                                    unit=""
-                                    activeColor={isPhWarning ? "#991B1B" : "#10B981"}
-                                />
-                                <Text style={styles.gridStatusText}>
-                                    {isPhWarning ? t("iot.abnormal", "Bất thường") : t("iot.normal", "Bình thường")}
-                                </Text>
-                            </View>
-                            <View style={styles.gaugeColumnRight}>
-                                <GaugeChart
-                                    title={t("iot.hardness", "Độ cứng nước")}
-                                    value={data.hardness !== null ? Number(data.hardness) : 0}
-                                    min={0}
-                                    max={500}
-                                    unit="mg/L"
-                                    activeColor={(data.hardness !== null && Number(data.hardness) > THRESHOLDS.HARDNESS_WARNING) ? "#991B1B" : "#6366F1"}
-                                />
-                                <Text style={styles.gridStatusText}>
-                                    {(data.hardness !== null && Number(data.hardness) > THRESHOLDS.HARDNESS_WARNING) ? t("iot.high", "Cao") : t("iot.normal", "Bình thường")}
-                                </Text>
-                            </View>
-                        </View>
-                        
-                        <View style={styles.gaugeGrid}>
-                            <View style={styles.gaugeColumnLeft}>
-                                <GaugeChart
-                                    title={t("iot.turbidity", "Độ đục")}
-                                    value={data.turbidity !== null ? Number(data.turbidity) : 0}
-                                    min={0}
-                                    max={10}
-                                    unit="NTU"
-                                    activeColor="#EAB308"
-                                />
-                                <Text style={styles.gridStatusText}>
-                                    {t("iot.measured", "Đã đo đạc")}
-                                </Text>
-                            </View>
-                            <View style={styles.gaugeColumnRight}>
-                                <GaugeChart
-                                    title={t("iot.solids", "Chất rắn")}
-                                    value={data.solids !== null ? Number(data.solids) : 0}
-                                    min={0}
-                                    max={30000}
-                                    unit="mg/L"
-                                    activeColor="#8B5CF6"
-                                />
-                                <Text style={styles.gridStatusText}>
-                                    {t("iot.measured", "Đã đo đạc")}
-                                </Text>
-                            </View>
+                        <View style={styles.gridContainer}>
+                            {renderMetricCard("Độ pH / pH", data.ph, "", "#10B981", isPhWarning)}
+                            {renderMetricCard("Độ cứng / Hardness", data.hardness, "mg/L", "#3B82F6", data.hardness !== null && Number(data.hardness) > THRESHOLDS.HARDNESS_WARNING)}
+                            {renderMetricCard("Độ đục / Turbidity", data.turbidity, "NTU", "#8B5CF6")}
+                            {renderMetricCard("Chất rắn / Solids", data.solids, "mg/L", "#F59E0B")}
+                            {renderMetricCard("Cloramin / Chloramines", data.chloramines, "mg/L", "#EF4444")}
+                            {renderMetricCard("Sunfat / Sulfate", data.sulfate, "mg/L", "#06B6D4")}
+                            {renderMetricCard("Độ dẫn điện / Conductivity", data.conductivity, "μS/cm", "#F97316")}
+                            {renderMetricCard("Carbon hữu cơ / Organic Carbon", data.organic_carbon, "mg/L", "#14B8A6")}
+                            {renderMetricCard("Trihalomethanes / THMs", data.trihalomethanes, "μg/L", "#EC4899")}
                         </View>
                     </View>
                 )}
@@ -259,18 +240,59 @@ const styles = StyleSheet.create({
     },
     emptyText: { color: "#94A3B8", fontSize: 14, fontFamily: "Inter-Regular" },
 
-    gaugeGrid: { flexDirection: "row", paddingHorizontal: 16, width: "100%", marginTop: 8, marginBottom: 12 },
-    gaugeColumnLeft: { flex: 1, marginRight: 8, alignItems: "center" },
-    gaugeColumnRight: { flex: 1, marginLeft: 8, alignItems: "center" },
-    
-    gridStatusText: {
+    dashboardContainer: {
+        paddingHorizontal: 16,
+    },
+    gridContainer: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        marginTop: 8,
+    },
+    metricCard: {
+        width: "48%", // Sẽ tạo thành 2 cột
+        backgroundColor: "#F8FAFC",
+        borderRadius: 12,
+        marginBottom: 12,
+        flexDirection: "row",
+        overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+    },
+    metricCardWarning: {
+        backgroundColor: "#FEF2F2",
+        borderColor: "#FCA5A5",
+    },
+    metricColorBar: {
+        width: 6,
+        height: "100%",
+    },
+    metricContent: {
+        flex: 1,
+        padding: 12,
+    },
+    metricTitle: {
         fontSize: 12,
         color: "#64748B",
         fontFamily: "Inter-Medium",
-        marginTop: 10,
-        textAlign: "center"
+        marginBottom: 6,
     },
-
-    cardWarning: { borderColor: "#FDBA74", backgroundColor: "#FFF7ED" },
-    cardDanger: { borderColor: "#FCA5A5", backgroundColor: "#FEF2F2" },
+    metricValueContainer: {
+        flexDirection: "row",
+        alignItems: "baseline",
+    },
+    metricValue: {
+        fontSize: 20,
+        color: "#0F172B",
+        fontFamily: "Inter-Bold",
+        marginRight: 4,
+    },
+    metricValueWarning: {
+        color: "#991B1B",
+    },
+    metricUnit: {
+        fontSize: 11,
+        color: "#94A3B8",
+        fontFamily: "Inter-Regular",
+    },
 });

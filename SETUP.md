@@ -496,3 +496,33 @@ Sau khi hoàn tất, model sẽ được lưu vào thư mục data/
 
 ## C?u h�nh Adafruit IO
 �? h? th?ng nh?n d? d? li?u, b?n c?n t?o c�c feeds sau tr�n Adafruit IO: 	emp, humi, light, ph, hardness, solids, chloramines, sulfate, conductivity, organic-carbon, 	rihalomethanes, 	urbidity.
+
+---
+
+## Luong du lieu (Data Flow)
+
+Adafruit IO (IoT feeds)
+        |
+        |  Cron moi 5 phut (cron.service.js)
+        v
+SQLite DB — bang OBSERVATION (station_id=1, timestamp UTC)
+        |
+        |  API GET /data/station-history?station_id=1&limit=1000
+        v
+Frontend (history.tsx) — parse timestamp + "Z" -> UTC -> gio dia phuong
+        |
+        |  Nhom theo gio (24 slot) / 5 phut (12 slot)
+        v
+BaseChart — ve truc X du 24h, chi ve dot & line tai gio co du lieu thuc
+
+## Luu y quan trong ve timezone
+
+SQLite luu CURRENT_TIMESTAMP theo UTC. Khi frontend doc chuoi timestamp
+(vd: "2026-06-07 06:19:00"), JavaScript se mac dinh parse nhu gio dia phuong
+neu khong co ki hieu timezone — gay lech +7 gio tai Viet Nam.
+
+Cach khac phuc (da ap dung): Frontend them "Z" vao cuoi chuoi truoc khi parse
+→ JavaScript hieu la UTC → tu chuyen doi sang gio dia phuong khi hien thi.
+
+Tat ca 4 tram quan trac hien thi chung 1 bo du lieu tu station_id = 1
+(du lieu thuc tu Adafruit IO, duoc luu vao DB moi 5 phut).

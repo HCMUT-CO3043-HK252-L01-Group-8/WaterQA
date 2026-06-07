@@ -12,7 +12,6 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View, Modal, TouchableOpa
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { telemetryServices } from "@/services/telemetryServices";
-import { dataServices } from "@/services/dataServices";
 import { aiServices } from "@/services/aiServices";
 import { useTranslation } from "react-i18next";
 
@@ -29,12 +28,6 @@ export default function HomeDashboard() {
     const [waterMetrics, setWaterMetrics] = useState({ wqi: 0, pH: 0, hardness: 0, clo: 0, ntu: 0, lastUpdated: "" });
     const [statusData, setStatusData] = useState({ wqiChange: "", sensorStatus: "", sensorIssue: "" });
     const [showAlertBanner, setShowAlertBanner] = useState(false);
-    
-    // States for sample selection
-    const [stationHistory, setStationHistory] = useState<any[]>([]);
-    const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
-    const [isSampleModalVisible, setSampleModalVisible] = useState(false);
-    const [latestSnapshot, setLatestSnapshot] = useState<any>(null);
     
     const { t } = useTranslation();
 
@@ -115,20 +108,13 @@ export default function HomeDashboard() {
 
     const fetchDashboardData = async () => {
         try {
-            const snapshot = await telemetryServices.getLatestTelemetrySnapshot();
-            setLatestSnapshot(snapshot);
-            
-            const stationId = LOCATIONS.indexOf(selectedLocation) + 1;
-            const historyRes = await dataServices.getStationHistory(stationId, 8);
-            
-            if (historyRes.success && historyRes.payload && historyRes.payload.length > 0) {
-                setStationHistory(historyRes.payload);
-                setSelectedSampleIndex(0);
-            } else {
-                setStationHistory([]);
-            }
+            // Tất cả trạm quan trắc đều sử dụng chung dữ liệu real-time từ Adafruit IO
+            let snapshotToUse: any = null;
+            snapshotToUse = await telemetryServices.getLatestTelemetrySnapshot();
 
-            await processPrediction(snapshot);
+            if (snapshotToUse) {
+                await processPrediction(snapshotToUse);
+            }
         } catch (error) {
             console.log("Lỗi fetch data IoT:", error);
         } finally {
@@ -148,14 +134,6 @@ export default function HomeDashboard() {
         await fetchDashboardData();
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
-    };
-    
-    const handleSelectSample = (index: number) => {
-        setSelectedSampleIndex(index);
-        setSampleModalVisible(false);
-        if (latestSnapshot) {
-            processPrediction(latestSnapshot);
-        }
     };
 
     if (isLoading && !refreshing) return <HomeSkeleton userName={userName} />;
@@ -212,7 +190,6 @@ export default function HomeDashboard() {
 
                     <WqiCard 
                         metrics={waterMetrics} 
-                        onSelectSamplePress={() => setSampleModalVisible(true)} 
                     />
 
                     <StatusSummary
@@ -225,39 +202,6 @@ export default function HomeDashboard() {
                     <WaterChart />
                 </ScrollView>
             </SafeAreaView>
-            
-            <Modal visible={isSampleModalVisible} transparent animationType="slide">
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>{t("home.selectSampleTitle", "Chọn bộ dữ liệu mẫu")}</Text>
-                            <TouchableOpacity onPress={() => setSampleModalVisible(false)}>
-                                <Text style={styles.closeText}>{t("home.close", "Đóng")}</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <ScrollView style={styles.sampleList}>
-                            {stationHistory.map((item, index) => (
-                                <TouchableOpacity 
-                                    key={index} 
-                                    style={[
-                                        styles.sampleItem, 
-                                        selectedSampleIndex === index && styles.sampleItemSelected
-                                    ]}
-                                    onPress={() => handleSelectSample(index)}
-                                >
-                                    <View>
-                                        <Text style={styles.sampleName}>{t("home.sampleData", "Mẫu dữ liệu")} {index + 1}</Text>
-                                        <Text style={styles.sampleDetail}>pH: {Number(item.ph).toFixed(2)} | {t("home.wqiData", "WQI Data:")} {new Date(item.timestamp).toLocaleString("vi-VN")}</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            ))}
-                            {stationHistory.length === 0 && (
-                                <Text style={styles.emptyText}>{t("home.noSampleData", "Chưa có dữ liệu mẫu cho trạm này")}</Text>
-                            )}
-                        </ScrollView>
-                    </View>
-                </View>
-            </Modal>
         </View>
     );
 }
@@ -270,16 +214,5 @@ const styles = StyleSheet.create({
     greetingSection: { marginBottom: 4 },
     greetingTitle: { fontSize: 20, color: "#0F172B", marginBottom: 4, fontFamily: "Inter-Regular" },
     userName: { fontFamily: "Inter-Bold" },
-    greetingSubtitle: { fontSize: 13, color: "#45556C", fontFamily: "Inter-Regular" },
-    modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-    modalContent: { backgroundColor: "#FFF", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: "70%" },
-    modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
-    modalTitle: { fontSize: 18, fontFamily: "Inter-Bold", color: "#0F172B" },
-    closeText: { fontSize: 16, color: "#00A89D", fontFamily: "Inter-Medium" },
-    sampleList: { marginBottom: 20 },
-    sampleItem: { padding: 16, borderRadius: 12, backgroundColor: "#F8FAFC", marginBottom: 12, borderWidth: 1, borderColor: "#E2E8F0" },
-    sampleItemSelected: { borderColor: "#00A89D", backgroundColor: "#E6F6F5" },
-    sampleName: { fontSize: 16, fontFamily: "Inter-Bold", color: "#0F172B", marginBottom: 4 },
-    sampleDetail: { fontSize: 12, fontFamily: "Inter-Regular", color: "#64748B" },
-    emptyText: { textAlign: "center", color: "#64748B", marginTop: 20 }
+    greetingSubtitle: { fontSize: 13, color: "#45556C", fontFamily: "Inter-Regular" }
 });

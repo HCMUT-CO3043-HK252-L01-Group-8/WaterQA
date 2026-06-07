@@ -6,7 +6,7 @@ import CustomFilterTab from "@/components/ui/CustomFilterTab";
 import { useTabBarHeight } from "@/hooks/useTabBarHeight";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View, TouchableOpacity, Alert } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View, TouchableOpacity, Alert, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -71,22 +71,36 @@ export default function NotificationScreen() {
         await fetchNotifications();
     };
 
-    const handleClearAll = () => {
-        Alert.alert(
-            t("common.confirm", "Xác nhận"),
-            t("notifications.confirmClearAll", "Bạn có chắc chắn muốn xóa tất cả cảnh báo?"),
-            [
-                { text: t("common.cancel", "Hủy"), style: "cancel" },
-                {
-                    text: t("common.delete", "Xóa"),
-                    style: "destructive",
-                    onPress: async () => {
-                        await AsyncStorage.removeItem(ALERTS_STORAGE_KEY);
-                        setAlerts([]);
+    const handleClearAll = async () => {
+        if (Platform.OS === 'web') {
+            const confirmed = window.confirm(t("notifications.confirmClearAll", "Bạn có chắc chắn muốn xóa tất cả cảnh báo?"));
+            if (confirmed) {
+                await AsyncStorage.removeItem(ALERTS_STORAGE_KEY);
+                setAlerts([]);
+            }
+        } else {
+            Alert.alert(
+                t("common.confirm", "Xác nhận"),
+                t("notifications.confirmClearAll", "Bạn có chắc chắn muốn xóa tất cả cảnh báo?"),
+                [
+                    { text: t("common.cancel", "Hủy"), style: "cancel" },
+                    {
+                        text: t("common.delete", "Xóa"),
+                        style: "destructive",
+                        onPress: async () => {
+                            await AsyncStorage.removeItem(ALERTS_STORAGE_KEY);
+                            setAlerts([]);
+                        },
                     },
-                },
-            ],
-        );
+                ],
+            );
+        }
+    };
+
+    const handleMarkAsRead = async (id: string) => {
+        const newAlerts = alerts.filter(a => a.id !== id);
+        await AsyncStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(newAlerts));
+        setAlerts(newAlerts);
     };
 
     if (isLoading && !refreshing) return <NotificationSkeleton />;
@@ -136,7 +150,9 @@ export default function NotificationScreen() {
 
                 <View style={styles.alertList}>
                     {filteredAlerts.length ? (
-                        filteredAlerts.map((alert) => <AlertCard key={alert.id} alert={alert} />)
+                        filteredAlerts.map((alert) => (
+                            <AlertCard key={alert.id} alert={alert} onMarkRead={handleMarkAsRead} />
+                        ))
                     ) : (
                         <View style={styles.emptyState}>
                             <Text style={styles.emptyStateText}>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Animated, Dimensions, StyleSheet, Text, View } from "react-native";
+import { Animated, Dimensions, StyleSheet, Text, View, ScrollView } from "react-native";
 import Svg, { Path, Circle } from "react-native-svg";
 import { useTranslation } from "react-i18next";
 
@@ -9,26 +9,30 @@ export interface OverviewChartProps {
 }
 
 const COLORS = {
-    temperature: "#EF4444",
-    humidity: "#3B82F6",
     ph: "#10B981",
-    light_intensity: "#F59E0B",
+    hardness: "#3B82F6",
     turbidity: "#8B5CF6",
-    water_level: "#06B6D4"
+    solids: "#F59E0B",
+    chloramines: "#EF4444",
+    sulfate: "#06B6D4",
+    conductivity: "#F97316",
+    organic_carbon: "#14B8A6",
+    trihalomethanes: "#EC4899"
 };
 
-const PARAM_KEYS = ["temperature", "humidity", "ph", "light_intensity", "turbidity", "water_level"];
-const PARAM_NAMES = ["Nhiệt độ", "Độ ẩm", "pH", "Ánh sáng", "Độ đục", "Mực nước"];
+const PARAM_KEYS = ["ph", "hardness", "turbidity", "solids", "chloramines", "sulfate", "conductivity", "organic_carbon", "trihalomethanes"];
+const PARAM_NAMES = ["pH", "Độ cứng", "Độ đục", "Chất rắn", "Cloramin", "Sunfat", "Độ dẫn", "Carbon", "THMs"];
 
 export default function OverviewChart({ data, labels }: OverviewChartProps) {
     const { t } = useTranslation();
-    const chartWidth = Dimensions.get("window").width - 64;
+    const screenWidth = Dimensions.get("window").width - 64;
+    const actualChartWidth = labels.length > 7 ? labels.length * 45 : screenWidth;
     const chartHeight = 180;
     const paddingX = 20;
     const paddingTop = 20;
     const paddingBottom = 30;
 
-    const drawableWidth = chartWidth - paddingX * 2;
+    const drawableWidth = actualChartWidth - paddingX * 2;
     const drawableHeight = chartHeight - paddingTop - paddingBottom;
 
     if (!data || data.length === 0) return null;
@@ -60,56 +64,57 @@ export default function OverviewChart({ data, labels }: OverviewChartProps) {
                 <Text style={styles.chartTitle}>{t("Tổng quan biến động")}</Text>
             </View>
 
-            <View style={styles.chartContainer}>
-                <Svg width={chartWidth} height={chartHeight}>
-                    {datasets.map(dataset => {
-                        const { points, color } = dataset;
-                        if (points.length === 0) return null;
-                        
-                        let path = `M ${points[0].x} ${points[0].y}`;
-                        const smoothing = 0.15;
-                        for (let i = 0; i < points.length - 1; i++) {
-                            const p0 = points[i === 0 ? 0 : i - 1];
-                            const p1 = points[i];
-                            const p2 = points[i + 1];
-                            const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} bounces={false}>
+                <View style={[styles.chartContainer, { width: actualChartWidth, height: chartHeight }]}>
+                    <Svg width={actualChartWidth} height={chartHeight}>
+                        {datasets.map(dataset => {
+                            const { points, color } = dataset;
+                            if (points.length === 0) return null;
+                            
+                            let path = `M ${points[0].x} ${points[0].y}`;
+                            const smoothing = 0.15;
+                            for (let i = 0; i < points.length - 1; i++) {
+                                const p0 = points[i === 0 ? 0 : i - 1];
+                                const p1 = points[i];
+                                const p2 = points[i + 1];
+                                const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
 
-                            const cp1X = p1.x + (p2.x - p0.x) * smoothing;
-                            const cp1Y = p1.y + (p2.y - p0.y) * smoothing;
-                            const cp2X = p2.x - (p3.x - p1.x) * smoothing;
-                            const cp2Y = p2.y - (p3.y - p1.y) * smoothing;
+                                const cp1X = p1.x + (p2.x - p0.x) * smoothing;
+                                const cp1Y = p1.y + (p2.y - p0.y) * smoothing;
+                                const cp2X = p2.x - (p3.x - p1.x) * smoothing;
+                                const cp2Y = p2.y - (p3.y - p1.y) * smoothing;
 
-                            path += ` C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${p2.x} ${p2.y}`;
-                        }
+                                path += ` C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${p2.x} ${p2.y}`;
+                            }
 
-                        return <Path key={dataset.key} d={path} fill="none" stroke={color} strokeWidth="2" />;
-                    })}
-                </Svg>
+                            return <Path key={dataset.key} d={path} fill="none" stroke={color} strokeWidth="2" />;
+                        })}
+                    </Svg>
 
-                <View style={styles.xAxisContainer}>
-                    {labels.map((label, i) => {
-                        if (!label) return null;
-                        const isCrowded = labels.length > 7;
-                        const labelWidth = isCrowded ? 30 : 35;
-                        const labelFontSize = isCrowded ? 10 : 11;
-                        // Map the label X based on index. Note: labels are passed from reversed list
-                        const pointIndex = i; 
-                        const x = paddingX + (pointIndex / (labels.length - 1 || 1)) * drawableWidth;
+                    <View style={styles.xAxisContainer}>
+                        {labels.map((label, i) => {
+                            if (!label) return null;
+                            const isCrowded = labels.length > 7;
+                            const labelWidth = isCrowded ? 36 : 40;
+                            const labelFontSize = isCrowded ? 10 : 11;
+                            const pointIndex = i; 
+                            const x = paddingX + (pointIndex / (labels.length - 1 || 1)) * drawableWidth;
 
-                        return (
-                            <Text
-                                key={`label-${i}`}
-                                style={[
-                                    styles.axisText,
-                                    { left: x - labelWidth / 2, width: labelWidth, fontSize: labelFontSize },
-                                ]}
-                            >
-                                {label}
-                            </Text>
-                        );
-                    })}
+                            return (
+                                <Text
+                                    key={`label-${i}`}
+                                    style={[
+                                        styles.axisText,
+                                        { left: x - labelWidth / 2, width: labelWidth, fontSize: labelFontSize },
+                                    ]}
+                                >
+                                    {label}
+                                </Text>
+                            );
+                        })}
+                    </View>
                 </View>
-            </View>
+            </ScrollView>
             
             <View style={styles.legendContainer}>
                 {PARAM_KEYS.map((key, index) => (
@@ -135,7 +140,7 @@ const styles = StyleSheet.create({
     },
     chartHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
     chartTitle: { fontSize: 13, color: "#1E293B", fontFamily: "Inter-SemiBold" },
-    chartContainer: { alignItems: "center" },
+    chartContainer: { position: 'relative' },
     xAxisContainer: {
         height: 24,
         width: "100%",

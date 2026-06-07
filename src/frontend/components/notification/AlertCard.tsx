@@ -4,13 +4,14 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 interface AlertData {
+    id: string;
     type: "critical" | "warning";
     title: string;
     desc: string;
     time: string;
 }
 
-export default function AlertCard({ alert }: { alert: AlertData }) {
+export default function AlertCard({ alert, onMarkRead }: { alert: AlertData, onMarkRead?: (id: string) => void }) {
     const { t } = useTranslation();
     const isCritical = alert.type === "critical";
 
@@ -37,7 +38,7 @@ export default function AlertCard({ alert }: { alert: AlertData }) {
                             {t("notifications.details", "Chi tiết")}
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => onMarkRead && onMarkRead(alert.id)}>
                         <Text style={[styles.markReadText, { color: mainColor }]}>
                             {t("notifications.markAsRead", "Đánh dấu đã đọc")}
                         </Text>

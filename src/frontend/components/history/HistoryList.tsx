@@ -1,15 +1,19 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-interface HistoryItem {
+export interface HistoryItem {
     id: string;
     wqi: string;
     date: string;
     time: string;
     trend: string;
+    isGroup?: boolean;
+    groupType?: string;
+    groupYear?: number;
+    groupMonth?: number;
 }
 
-export default function HistoryList({ data }: { data: HistoryItem[] }) {
+export default function HistoryList({ data, onItemPress }: { data: HistoryItem[], onItemPress?: (item: HistoryItem) => void }) {
     return (
         <View style={styles.historyListContainer}>
             {data.map((item, index) => {
@@ -18,11 +22,18 @@ export default function HistoryList({ data }: { data: HistoryItem[] }) {
                 const trendColor = isPositive ? "#00A63E" : "#E7000B";
                 const trendIcon = isPositive ? "arrow-up-right" : "arrow-down-right";
 
+                const CardComponent = (onItemPress && item.isGroup) ? TouchableOpacity : View;
+
                 return (
-                    <View style={[styles.historyCard, isLast && { borderBottomWidth: 0 }]} key={item.id}>
+                    <CardComponent 
+                        style={[styles.historyCard, isLast && { borderBottomWidth: 0 }, item.isGroup && { backgroundColor: '#F8FAFC', paddingHorizontal: 8, borderRadius: 8 }]} 
+                        key={item.id}
+                        onPress={onItemPress && item.isGroup ? () => onItemPress(item) : undefined}
+                        activeOpacity={0.7}
+                    >
                         <View style={styles.cardLeft}>
-                            <View style={styles.iconBox}>
-                                <Feather name="activity" size={16} color="#0092B8" />
+                            <View style={[styles.iconBox, item.isGroup && { backgroundColor: '#E0F2FE' }]}>
+                                <Feather name={item.isGroup ? "folder" : "activity"} size={16} color="#0092B8" />
                             </View>
                             <View>
                                 <Text style={styles.wqiText}>{item.wqi}</Text>
@@ -33,9 +44,9 @@ export default function HistoryList({ data }: { data: HistoryItem[] }) {
                             <Text style={[styles.trendText, { color: trendColor }]}>
                                 <Feather name={trendIcon as any} size={12} /> {item.trend}
                             </Text>
-                            <Text style={styles.timeText}>{item.time}</Text>
+                            <Text style={styles.timeText}>{item.time || "Trung bình"}</Text>
                         </View>
-                    </View>
+                    </CardComponent>
                 );
             })}
         </View>

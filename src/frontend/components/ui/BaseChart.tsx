@@ -1,10 +1,11 @@
 import { Fragment } from "react";
-import { Animated, Dimensions, StyleSheet, Text, View } from "react-native";
+import { Animated, Dimensions, StyleSheet, Text, View, ScrollView } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
 
 export interface BaseChartProps {
     title: string;
-    data: number[];
+    /** Mảng giá trị – null nghĩa là không có dữ liệu tại nhãn đó */
+    data: (number | null)[];
     labels: string[];
     lineColor?: string;
     smooth?: boolean;
@@ -12,11 +13,13 @@ export interface BaseChartProps {
     highlightMax?: boolean;
     highlightIndex?: number;
     chartHeight?: number;
+    chartWidth?: number;
     headerRight?: React.ReactNode;
     footerText?: string;
     minY?: number;
     maxY?: number;
     fadeAnim?: Animated.Value;
+    onPointClick?: (index: number) => void;
 }
 
 export default function BaseChart({
@@ -29,63 +32,84 @@ export default function BaseChart({
     highlightMax = false,
     highlightIndex,
     chartHeight = 140,
+    chartWidth,
     headerRight,
     footerText,
     minY,
     maxY,
     fadeAnim,
+    onPointClick
 }: BaseChartProps) {
-    const chartWidth = Dimensions.get("window").width - 64;
+    const screenWidth = Dimensions.get("window").width - 64;
+    const yAxisWidth = 35;
+    const actualChartWidth = chartWidth || screenWidth - yAxisWidth;
+
     const paddingX = 20;
     const paddingTop = showValues ? 30 : 20;
     const paddingBottom = 20;
 
-    const drawableWidth = chartWidth - paddingX * 2;
+    const drawableWidth = actualChartWidth - paddingX * 2;
     const drawableHeight = chartHeight - paddingTop - paddingBottom;
 
-    const rawMaxVal = Math.max(...data);
-    const rawMinVal = Math.min(...data);
+    // Tính Y-axis chỉ từ các giá trị không null
+    const validValues = data.filter((v): v is number => v !== null && !isNaN(v));
+    const rawMaxVal = validValues.length > 0 ? Math.max(...validValues) : 1;
+    const rawMinVal = validValues.length > 0 ? Math.min(...validValues) : 0;
     const maxIndex = data.indexOf(rawMaxVal);
 
-    const minVal = minY !== undefined ? minY : rawMinVal - (rawMaxVal - rawMinVal) * 0.1;
-    const maxVal = maxY !== undefined ? maxY : rawMaxVal + (rawMaxVal - rawMinVal) * 0.1;
+    const padding = rawMaxVal === rawMinVal ? 1 : (rawMaxVal - rawMinVal) * 0.15;
+    const minVal = minY !== undefined ? minY : rawMinVal - padding;
+    const maxVal = maxY !== undefined ? maxY : rawMaxVal + padding;
+    const midVal = (maxVal + minVal) / 2;
+    const safeRange = maxVal - minVal === 0 ? 1 : maxVal - minVal;
 
-    const points = data.map((val, index) => {
-        const x = paddingX + (index / (data.length - 1)) * drawableWidth;
-        const y = paddingTop + drawableHeight - ((val - minVal) / (maxVal - minVal)) * drawableHeight;
-        return { x, y, val };
-    });
+    // Tổng số slots = labels.length (luôn đủ 24 cho view ngày)
+    const totalSlots = labels.length;
 
+    // Tính toạ độ X cho mỗi index (kể cả null)
+    const getX = (index: number) =>
+        paddingX + (totalSlots <= 1 ? drawableWidth / 2 : (index / (totalSlots - 1)) * drawableWidth);
+
+    // Tính toạ độ Y cho một giá trị
+    const getY = (val: number) =>
+        paddingTop + drawableHeight - ((val - minVal) / safeRange) * drawableHeight;
+
+    // Tạo các điểm (x, y, val, hasData) cho tất cả slots
+    const allPoints = data.map((val, index) => ({
+        x: getX(index),
+        y: val !== null ? getY(val) : null,
+        val,
+        hasData: val !== null,
+    }));
+
+    // Tạo SVG path: chỉ nối các điểm liền nhau đều có dữ liệu
+    // Khi gặp null → nhấc bút (M), khi có dữ liệu liên tiếp → kéo line (L)
     const getPath = () => {
-        if (points.length === 0) return "";
-        let path = `M ${points[0].x} ${points[0].y}`;
+        let path = "";
+        let penDown = false;
 
-        if (!smooth) {
-            for (let i = 1; i < points.length; i++) {
-                path += ` L ${points[i].x} ${points[i].y}`;
+        for (let i = 0; i < allPoints.length; i++) {
+            const pt = allPoints[i];
+            if (!pt.hasData || pt.y === null) {
+                penDown = false;
+                continue;
             }
-            return path;
+            if (!penDown) {
+                path += `M ${pt.x} ${pt.y} `;
+                penDown = true;
+            } else {
+                path += `L ${pt.x} ${pt.y} `;
+            }
         }
-
-        const smoothing = 0.15;
-        for (let i = 0; i < points.length - 1; i++) {
-            const p0 = points[i === 0 ? 0 : i - 1];
-            const p1 = points[i];
-            const p2 = points[i + 1];
-            const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
-
-            const cp1X = p1.x + (p2.x - p0.x) * smoothing;
-            const cp1Y = p1.y + (p2.y - p0.y) * smoothing;
-            const cp2X = p2.x - (p3.x - p1.x) * smoothing;
-            const cp2Y = p2.y - (p3.y - p1.y) * smoothing;
-
-            path += ` C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${p2.x} ${p2.y}`;
-        }
-        return path;
+        return path.trim();
     };
 
     const ChartWrapper = fadeAnim ? Animated.View : View;
     const animatedStyle = fadeAnim ? { opacity: fadeAnim } : {};
+
+    const crowded = labels.length > 12;
+    const labelWidth = crowded ? 36 : 40;
+    const labelFontSize = crowded ? 10 : 11;
 
     return (
         <View style={styles.chartCard}>
@@ -95,63 +119,95 @@ export default function BaseChart({
             </View>
 
             <ChartWrapper style={[styles.chartContainer, animatedStyle]}>
-                <Svg width={chartWidth} height={chartHeight}>
-                    <Path
-                        d={`M 0 ${paddingTop + drawableHeight / 2} L ${chartWidth} ${paddingTop + drawableHeight / 2}`}
-                        stroke="#F1F5F9"
-                        strokeWidth="1"
-                        strokeDasharray={smooth ? "4, 4" : "0"}
-                    />
-                    <Path
-                        d={`M 0 ${paddingTop + drawableHeight} L ${chartWidth} ${paddingTop + drawableHeight}`}
-                        stroke="#F1F5F9"
-                        strokeWidth="1"
-                    />
+                <View style={{ flexDirection: 'row', width: '100%' }}>
+                    {/* Fixed Y-Axis */}
+                    <View style={{ width: yAxisWidth, height: chartHeight, justifyContent: 'space-between', paddingBottom: paddingBottom + 8, paddingTop: paddingTop - 6, paddingRight: 4 }}>
+                        <Text style={styles.yAxisText}>{maxVal.toFixed(1)}</Text>
+                        <Text style={styles.yAxisText}>{midVal.toFixed(1)}</Text>
+                        <Text style={styles.yAxisText}>{minVal.toFixed(1)}</Text>
+                    </View>
 
-                    <Path d={getPath()} fill="none" stroke={lineColor} strokeWidth={smooth ? "3" : "2.5"} />
-
-                    {points.map((pt, i) => {
-                        const isHighlighted = (highlightIndex !== undefined && i === highlightIndex) || (highlightMax && i === maxIndex);
-                        return (
-                            <Fragment key={`point-${i}`}>
-                                <Circle
-                                    cx={pt.x}
-                                    cy={pt.y}
-                                    r={isHighlighted ? 7 : 4}
-                                    fill={smooth ? lineColor : "#FFFFFF"}
-                                    stroke={isHighlighted ? "#CCEEEB" : smooth ? "none" : lineColor}
-                                    strokeWidth={isHighlighted ? 4 : smooth ? 0 : 2}
+                    {/* Scrollable X-Axis and Chart */}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} bounces={false}>
+                        <View style={{ width: actualChartWidth, height: chartHeight + 24 }}>
+                            <Svg width={actualChartWidth} height={chartHeight}>
+                                {/* Horizontal grid lines */}
+                                <Path
+                                    d={`M 0 ${paddingTop + drawableHeight / 2} L ${actualChartWidth} ${paddingTop + drawableHeight / 2}`}
+                                    stroke="#F1F5F9"
+                                    strokeWidth="1"
+                                    strokeDasharray="4, 4"
                                 />
-                                {showValues && (
-                                    <Text style={[styles.dataValueText, { left: pt.x - 10, top: pt.y - 20 }]}>
-                                        {pt.val}
-                                    </Text>
-                                )}
-                            </Fragment>
-                        );
-                    })}
-                </Svg>
+                                <Path
+                                    d={`M 0 ${paddingTop + drawableHeight} L ${actualChartWidth} ${paddingTop + drawableHeight}`}
+                                    stroke="#F1F5F9"
+                                    strokeWidth="1"
+                                />
 
-                <View style={styles.xAxisContainer}>
-                    {labels.map((label, i) => {
-                        const isCrowded = labels.length > 7;
-                        const labelWidth = isCrowded ? 30 : 35;
-                        const labelFontSize = isCrowded ? 10 : 11;
-                        const isHighlighted = (highlightIndex !== undefined && i === highlightIndex) || (highlightMax && i === maxIndex);
+                                {/* Line path – chỉ nối các điểm có dữ liệu */}
+                                <Path d={getPath()} fill="none" stroke={lineColor} strokeWidth="2.5" />
 
-                        return (
-                            <Text
-                                key={`label-${i}`}
-                                style={[
-                                    styles.axisText,
-                                    isHighlighted && { color: lineColor, fontFamily: "Inter-Bold" },
-                                    { left: points[i].x - labelWidth / 2, width: labelWidth, fontSize: labelFontSize },
-                                ]}
-                            >
-                                {label}
-                            </Text>
-                        );
-                    })}
+                                {/* Dots – chỉ vẽ tại các điểm có dữ liệu */}
+                                {allPoints.map((pt, i) => {
+                                    if (!pt.hasData || pt.y === null) return null;
+                                    const isHighlighted =
+                                        (highlightIndex !== undefined && i === highlightIndex) ||
+                                        (highlightMax && i === maxIndex);
+                                    return (
+                                        <Fragment key={`point-${i}`}>
+                                            {/* Hit area (transparent, larger) */}
+                                            <Circle
+                                                cx={pt.x}
+                                                cy={pt.y}
+                                                r={onPointClick ? 12 : (isHighlighted ? 7 : 4)}
+                                                fill="transparent"
+                                                stroke="transparent"
+                                                onPress={onPointClick ? () => onPointClick(i) : undefined}
+                                                style={{ cursor: onPointClick ? 'pointer' : 'default' }}
+                                            />
+                                            {/* Visible dot */}
+                                            <Circle
+                                                cx={pt.x}
+                                                cy={pt.y}
+                                                r={isHighlighted ? 7 : 4}
+                                                fill="#FFFFFF"
+                                                stroke={isHighlighted ? "#CCEEEB" : lineColor}
+                                                strokeWidth={isHighlighted ? 4 : 2}
+                                                pointerEvents="none"
+                                            />
+                                            {showValues && (
+                                                <Text style={[styles.dataValueText, { left: pt.x - 10, top: pt.y - 20 }]}>
+                                                    {pt.val}
+                                                </Text>
+                                            )}
+                                        </Fragment>
+                                    );
+                                })}
+                            </Svg>
+
+                            {/* X-axis labels – luôn hiển thị đủ tất cả nhãn */}
+                            <View style={styles.xAxisContainer}>
+                                {labels.map((label, i) => {
+                                    const xPos = getX(i);
+                                    const isHighlighted =
+                                        (highlightIndex !== undefined && i === highlightIndex) ||
+                                        (highlightMax && i === maxIndex);
+                                    return (
+                                        <Text
+                                            key={`label-${i}`}
+                                            style={[
+                                                styles.axisText,
+                                                isHighlighted && { color: lineColor, fontFamily: "Inter-Bold" },
+                                                { left: xPos - labelWidth / 2, width: labelWidth, fontSize: labelFontSize },
+                                            ]}
+                                        >
+                                            {label}
+                                        </Text>
+                                    );
+                                })}
+                            </View>
+                        </View>
+                    </ScrollView>
                 </View>
             </ChartWrapper>
 
@@ -172,7 +228,7 @@ const styles = StyleSheet.create({
     },
     chartHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
     chartTitle: { fontSize: 13, color: "#1E293B", fontFamily: "Inter-SemiBold" },
-    chartContainer: { alignItems: "center" },
+    chartContainer: { alignItems: "center", width: '100%' },
     dataValueText: {
         position: "absolute",
         fontSize: 10,
@@ -184,11 +240,13 @@ const styles = StyleSheet.create({
     xAxisContainer: {
         height: 24,
         width: "100%",
-        position: "relative",
+        position: "absolute",
+        bottom: 0,
         borderTopWidth: 1,
         borderTopColor: "#E2E8F0",
         paddingTop: 8,
     },
     axisText: { position: "absolute", textAlign: "center", color: "#64748B", fontFamily: "Inter-Regular" },
+    yAxisText: { fontSize: 10, color: "#64748B", fontFamily: "Inter-Medium", textAlign: "right" },
     chartFooter: { fontSize: 10, color: "#64748B", textAlign: "center", marginTop: 16, fontFamily: "Inter-Regular" },
 });
