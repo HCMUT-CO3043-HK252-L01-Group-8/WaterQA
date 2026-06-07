@@ -6,7 +6,7 @@ const dataService = require('./data.service');
 const accountsRepo = require('../repositories/accounts.repo');
 //Lay tu feed key tren Adafruit IO, neu muon check ca 2 feed cung luc 
 //thi de trong array, neu chi check 1 feed thi de 1 phan tu trong array nhu duoi
-const FEEDS_TO_MONITOR = ['temp', 'humi', 'light']; //cap nhat: dam quay chinh sach canh bao light
+const FEEDS_TO_MONITOR = ['ph', 'hardness', 'solids', 'chloramines', 'sulfate', 'conductivity', 'organic-carbon', 'trihalomethanes', 'turbidity'];
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL; //Co the doi mail de test
 const LIGHT_THRESHOLD = 60; // Mốc cảnh báo cường độ ánh sáng
 const LIGHT_DURATION_MS = 10000; // 10 giây
@@ -168,35 +168,37 @@ const startDeviceMonitor = () => {
     cron.schedule('*/5 * * * *', async () => {
         try {
             console.log("Đang lấy dữ liệu từ Adafruit để lưu vào lịch sử...");
-            let currentData = { temp: null, humi: null, light: null };
+            let currentData = { ph: null, hardness: null, solids: null, chloramines: null, sulfate: null, conductivity: null, organic_carbon: null, trihalomethanes: null, turbidity: null };
 
             for (let feedKey of FEEDS_TO_MONITOR) {
                 const response = await dataService.getTelemetryData(feedKey, 1);
                 if (response && response.data && response.data.length > 0) {
-                    currentData[feedKey] = parseFloat(response.data[0].value);
+                    // Xử lý key có dấu gạch ngang (organic-carbon -> organic_carbon)
+                    const dataKey = feedKey.replace("-", "_");
+                    currentData[dataKey] = parseFloat(response.data[0].value);
                 }
             }
 
             const stationId = 1; // Mặc định trạm 1
             dataService.insertObservation(
                 stationId,
-                currentData.light,  // light_intensity
+                null,  // light_intensity
                 0,                  // water_level
-                currentData.temp,   // temperature
-                currentData.humi,   // humidity
+                null,   // temperature
+                null,   // humidity
                 0,                  // tank_surface_moisture
                 0,                  // lid_status
                 0,                  // leakage_signal
                 0,                  // intrusion_signal
-                null,               // ph
-                null,               // hardness
-                null,               // solids
-                null,               // chloramines
-                null,               // sulfate
-                null,               // conductivity
-                null,               // organic_carbon
-                null,               // trihalomethanes
-                null                // turbidity
+                currentData.ph,
+                currentData.hardness,
+                currentData.solids,
+                currentData.chloramines,
+                currentData.sulfate,
+                currentData.conductivity,
+                currentData.organic_carbon,
+                currentData.trihalomethanes,
+                currentData.turbidity
             );
             console.log("Đã lưu lịch sử quan trắc thành công.");
         } catch (error) {

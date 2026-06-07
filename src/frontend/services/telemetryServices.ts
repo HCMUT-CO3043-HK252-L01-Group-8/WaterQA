@@ -4,9 +4,6 @@ import { ApiResponse } from "./authServices";
 
 export type LatestTelemetryValue = { feedKey: string; value: string | null; createdAt?: string; raw?: unknown };
 export type TelemetrySnapshot = {
-    temp: LatestTelemetryValue;
-    humi: LatestTelemetryValue;
-    leakage: LatestTelemetryValue;
     ph: LatestTelemetryValue;
     hardness: LatestTelemetryValue;
     solids: LatestTelemetryValue;
@@ -47,13 +44,10 @@ export const telemetryServices = {
 
     getLatestTelemetrySnapshot: async (signal?: AbortSignal): Promise<TelemetrySnapshot> => {
         const [
-            temp, humi, light, ph, hardness, solids, 
+            ph, hardness, solids, 
             chloramines, sulfate, conductivity, organic_carbon, 
             trihalomethanes, turbidity
         ] = await Promise.all([
-            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.TEMP_FEED, signal),
-            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.HUMIDITY_FEED, signal),
-            telemetryServices.getLatestValue(ADAFRUIT_FEEDS.LIGHT_FEED, signal),
             telemetryServices.getLatestValue(ADAFRUIT_FEEDS.PH_FEED, signal),
             telemetryServices.getLatestValue(ADAFRUIT_FEEDS.HARDNESS_FEED, signal),
             telemetryServices.getLatestValue(ADAFRUIT_FEEDS.SOLIDS_FEED, signal),
@@ -66,9 +60,6 @@ export const telemetryServices = {
         ]);
 
         return {
-            temp,
-            humi,
-            leakage: light,
             ph,
             hardness,
             solids,

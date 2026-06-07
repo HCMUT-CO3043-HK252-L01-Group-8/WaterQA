@@ -1,7 +1,4 @@
 export const ADAFRUIT_FEEDS = {
-    TEMP_FEED: "temp",
-    HUMIDITY_FEED: "humi",
-    LIGHT_FEED: "light",
     PH_FEED: "ph",
     HARDNESS_FEED: "hardness",
     SOLIDS_FEED: "solids",
@@ -15,11 +12,9 @@ export const ADAFRUIT_FEEDS = {
 
 
 export const THRESHOLDS = {
-    TEMP_WARNING: 40,
-    HUMIDITY_WARNING: 80,
-    LIGHT_NORMAL: 50,
-    LIGHT_WARNING: 60,
-    LIGHT_CHECK_DURATION_MS: 5000,
+    PH_WARNING_LOW: 6.5,
+    PH_WARNING_HIGH: 8.5,
+    HARDNESS_WARNING: 300,
 } as const;
 
 

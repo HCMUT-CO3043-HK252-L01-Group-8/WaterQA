@@ -23,11 +23,7 @@ print("Đã kết nối Adafruit IO. Bắt đầu đẩy dữ liệu ảo...")
 
 try:
     while True:
-        # Tạo số liệu ngẫu nhiên giả lập cảm biến
-        temp = round(random.uniform(25.0, 35.0), 2)  # Nhiệt độ 25 - 35
-        humi = round(random.uniform(50.0, 80.0), 2)  # Độ ẩm 50 - 80
-        light = round(random.uniform(0.0, 100.0), 2) # Ánh sáng 0 - 100
-        
+        # Tạo số liệu ngẫu nhiên giả lập cảm biến hóa học nước
         ph = round(random.uniform(6.5, 8.5), 2) 
         hardness = round(random.uniform(100.0, 250.0), 2)
         solids = round(random.uniform(10000.0, 25000.0), 2)
@@ -42,9 +38,6 @@ try:
 
         # Đẩy dữ liệu lên Adafruit IO (Lưu ý: Tên feed phải tạo trước trên web Adafruit)
         try:
-            aio.send('temp', temp)
-            aio.send('humi', humi)
-            aio.send('light', light)
             aio.send('ph', ph)
             aio.send('hardness', hardness)
             aio.send('solids', solids)

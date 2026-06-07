@@ -12,41 +12,27 @@ import { THRESHOLDS, REFRESH_INTERVALS } from "@/configs/feeds";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const REFRESH_INTERVAL_MS = REFRESH_INTERVALS.DASHBOARD_REFRESH_MS;
-const TEMP_WARNING_THRESHOLD = THRESHOLDS.TEMP_WARNING;
-const HUMI_WARNING_THRESHOLD = THRESHOLDS.HUMIDITY_WARNING;
-const LIGHT_WARNING = THRESHOLDS.LIGHT_WARNING;
-const LIGHT_NORMAL = THRESHOLDS.LIGHT_NORMAL;
-const LIGHT_CHECK_DURATION = THRESHOLDS.LIGHT_CHECK_DURATION_MS;
 const ALERT_THROTTLE_MS = REFRESH_INTERVALS.ALERT_THROTTLE_MS;
 const ALERTS_STORAGE_KEY = "local_alerts_database";
 
 type SensorData = {
-    temp: string | number | null;
-    humi: string | number | null;
-    light: string | number | null;
     ph: string | number | null;
     hardness: string | number | null;
-};
-
-type LightHistory = {
-    timestamp: number;
-    value: number;
+    turbidity: string | number | null;
+    solids: string | number | null;
 };
 
 export default function IotDashboard() {
     const { t } = useTranslation();
     const tabBarHeight = useTabBarHeight();
-    const [data, setData] = useState<SensorData>({ temp: null, humi: null, light: null, ph: null, hardness: null });
+    const [data, setData] = useState<SensorData>({ ph: null, hardness: null, turbidity: null, solids: null });
     const [loading, setLoading] = useState<boolean>(true);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [showTempBanner, setShowTempBanner] = useState(false);
-    const [showLightBanner, setShowLightBanner] = useState(false);
+    const [showPhBanner, setShowPhBanner] = useState(false);
     const requestSeq = useRef(0);
     const abortRef = useRef<AbortController | null>(null);
-    const lastTempAlertAt = useRef<number>(0);
-    const lastLightAlertAt = useRef<number>(0);
-    const lightHistoryRef = useRef<LightHistory[]>([]);
+    const lastAlertAt = useRef<number>(0);
 
     const loadData = useCallback(
         async (isRefresh = false) => {
@@ -61,23 +47,12 @@ export default function IotDashboard() {
                 const snap = await telemetryServices.getLatestTelemetrySnapshot(controller.signal);
                 if (thisReq !== requestSeq.current) return;
 
-                const newLightValue = snap.leakage.value ? Number(snap.leakage.value) : null;
-
                 setData({
-                    temp: snap.temp.value,
-                    humi: snap.humi.value,
-                    light: newLightValue,
                     ph: snap.ph?.value || null,
                     hardness: snap.hardness?.value || null,
+                    turbidity: snap.turbidity?.value || null,
+                    solids: snap.solids?.value || null,
                 });
-
-                if (newLightValue !== null) {
-                    const now = Date.now();
-                    lightHistoryRef.current.push({ timestamp: now, value: newLightValue });
-                    lightHistoryRef.current = lightHistoryRef.current.filter(
-                        (entry) => now - entry.timestamp < LIGHT_CHECK_DURATION,
-                    );
-                }
             } catch (err) {
                 if ((err as any)?.name === "AbortError") return;
                 console.log(err);
@@ -106,24 +81,8 @@ export default function IotDashboard() {
 
     const onRefresh = () => loadData(true);
 
-    const isTempHigh = data.temp !== null && Number(data.temp) > TEMP_WARNING_THRESHOLD;
-    const isHumiHigh = data.humi !== null && Number(data.humi) > HUMI_WARNING_THRESHOLD;
-    const lightValue = data.light !== null ? Number(data.light) : null;
-    const isLightHigh = lightValue !== null && lightValue >= LIGHT_WARNING;
-    const isLightNormal = lightValue !== null && lightValue < LIGHT_NORMAL;
-
-    const isLidOpened = useCallback(() => {
-        if (lightHistoryRef.current.length === 0) return false;
-        const now = Date.now();
-        const recentReadings = lightHistoryRef.current.filter((entry) => now - entry.timestamp < LIGHT_CHECK_DURATION);
-
-        if (recentReadings.length === 0) return false;
-        const allReadingsHigh = recentReadings.every((entry) => entry.value >= LIGHT_WARNING);
-        const oldestReading = Math.min(...recentReadings.map((r) => r.timestamp));
-        const readingDuration = now - oldestReading;
-
-        return allReadingsHigh && readingDuration >= LIGHT_CHECK_DURATION;
-    }, []);
+    const phValue = data.ph !== null ? Number(data.ph) : null;
+    const isPhWarning = phValue !== null && (phValue < THRESHOLDS.PH_WARNING_LOW || phValue > THRESHOLDS.PH_WARNING_HIGH);
 
     const saveAlertToLocal = async (type: "warning" | "critical", title: string, desc: string) => {
         try {
@@ -145,27 +104,18 @@ export default function IotDashboard() {
 
     useEffect(() => {
         const now = Date.now();
-        if (isTempHigh) setShowTempBanner(true);
-        if (isLidOpened()) setShowLightBanner(true);
+        if (isPhWarning) setShowPhBanner(true);
 
-        if (isTempHigh && now - lastTempAlertAt.current > ALERT_THROTTLE_MS) {
-            lastTempAlertAt.current = now;
-            const title = t("iot.tempWarningTitle", "Cảnh báo: Nhiệt độ cao");
-            const desc = `${t("iot.temperature", "Nhiệt độ")} ${String(data.temp)}°C.`;
+        if (isPhWarning && now - lastAlertAt.current > ALERT_THROTTLE_MS) {
+            lastAlertAt.current = now;
+            const title = t("iot.phWarningTitle", "Cảnh báo: Độ pH bất thường");
+            const desc = `${t("iot.ph", "Độ pH")} hiện tại: ${phValue}.`;
             Alert.alert(title, desc);
             saveAlertToLocal("warning", title, desc);
         }
+    }, [isPhWarning, phValue, t]);
 
-        if (isLidOpened() && now - lastLightAlertAt.current > ALERT_THROTTLE_MS) {
-            lastLightAlertAt.current = now;
-            const title = t("iot.lidDangerTitle", "Nguy hiểm: Mở nắp bồn!");
-            const desc = `${t("iot.lightLevel", "Ánh sáng")} ${lightValue}.`;
-            Alert.alert(title, desc);
-            saveAlertToLocal("critical", title, desc);
-        }
-    }, [data.temp, isTempHigh, lightValue, isLidOpened, t]);
-
-    const isEmpty = data.temp === null && data.humi === null && data.light === null && data.ph === null && data.hardness === null;
+    const isEmpty = data.ph === null && data.hardness === null && data.turbidity === null && data.solids === null;
 
     if (loading && !refreshing) return (
         <SafeAreaView style={styles.safeArea}>
@@ -187,7 +137,7 @@ export default function IotDashboard() {
                     <AppHeader />
                     <Text style={styles.pageTitle}>{t("iot.title", "IoT Dashboard")}</Text>
                     <Text style={styles.pageSubtitle}>
-                        {t("iot.subtitle", "Dữ liệu quan trắc theo thời gian thực")}
+                        {t("iot.subtitle", "Dữ liệu hóa học nước theo thời gian thực")}
                     </Text>
                 </View>
 
@@ -204,55 +154,15 @@ export default function IotDashboard() {
                 ) : (
                     <View>
                         <AlertBanner
-                            visible={showTempBanner}
+                            visible={showPhBanner}
                             type="warning"
-                            title={t("iot.tempWarningTitle", "Cảnh báo: Nhiệt độ cao")}
+                            title={t("iot.phWarningTitle", "Cảnh báo: Độ pH bất thường")}
                             message={t(
-                                "iot.tempWarningDesc",
-                                "Nhiệt độ hiện tại cao hơn mức bình thường ({{temp}}°C).",
-                            ).replace("{{temp}}", String(data.temp))}
-                            onClose={() => setShowTempBanner(false)}
+                                "iot.phWarningDesc",
+                                "Độ pH hiện tại vượt ngưỡng an toàn ({{ph}}).",
+                            ).replace("{{ph}}", String(data.ph))}
+                            onClose={() => setShowPhBanner(false)}
                         />
-
-                        <AlertBanner
-                            visible={showLightBanner}
-                            type="error"
-                            title={t("iot.lidDangerTitle", "Nguy hiểm: Mở nắp bồn!")}
-                            message={t(
-                                "iot.lidDangerDesc",
-                                "Phát hiện mức ánh sáng cao ({{light}}). Vui lòng kiểm tra ngay!",
-                            ).replace("{{light}}", String(lightValue))}
-                            onClose={() => setShowLightBanner(false)}
-                        />
-
-                        <View style={styles.gaugeGrid}>
-                            <View style={styles.gaugeColumnLeft}>
-                                <GaugeChart
-                                    title={t("iot.temperature", "Nhiệt độ")}
-                                    value={data.temp !== null ? Number(data.temp) : 0}
-                                    min={0}
-                                    max={100}
-                                    unit="°C"
-                                    activeColor={isTempHigh ? "#991B1B" : "#0891B2"}
-                                />
-                                <Text style={styles.gridStatusText}>
-                                    {isTempHigh ? t("iot.aboveNormal", "Cao") : t("iot.normal", "Bình thường")}
-                                </Text>
-                            </View>
-                            <View style={styles.gaugeColumnRight}>
-                                <GaugeChart
-                                    title={t("iot.humidity", "Độ ẩm")}
-                                    value={data.humi !== null ? Number(data.humi) : 0}
-                                    min={0}
-                                    max={100}
-                                    unit="%"
-                                    activeColor={isHumiHigh ? "#991B1B" : "#00A63E"}
-                                />
-                                <Text style={styles.gridStatusText}>
-                                    {isHumiHigh ? t("iot.high", "Cao") : t("iot.normal", "Bình thường")}
-                                </Text>
-                            </View>
-                        </View>
 
                         <View style={styles.gaugeGrid}>
                             <View style={styles.gaugeColumnLeft}>
@@ -262,10 +172,10 @@ export default function IotDashboard() {
                                     min={0}
                                     max={14}
                                     unit=""
-                                    activeColor={(data.ph !== null && (Number(data.ph) < 6.5 || Number(data.ph) > 8.5)) ? "#991B1B" : "#10B981"}
+                                    activeColor={isPhWarning ? "#991B1B" : "#10B981"}
                                 />
                                 <Text style={styles.gridStatusText}>
-                                    {(data.ph !== null && (Number(data.ph) < 6.5 || Number(data.ph) > 8.5)) ? t("iot.abnormal", "Bất thường") : t("iot.normal", "Bình thường")}
+                                    {isPhWarning ? t("iot.abnormal", "Bất thường") : t("iot.normal", "Bình thường")}
                                 </Text>
                             </View>
                             <View style={styles.gaugeColumnRight}>
@@ -275,34 +185,41 @@ export default function IotDashboard() {
                                     min={0}
                                     max={500}
                                     unit="mg/L"
-                                    activeColor={(data.hardness !== null && Number(data.hardness) > 300) ? "#991B1B" : "#6366F1"}
+                                    activeColor={(data.hardness !== null && Number(data.hardness) > THRESHOLDS.HARDNESS_WARNING) ? "#991B1B" : "#6366F1"}
                                 />
                                 <Text style={styles.gridStatusText}>
-                                    {(data.hardness !== null && Number(data.hardness) > 300) ? t("iot.high", "Cao") : t("iot.normal", "Bình thường")}
+                                    {(data.hardness !== null && Number(data.hardness) > THRESHOLDS.HARDNESS_WARNING) ? t("iot.high", "Cao") : t("iot.normal", "Bình thường")}
                                 </Text>
                             </View>
                         </View>
-
-                        <View style={styles.lightSectionContainer}>
-                            <GaugeChart
-                                title={t("iot.lightLevel", "Ánh sáng")} 
-                                value={lightValue !== null ? lightValue : 0}
-                                min={0}
-                                max={100}
-                                unit="Lux"
-                                activeColor={isLidOpened() ? "#991B1B" : isLightHigh ? "#EAB308" : "#0891B2"}
-                            />
-                            <Text style={styles.lightStatusText}>
-                                {isLidOpened()
-                                    ? t("iot.lidOpenedAlert", "Mở nắp! (≥60 trong 5s)")
-                                    : isLightHigh
-                                      ? t("iot.highLight", "Cao ({{light}} ≥ {{threshold}})")
-                                            .replace("{{light}}", String(lightValue))
-                                            .replace("{{threshold}}", String(LIGHT_WARNING))
-                                      : isLightNormal
-                                        ? t("iot.normalLight", "Bình thường (< 50)")
-                                        : t("iot.lowLight", "Ánh sáng yếu")}
-                            </Text>
+                        
+                        <View style={styles.gaugeGrid}>
+                            <View style={styles.gaugeColumnLeft}>
+                                <GaugeChart
+                                    title={t("iot.turbidity", "Độ đục")}
+                                    value={data.turbidity !== null ? Number(data.turbidity) : 0}
+                                    min={0}
+                                    max={10}
+                                    unit="NTU"
+                                    activeColor="#EAB308"
+                                />
+                                <Text style={styles.gridStatusText}>
+                                    {t("iot.measured", "Đã đo đạc")}
+                                </Text>
+                            </View>
+                            <View style={styles.gaugeColumnRight}>
+                                <GaugeChart
+                                    title={t("iot.solids", "Chất rắn")}
+                                    value={data.solids !== null ? Number(data.solids) : 0}
+                                    min={0}
+                                    max={30000}
+                                    unit="mg/L"
+                                    activeColor="#8B5CF6"
+                                />
+                                <Text style={styles.gridStatusText}>
+                                    {t("iot.measured", "Đã đo đạc")}
+                                </Text>
+                            </View>
                         </View>
                     </View>
                 )}
@@ -342,7 +259,7 @@ const styles = StyleSheet.create({
     },
     emptyText: { color: "#94A3B8", fontSize: 14, fontFamily: "Inter-Regular" },
 
-    gaugeGrid: { flexDirection: "row", paddingHorizontal: 16, width: "100%", marginTop: 8 },
+    gaugeGrid: { flexDirection: "row", paddingHorizontal: 16, width: "100%", marginTop: 8, marginBottom: 12 },
     gaugeColumnLeft: { flex: 1, marginRight: 8, alignItems: "center" },
     gaugeColumnRight: { flex: 1, marginLeft: 8, alignItems: "center" },
     
@@ -352,20 +269,6 @@ const styles = StyleSheet.create({
         fontFamily: "Inter-Medium",
         marginTop: 10,
         textAlign: "center"
-    },
-
-    lightSectionContainer: { 
-        paddingHorizontal: 16, 
-        marginTop: 20, 
-        alignItems: "center" 
-    },
-    lightStatusText: { 
-        fontSize: 12, 
-        color: "#64748B", 
-        fontFamily: "Inter-Medium",
-        textAlign: "center", 
-        marginTop: 10,
-        marginBottom: 10,
     },
 
     cardWarning: { borderColor: "#FDBA74", backgroundColor: "#FFF7ED" },

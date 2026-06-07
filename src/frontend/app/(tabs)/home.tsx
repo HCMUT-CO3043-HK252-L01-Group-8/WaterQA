@@ -54,23 +54,19 @@ export default function HomeDashboard() {
     }, []);
 
     const processPrediction = async (snapshot: any) => {
-        const tempVal = snapshot ? Number(snapshot.temp?.value) || 0 : 34.3;
-        const humiVal = snapshot ? Number(snapshot.humi?.value) || 0 : 60;
-        const lightVal = snapshot ? Number(snapshot.leakage?.value) || 0 : 62;
-        
-        let wqiResult = tempVal; // Mặc định
-        let isSafeWater = tempVal >= 80;
+        let wqiResult = 85; // Mặc định
+        let isSafeWater = true;
         
         let aiParams = {
             ph: snapshot?.ph?.value ? Number(snapshot.ph.value) : 7.2,
-            hardness: snapshot?.hardness?.value ? Number(snapshot.hardness.value) : humiVal,
+            hardness: snapshot?.hardness?.value ? Number(snapshot.hardness.value) : 120,
             solids: snapshot?.solids?.value ? Number(snapshot.solids.value) : 20000,
             chloramines: snapshot?.chloramines?.value ? Number(snapshot.chloramines.value) : 0.5,
             sulfate: snapshot?.sulfate?.value ? Number(snapshot.sulfate.value) : 300,
             conductivity: snapshot?.conductivity?.value ? Number(snapshot.conductivity.value) : 400,
             organic_carbon: snapshot?.organic_carbon?.value ? Number(snapshot.organic_carbon.value) : 10,
             trihalomethanes: snapshot?.trihalomethanes?.value ? Number(snapshot.trihalomethanes.value) : 60,
-            turbidity: snapshot?.turbidity?.value ? Number(snapshot.turbidity.value) : lightVal
+            turbidity: snapshot?.turbidity?.value ? Number(snapshot.turbidity.value) : 5
         };
 
         try {
@@ -106,7 +102,7 @@ export default function HomeDashboard() {
 
         setStatusData({
             wqiChange: isSafeWater ? "+2" : "-15",
-            sensorStatus: snapshot?.temp?.value
+            sensorStatus: snapshot?.ph?.value
                 ? t("home.sensorGood", "Hoạt động tốt")
                 : t("home.sensorDisconnect", "Mất kết nối"),
             sensorIssue: isSafeWater
