@@ -88,6 +88,8 @@ async function loadAndPreprocessData() {
 const model = tf.sequential();
 
 async function run() {
+  console.time("Training time");
+
   try {
     const { xsTensor, ysTensor, stats } = await loadAndPreprocessData();
 
@@ -109,27 +111,15 @@ async function run() {
       metrics: ["accuracy"],
     });
 
-    // tfvis.show.modelSummary({ name: "Model Architecture" }, model);
-
-    const maxLoss = 10.0; // Adjust max expected loss
-    const barLength = 40;
-
-    updateStatus("Training model (Check side panel)...");
+    updateStatus("Begin training model");
     await model.fit(xsTensor, ysTensor, {
       epochs: 75,
       batchSize: 32,
       shuffle: true,
       validationSplit: 0.1,
-      // callbacks: {
-      //   onEpochEnd: (epoch, logs) => {
-      //     console.log(
-      //       `Epoch ${epoch + 1} | Loss ${logs.loss.toFixed(4)} | Val loss ${logs.val_loss.toFixed(4)} | Acc ${logs.acc.toFixed(4)} | Val acc ${logs.val_acc.toFixed(4)}`,
-      //     );
-      //   },
-      // },
     });
 
-    updateStatus("Training complete! Check console for a sample prediction.");
+    updateStatus("Training complete!");
 
     xsTensor.dispose();
     ysTensor.dispose();
@@ -160,27 +150,20 @@ async function run() {
       `Predicted probability of potability: ${(probability * 100).toFixed(2)}%`,
     );
 
+    console.timeEnd("Training time");
+
     model.save("file://data");
+
+    console.log("Model has been saved to data/");
 
     inputTensor.dispose();
   } catch (error) {
     updateStatus(`Error: ${error.message}`);
     console.error(error);
   }
-
-  // const download = document.createElement("button");
-  // download.textContent = "Click to download model";
-
-  // download.addEventListener("click", async () => {
-  //   await model.save("downloads://model");
-  //   updateStatus("Model downloaded successfully!");
-  // });
-
-  // document.body.appendChild(download);
 }
 
 function updateStatus(message) {
-  //document.getElementById("status").innerText = `Status: ${message}`;
   console.log(`Status + ${message}`);
 }
 
