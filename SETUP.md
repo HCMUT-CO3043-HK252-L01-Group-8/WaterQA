@@ -494,35 +494,35 @@ Sau khi hoàn tất, model sẽ được lưu vào thư mục data/
 
 Để hệ thống deploy thấy được thay đổi mới, hãy commit và push.
 
-## C?u h�nh Adafruit IO
-�? h? th?ng nh?n d? d? li?u, b?n c?n t?o c�c feeds sau tr�n Adafruit IO: 	emp, humi, light, ph, hardness, solids, chloramines, sulfate, conductivity, organic-carbon, 	rihalomethanes, 	urbidity.
+## Cấu hình Adafruit IO
+Để hệ thống nhận đủ dữ liệu, bạn cần tạo các feeds sau trên Adafruit IO: temp, humi, light, ph, hardness, solids, chloramines, sulfate, conductivity, organic-carbon, trihalomethanes, turbidity.
 
 ---
 
-## Luong du lieu (Data Flow)
+## Luồng dữ liệu (Data Flow)
 
 Adafruit IO (IoT feeds)
         |
-        |  Cron moi 5 phut (cron.service.js)
+        |  Cron mỗi 5 phút (cron.service.js)
         v
-SQLite DB — bang OBSERVATION (station_id=1, timestamp UTC)
+SQLite DB -> bảng OBSERVATION (station_id=1, timestamp UTC)
         |
         |  API GET /data/station-history?station_id=1&limit=1000
         v
-Frontend (history.tsx) — parse timestamp + "Z" -> UTC -> gio dia phuong
+Frontend (history.tsx) -> parse timestamp + "Z" -> UTC -> giờ địa phương
         |
-        |  Nhom theo gio (24 slot) / 5 phut (12 slot)
+        |  Nhóm theo giờ (24 slot) / 5 phút (12 slot)
         v
-BaseChart — ve truc X du 24h, chi ve dot & line tai gio co du lieu thuc
+BaseChart -> vẽ trục X đủ 24h, chỉ vẽ dot & line tại giờ có dữ liệu thực
 
-## Luu y quan trong ve timezone
+## Lưu ý quan trọng về timezone
 
-SQLite luu CURRENT_TIMESTAMP theo UTC. Khi frontend doc chuoi timestamp
-(vd: "2026-06-07 06:19:00"), JavaScript se mac dinh parse nhu gio dia phuong
-neu khong co ki hieu timezone — gay lech +7 gio tai Viet Nam.
+SQLite lưu CURRENT_TIMESTAMP theo UTC. Khi frontend đọc chuỗi timestamp
+(vd: "2026-06-07 06:19:00"), JavaScript sẽ mặc định parse như giờ địa phương
+nếu không có kí hiệu timezone -> gây lệch +7 giờ tại Việt Nam.
 
-Cach khac phuc (da ap dung): Frontend them "Z" vao cuoi chuoi truoc khi parse
-→ JavaScript hieu la UTC → tu chuyen doi sang gio dia phuong khi hien thi.
+Cách khắc phục (đã áp dụng): Frontend thêm "Z" vào cuối chuỗi trước khi parse
+-> JavaScript hiểu là UTC -> tự chuyển đổi sang giờ địa phương khi hiển thị.
 
-Tat ca 4 tram quan trac hien thi chung 1 bo du lieu tu station_id = 1
-(du lieu thuc tu Adafruit IO, duoc luu vao DB moi 5 phut).
+Tất cả 4 trạm quan trắc hiển thị chung 1 bộ dữ liệu từ station_id = 1
+(dữ liệu thực từ Adafruit IO, được lưu vào DB mỗi 5 phút).
