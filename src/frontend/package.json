@@ -3,7 +3,8 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "concurrently \"python ../backend/utils/python/simulate_iot.py\" \"expo start\"",
+    "start-c": "concurrently \"python ../backend/utils/python/simulate_iot.py\" \"expo start -c\"",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -54,6 +55,7 @@
   "devDependencies": {
     "@types/react": "~19.1.0",
     "babel-plugin-module-resolver": "^5.0.3",
+    "concurrently": "^10.0.3",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"

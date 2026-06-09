@@ -51,14 +51,15 @@ CREATE TABLE SENSOR (
 CREATE TABLE OBSERVATION (
     observation_id INTEGER PRIMARY KEY AUTOINCREMENT,
     station_id INTEGER NOT NULL,
-    light_intensity REAL,
-    water_level REAL,
-    temperature REAL,
-    humidity REAL,
-    tank_surface_moisture REAL,
-    lid_status INTEGER,
-    leakage_signal INTEGER,
-    intrusion_signal INTEGER,
+    ph REAL,
+    hardness REAL,
+    solids REAL,
+    chloramines REAL,
+    sulfate REAL,
+    conductivity REAL,
+    organic_carbon REAL,
+    trihalomethanes REAL,
+    turbidity REAL,
     timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (station_id) REFERENCES IOT_STATION(station_id)
 );

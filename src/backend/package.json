@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@tensorflow/tfjs-converter": "^4.22.0",
-    "@tensorflow/tfjs-node": "^4.22.0",
+    "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-vis": "^1.5.1",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.9.0",

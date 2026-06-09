@@ -14,8 +14,8 @@ class DataService {
     getStationHistory(station_id, limit) {
         return dataRepo.getStationHistory(station_id, limit);
     }
-    insertObservation(station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal, ph, hardness, solids, chloramines, sulfate, conductivity, organic_carbon, trihalomethanes, turbidity) {
-        return dataRepo.insertObservation(station_id, light_intensity, water_level, temperature, humidity, tank_surface_moisture, lid_status, leakage_signal, intrusion_signal, ph, hardness, solids, chloramines, sulfate, conductivity, organic_carbon, trihalomethanes, turbidity);
+    insertObservation(station_id, ph, hardness, solids, chloramines, sulfate, conductivity, organic_carbon, trihalomethanes, turbidity) {
+        return dataRepo.insertObservation(station_id, ph, hardness, solids, chloramines, sulfate, conductivity, organic_carbon, trihalomethanes, turbidity);
     }
 
     async getTelemetryData(feedKey, rowLimit) {
