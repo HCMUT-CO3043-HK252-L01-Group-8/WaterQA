@@ -84,7 +84,10 @@
             "description": "Logout successful",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:38.000Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:38.000Z"
+                }
               }
             }
           }
@@ -115,7 +118,10 @@
             "description": "OTP sent (or saved to backend logs if email fails)",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:38.000Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:38.000Z"
+                }
               }
             }
           },
@@ -123,7 +129,10 @@
             "description": "Email not found",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Email not found in the system" }
+                "example": {
+                  "success": false,
+                  "error": "Email not found in the system"
+                }
               }
             }
           }
@@ -155,7 +164,10 @@
             "description": "OTP valid",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:38.000Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:38.000Z"
+                }
               }
             }
           },
@@ -185,7 +197,10 @@
                 "properties": {
                   "email": { "type": "string", "example": "admin@waterqa.com" },
                   "otp": { "type": "string", "example": "123456" },
-                  "new_password": { "type": "string", "example": "newpassword123" }
+                  "new_password": {
+                    "type": "string",
+                    "example": "newpassword123"
+                  }
                 }
               }
             }
@@ -196,7 +211,10 @@
             "description": "Password reset successful",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:38.000Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:38.000Z"
+                }
               }
             }
           },
@@ -204,7 +222,10 @@
             "description": "OTP invalid or expired",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "OTP is invalid or has expired" }
+                "example": {
+                  "success": false,
+                  "error": "OTP is invalid or has expired"
+                }
               }
             }
           }
@@ -226,7 +247,10 @@
                 "properties": {
                   "name": { "type": "string", "example": "Gia Minh" },
                   "email": { "type": "string", "example": "user@gmail.com" },
-                  "picture": { "type": "string", "example": "https://lh3.googleusercontent.com/..." }
+                  "picture": {
+                    "type": "string",
+                    "example": "https://lh3.googleusercontent.com/..."
+                  }
                 }
               }
             }
@@ -403,14 +427,18 @@
             "description": "Setting updated",
             "content": {
               "application/json": {
-                "example": { "success": true, "message": "Email notifications enabled", "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": {
+                  "success": true,
+                  "message": "Email notifications enabled",
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
               }
             }
           }
         }
       }
     },
-    "/accounts/signup": {
+    "/accounts/": {
       "post": {
         "tags": ["Account"],
         "summary": "Sign up (create account)",
@@ -454,7 +482,10 @@
             "description": "Email already registered",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Email or phone number already registered" }
+                "example": {
+                  "success": false,
+                  "error": "Email or phone number already registered"
+                }
               }
             }
           },
@@ -462,14 +493,17 @@
             "description": "Password confirmation mismatch",
             "content": {
               "application/json": {
-                "example": { "success": false, "error": "Password confirmation does not match" }
+                "example": {
+                  "success": false,
+                  "error": "Password confirmation does not match"
+                }
               }
             }
           }
         }
       }
     },
-    "/accounts/change-password": {
+    "/accounts/me/password": {
       "put": {
         "tags": ["Account"],
         "summary": "Change password",
@@ -479,11 +513,21 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["currentPassword", "newPassword", "confirmPassword"],
+                "required": [
+                  "currentPassword",
+                  "newPassword",
+                  "confirmPassword"
+                ],
                 "properties": {
-                  "currentPassword": { "type": "string", "example": "oldpassword" },
+                  "currentPassword": {
+                    "type": "string",
+                    "example": "oldpassword"
+                  },
                   "newPassword": { "type": "string", "example": "newpassword" },
-                  "confirmPassword": { "type": "string", "example": "newpassword" }
+                  "confirmPassword": {
+                    "type": "string",
+                    "example": "newpassword"
+                  }
                 }
               }
             }
@@ -494,7 +538,10 @@
             "description": "Password changed successfully",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
               }
             }
           },
@@ -609,8 +656,16 @@
                   "payload": {
                     "count": 2,
                     "data": [
-                      { "id": "abc123", "value": "32.5", "created_at": "2026-05-31T13:00:00Z" },
-                      { "id": "abc124", "value": "31.8", "created_at": "2026-05-31T12:55:00Z" }
+                      {
+                        "id": "abc123",
+                        "value": "32.5",
+                        "created_at": "2026-05-31T13:00:00Z"
+                      },
+                      {
+                        "id": "abc124",
+                        "value": "31.8",
+                        "created_at": "2026-05-31T12:55:00Z"
+                      }
                     ]
                   },
                   "timestamp": "2026-05-31T14:21:47.759Z"
@@ -684,13 +739,26 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["parameter", "lower_threshold", "upper_threshold", "severity"],
+                "required": [
+                  "parameter",
+                  "lower_threshold",
+                  "upper_threshold",
+                  "severity"
+                ],
                 "properties": {
                   "parameter": { "type": "string", "example": "temperature" },
                   "lower_threshold": { "type": "number", "example": 20 },
                   "upper_threshold": { "type": "number", "example": 70 },
-                  "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"], "example": "high" },
-                  "station": { "type": "string", "example": "1", "description": "Station ID (optional)" }
+                  "severity": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high", "critical"],
+                    "example": "high"
+                  },
+                  "station": {
+                    "type": "string",
+                    "example": "1",
+                    "description": "Station ID (optional)"
+                  }
                 }
               }
             }
@@ -701,7 +769,10 @@
             "description": "Threshold added",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
               }
             }
           }
@@ -713,7 +784,12 @@
         "tags": ["Data"],
         "summary": "Get threshold by ID",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
         ],
         "responses": {
           "200": {
@@ -739,7 +815,12 @@
         "tags": ["Data"],
         "summary": "Edit threshold",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
         ],
         "requestBody": {
           "required": true,
@@ -763,7 +844,10 @@
             "description": "Threshold updated",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
               }
             }
           }
@@ -773,14 +857,22 @@
         "tags": ["Data"],
         "summary": "Delete threshold",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
         ],
         "responses": {
           "200": {
             "description": "Threshold deleted",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
               }
             }
           }
@@ -824,13 +916,25 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["station_id", "sensor_name", "sensor_type", "status"],
+                "required": [
+                  "station_id",
+                  "sensor_name",
+                  "sensor_type",
+                  "status"
+                ],
                 "properties": {
                   "station_id": { "type": "integer", "example": 1 },
-                  "sensor_name": { "type": "string", "example": "Cảm biến nhiệt độ" },
+                  "sensor_name": {
+                    "type": "string",
+                    "example": "Cảm biến nhiệt độ"
+                  },
                   "sensor_type": { "type": "string", "example": "temperature" },
                   "unit": { "type": "string", "example": "°C" },
-                  "status": { "type": "string", "enum": ["active", "inactive"], "example": "active" }
+                  "status": {
+                    "type": "string",
+                    "enum": ["active", "inactive"],
+                    "example": "active"
+                  }
                 }
               }
             }
@@ -841,7 +945,10 @@
             "description": "Device created",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
               }
             }
           }
@@ -853,7 +960,12 @@
         "tags": ["Devices"],
         "summary": "Get device by ID",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
         ],
         "responses": {
           "200": {
@@ -880,7 +992,12 @@
         "tags": ["Devices"],
         "summary": "Edit sensor (admin)",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
         ],
         "requestBody": {
           "content": {
@@ -889,7 +1006,10 @@
                 "type": "object",
                 "properties": {
                   "station_id": { "type": "integer", "example": 1 },
-                  "sensor_name": { "type": "string", "example": "Cảm biến nhiệt độ mới" },
+                  "sensor_name": {
+                    "type": "string",
+                    "example": "Cảm biến nhiệt độ mới"
+                  },
                   "sensor_type": { "type": "string", "example": "temperature" },
                   "unit": { "type": "string", "example": "°C" },
                   "status": { "type": "string", "example": "active" }
@@ -903,7 +1023,10 @@
             "description": "Sensor updated",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
               }
             }
           }
@@ -913,14 +1036,22 @@
         "tags": ["Devices"],
         "summary": "Delete device",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
         ],
         "responses": {
           "200": {
             "description": "Device deleted",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
               }
             }
           }
@@ -932,7 +1063,12 @@
         "tags": ["Devices"],
         "summary": "Rename sensor (user only)",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "example": 1 } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
         ],
         "requestBody": {
           "required": true,
@@ -942,7 +1078,10 @@
                 "type": "object",
                 "required": ["newName"],
                 "properties": {
-                  "newName": { "type": "string", "example": "Cảm biến hồng ngoại" }
+                  "newName": {
+                    "type": "string",
+                    "example": "Cảm biến hồng ngoại"
+                  }
                 }
               }
             }
@@ -953,7 +1092,10 @@
             "description": "Sensor renamed",
             "content": {
               "application/json": {
-                "example": { "success": true, "timestamp": "2026-05-31T14:21:29.775Z" }
+                "example": {
+                  "success": true,
+                  "timestamp": "2026-05-31T14:21:29.775Z"
+                }
               }
             }
           }
